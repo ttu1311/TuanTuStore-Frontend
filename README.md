@@ -160,4 +160,4 @@ read from `localStorage`. This avoids hydration errors, because the server has n
 
 ## Credits
 
-Photos: Wikimedia Commons (credited in the footer). Fonts: Phudu and Be Vietnam Pro (Google Fonts).
+Photos: Wikimedia Commons (credited in the footer). Fonts: Phudu and Be Vietnam Pro (Google Fonts)
