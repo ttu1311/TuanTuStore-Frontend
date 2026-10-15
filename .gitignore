@@ -1,0 +1,17 @@
+# dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# local environment files (this project does not need any)
+.env*
+
+# OS / editor
+.DS_Store
+
+# Claude Code local config
+.claude/
