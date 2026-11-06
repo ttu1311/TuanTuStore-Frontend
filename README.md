@@ -180,7 +180,7 @@ read from `localStorage`. This avoids hydration errors, because the server has n
 
 ## Credits
 
-Photos: Wikimedia Commons. The footer links to the page `/nguon-anh`, which lists the author and licence of each photo below (keep the two lists the same). Fonts: Phudu and Be Vietnam Pro (Google Fonts).
+Photos: Wikimedia Commons. The footer links to the page `/nguon-anh`, which lists the author and licence of each photo below (keep the two lists the same). Fonts: Phudu and Be Vietnam Pro (Google Fonts)
 
 Photos of the Cà Mau products (cropped and resized):
 
