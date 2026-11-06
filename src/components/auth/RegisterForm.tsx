@@ -15,18 +15,18 @@ const fieldStyle =
 const fieldOk = "border-line focus:border-primary focus:ring-primary-soft";
 const fieldBad = "border-sale focus:border-sale focus:ring-sale/20";
 
-// Field order = order of the checks, so the first error is also the first field on the page
+// Thứ tự trường = thứ tự kiểm tra, nên lỗi đầu tiên cũng là ô đầu tiên trên trang
 const fieldOrder: (keyof RegisterValues)[] = ["fullName", "email", "phone", "password", "confirmPassword"];
 
-// Creates a customer account (role USER) in localStorage, logs it in and opens /tai-khoan.
+// Tạo tài khoản khách hàng (vai trò USER) trong localStorage, đăng nhập luôn và mở /tai-khoan.
 export default function RegisterForm() {
   const { isReady, currentUser, register } = useStore();
   const router = useRouter();
   const [values, setValues] = useState<RegisterValues>(emptyForm);
   const [errors, setErrors] = useState<RegisterErrors>({});
-  const [formMessage, setFormMessage] = useState(""); // error that is not about one field
+  const [formMessage, setFormMessage] = useState(""); // lỗi không thuộc về một ô nào
 
-  // Already logged in (or just registered): go to the right page
+  // Đã đăng nhập (hoặc vừa đăng ký xong): chuyển tới đúng trang
   useEffect(() => {
     if (isReady && currentUser) router.replace(currentUser.role === "ADMIN" ? "/admin" : "/tai-khoan");
   }, [isReady, currentUser, router]);
@@ -36,7 +36,7 @@ export default function RegisterForm() {
   function handleChange(field: keyof RegisterValues, value: string) {
     setValues({ ...values, [field]: value });
     setFormMessage("");
-    // Remove the error of this field as soon as the user edits it
+    // Xóa lỗi của ô này ngay khi người dùng sửa nó
     if (errors[field]) setErrors({ ...errors, [field]: undefined });
   }
 
@@ -54,7 +54,7 @@ export default function RegisterForm() {
 
     const result = register(values);
     if (!result.ok) {
-      // "Email này đã được đăng ký" belongs to the email field; other messages go under the button
+      // "Email này đã được đăng ký" thuộc về ô email; các thông báo khác nằm dưới nút
       if (result.field === "email") {
         setErrors({ email: result.message });
         document.getElementById("email")?.focus();
@@ -64,12 +64,12 @@ export default function RegisterForm() {
     }
   }
 
-  // One labelled input with its error message
+  // Một ô nhập có nhãn kèm thông báo lỗi
   function renderField(field: keyof RegisterValues, label: string, type: string, autoComplete: string) {
     const error = errors[field];
     return (
       <div>
-        <label htmlFor={field} className="mb-2 block font-medium text-ink">
+        <label htmlFor={field} className="mb-1.5 block font-medium text-ink">
           {label}
         </label>
         <input
@@ -92,7 +92,7 @@ export default function RegisterForm() {
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit} className="space-y-5">
+    <form noValidate onSubmit={handleSubmit} className="space-y-4">
       {renderField("fullName", "Họ và tên", "text", "name")}
       {renderField("email", "Email", "email", "email")}
       {renderField("phone", "Số điện thoại", "tel", "tel")}

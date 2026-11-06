@@ -9,12 +9,12 @@ import { validatePasswordChange, type PasswordErrors, type PasswordValues } from
 const emptyForm: PasswordValues = { currentPassword: "", newPassword: "", confirmPassword: "" };
 const fieldOrder = ["currentPassword", "newPassword", "confirmPassword"] as const;
 
-// Changes the (simulated) password of the logged-in user in localStorage
+// Đổi mật khẩu (mô phỏng) của người đang đăng nhập trong localStorage
 export default function PasswordSection() {
   const { changePassword } = useStore();
   const [values, setValues] = useState<PasswordValues>(emptyForm);
   const [errors, setErrors] = useState<PasswordErrors>({});
-  const [formMessage, setFormMessage] = useState(""); // error that is not about one field
+  const [formMessage, setFormMessage] = useState(""); // lỗi không thuộc về một ô nào
   const [success, setSuccess] = useState(false);
 
   function handleChange(field: keyof PasswordValues, value: string) {

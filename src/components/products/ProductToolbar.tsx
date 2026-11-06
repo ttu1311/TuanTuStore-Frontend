@@ -10,14 +10,14 @@ const fieldStyle =
   "h-12 rounded-lg border border-line bg-white text-ink transition-colors duration-200 focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-soft";
 
 type ProductToolbarProps = {
-  total: number; // number of products currently shown
+  total: number; // số sản phẩm đang hiển thị
   search: string;
   onSearchChange: (value: string) => void;
   sort: string;
   onSortChange: (value: string) => void;
 };
 
-// Search box + result count + sort dropdown. The state lives in ProductListing.
+// Ô tìm kiếm + số kết quả + danh sách sắp xếp. State nằm ở ProductListing.
 export default function ProductToolbar({ total, search, onSearchChange, sort, onSortChange }: ProductToolbarProps) {
   return (
     <div className="mb-6 space-y-4">

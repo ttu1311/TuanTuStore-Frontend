@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import RegionBadge from "@/components/product/RegionBadge";
+import ContentSidebar from "@/components/layout/PageLayout";
 import { btnBase, btnPrimary } from "@/components/ui/buttons";
 import LoadingState from "@/components/ui/LoadingState";
 import { useStore } from "@/context/StoreContext";
@@ -16,9 +17,9 @@ const stepButton =
 
 function CartRow({ product, quantity }: { product: Product; quantity: number }) {
   const { setCartQuantity, removeFromCart } = useStore();
-  // Text while typing, so the field can be empty for a moment. The cart never gets a quantity below 1.
+  // Văn bản khi đang gõ, nên ô có thể trống trong giây lát. Giỏ hàng không bao giờ nhận số lượng dưới 1.
   const [draft, setDraft] = useState(String(quantity));
-  // Keep the field in sync when − / + change the quantity (adjusting state during render, as React recommends)
+  // Giữ ô nhập đồng bộ khi nút − / + đổi số lượng (chỉnh state ngay lúc render, như React khuyến nghị)
   const [shownQuantity, setShownQuantity] = useState(quantity);
   if (quantity !== shownQuantity) {
     setShownQuantity(quantity);
@@ -99,11 +100,11 @@ function CartRow({ product, quantity }: { product: Product; quantity: number }) 
   );
 }
 
-// The cart only stores product ids and quantities; names, prices and images come from the product list.
+// Giỏ hàng chỉ lưu id sản phẩm và số lượng; tên, giá và ảnh lấy từ danh sách sản phẩm.
 export default function CartView() {
   const { isReady, cart, products } = useStore();
 
-  // Wait for localStorage, otherwise the empty message would flash on every page load
+  // Chờ localStorage, nếu không thông báo giỏ trống sẽ nháy lên mỗi lần tải trang
   if (!isReady) return <LoadingState text="Đang tải giỏ hàng…" />;
 
   const lines = getCartLines(cart, products);
@@ -130,37 +131,42 @@ export default function CartView() {
   ];
 
   return (
-    <div className="grid items-start gap-8 lg:grid-cols-[1fr_360px]">
+    // Nội dung: các dòng trong giỏ. Sidebar (phải): tóm tắt đơn hàng, luôn nằm trong tầm nhìn khi cuộn.
+    <ContentSidebar
+      sidebarLabel="Tổng đơn hàng"
+      sticky
+      sidebar={
+        <div className="rounded-xl border border-line bg-white p-6">
+            <h2 className="font-display text-2xl font-semibold text-ink">Tổng đơn hàng</h2>
+            <dl className="mt-4 space-y-3">
+              {summaryRows.map((row) => (
+                <div key={row.label} className="flex justify-between gap-4">
+                  <dt className="text-ink-muted">{row.label}</dt>
+                  <dd className="font-medium text-ink">{row.value}</dd>
+                </div>
+              ))}
+              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-line pt-4">
+                <dt className="text-lg font-semibold text-ink">Tổng cộng</dt>
+                <dd className="text-2xl font-bold text-primary">{formatVND(total)}</dd>
+              </div>
+            </dl>
+            <Link href="/thanh-toan" className={`${btnBase} ${btnPrimary} mt-6 w-full`}>
+              Tiến hành thanh toán
+            </Link>
+            <Link
+              href="/san-pham"
+              className="mt-1 block py-3 text-center text-sm font-medium text-primary underline underline-offset-4"
+            >
+              Tiếp tục mua sắm
+            </Link>
+        </div>
+      }
+    >
       <ul className="divide-y divide-line rounded-xl border border-line bg-white px-6">
         {lines.map((line) => (
           <CartRow key={line.product.id} product={line.product} quantity={line.quantity} />
         ))}
       </ul>
-
-      <aside aria-label="Tổng đơn hàng" className="rounded-xl border border-line bg-white p-6">
-        <h2 className="font-display text-2xl font-semibold text-ink">Tổng đơn hàng</h2>
-        <dl className="mt-4 space-y-3">
-          {summaryRows.map((row) => (
-            <div key={row.label} className="flex justify-between gap-4">
-              <dt className="text-ink-muted">{row.label}</dt>
-              <dd className="font-medium text-ink">{row.value}</dd>
-            </div>
-          ))}
-          <div className="flex justify-between gap-4 border-t border-line pt-4">
-            <dt className="text-lg font-semibold text-ink">Tổng cộng</dt>
-            <dd className="text-2xl font-bold text-primary">{formatVND(total)}</dd>
-          </div>
-        </dl>
-        <Link href="/thanh-toan" className={`${btnBase} ${btnPrimary} mt-6 w-full`}>
-          Tiến hành thanh toán
-        </Link>
-        <Link
-          href="/san-pham"
-          className="mt-1 block py-3 text-center text-sm font-medium text-primary underline underline-offset-4"
-        >
-          Tiếp tục mua sắm
-        </Link>
-      </aside>
-    </div>
+    </ContentSidebar>
   );
 }

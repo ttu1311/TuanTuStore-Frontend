@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-// Layout shared by every /admin page. AdminShell shows the content only to an ADMIN.
+// Layout dùng chung cho mọi trang /admin. AdminShell chỉ hiển thị nội dung cho ADMIN.
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return <AdminShell>{children}</AdminShell>;
 }

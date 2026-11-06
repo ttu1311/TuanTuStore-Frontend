@@ -1,7 +1,7 @@
 import { regions } from "@/lib/regions";
 import type { Region } from "@/types";
 
-// The region of a product: a dot in the region colour, then its name
+// Vùng miền của sản phẩm: một chấm màu vùng, rồi tên vùng
 export default function RegionBadge({ region, className = "" }: { region: Region; className?: string }) {
   const { label, dotClass, textClass } = regions[region];
 

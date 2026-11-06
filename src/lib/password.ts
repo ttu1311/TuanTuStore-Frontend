@@ -1,22 +1,22 @@
-// Passwords of the FRONT-END DEMO.
+// Mật khẩu của BẢN DEMO FRONT-END.
 //
-// IMPORTANT: this is NOT real security, and it is not meant to be.
-// The password is saved as plain text in the user record in the browser's localStorage, and "checking" a login
-// simply compares it with what the visitor typed. There is no server that could keep a password secret:
-// anyone who opens the browser developer tools can read every password and change any account.
-// It only exists so the demo can show a login, a registration and a "change password" form that really work.
+// QUAN TRỌNG: đây KHÔNG phải bảo mật thật, và cũng không có ý định như vậy.
+// Mật khẩu được lưu dạng chữ thường trong bản ghi người dùng ở localStorage của trình duyệt, và việc "kiểm tra" đăng nhập
+// chỉ đơn giản là so sánh nó với những gì khách gõ. Không có server nào có thể giữ bí mật mật khẩu:
+// ai mở công cụ nhà phát triển của trình duyệt cũng đọc được mọi mật khẩu và sửa được mọi tài khoản.
+// Nó chỉ tồn tại để bản demo có thể cho thấy form đăng nhập, đăng ký và "đổi mật khẩu" hoạt động thật.
 //
-// It needs no browser feature at all (no Web Crypto), so it works the same on http://localhost,
-// on a plain http://192.168.x.x address (a phone on the same Wi-Fi) and on https://.
-// Never type a real password into this website.
+// Nó không cần tính năng trình duyệt nào (không dùng Web Crypto), nên chạy giống nhau trên http://localhost,
+// trên địa chỉ http://192.168.x.x thường (điện thoại cùng Wi-Fi) và trên https://.
+// Đừng bao giờ gõ mật khẩu thật vào website này.
 
-// The same Vietnamese letter can be typed in different ways ("ế" as one character, or "e" + accent marks).
-// NFKC makes them identical, so a password still matches whichever keyboard typed it.
+// Cùng một chữ cái tiếng Việt có thể gõ theo nhiều cách ("ế" là một ký tự, hoặc "e" + các dấu).
+// NFKC làm chúng giống hệt nhau, nên mật khẩu vẫn khớp dù gõ bằng bàn phím nào.
 function normalize(password: string) {
   return password.normalize("NFKC");
 }
 
-// Does the typed password match the saved one? `saved` is undefined for an old account that has no password.
+// Mật khẩu đã gõ có khớp với mật khẩu đã lưu không? `saved` là undefined với tài khoản cũ không có mật khẩu.
 export function isSamePassword(typed: string, saved: string | undefined) {
   return typeof saved === "string" && normalize(typed) === normalize(saved);
 }

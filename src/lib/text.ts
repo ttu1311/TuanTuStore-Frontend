@@ -1,14 +1,14 @@
-// Lower-case and remove Vietnamese accents: "Chè Thái Nguyên" -> "che thai nguyen".
-// Used by the search, so "o mai" also finds "Ô mai" and "nuoc mam" finds "Nước mắm".
+// Chuyển chữ thường và bỏ dấu tiếng Việt: "Chè Thái Nguyên" -> "che thai nguyen".
+// Dùng cho tìm kiếm, nên "o mai" cũng tìm ra "Ô mai" và "nuoc mam" tìm ra "Nước mắm".
 export function simplifyText(text: string) {
   return text
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "") // remove accent marks
+    .replace(/[̀-ͯ]/g, "") // bỏ các dấu thanh
     .replace(/đ/g, "d");
 }
 
-// "Bánh tráng trộn" -> "banh-trang-tron" (used to build the id of a new product)
+// "Bánh tráng trộn" -> "banh-trang-tron" (dùng để tạo id cho sản phẩm mới)
 export function slugify(text: string) {
   return simplifyText(text)
     .replace(/[^a-z0-9]+/g, "-")

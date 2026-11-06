@@ -5,9 +5,9 @@ import { useEffect } from "react";
 import LoadingState from "@/components/ui/LoadingState";
 import { useStore } from "@/context/StoreContext";
 
-// Shows its content only to a logged-in user. Visitors are sent to /dang-nhap.
-// While localStorage is being read, only a loading message is shown, so the protected content never flashes.
-// NOTE: this is a front-end demo. It improves the user experience but is NOT real security.
+// Chỉ hiển thị nội dung cho người đã đăng nhập. Khách chưa đăng nhập bị chuyển tới /dang-nhap.
+// Trong lúc localStorage đang được đọc, chỉ hiện thông báo đang tải, nên nội dung được bảo vệ không bị nháy lên.
+// LƯU Ý: đây là bản demo front-end. Nó cải thiện trải nghiệm người dùng nhưng KHÔNG phải bảo mật thật.
 export default function RequireLogin({ children }: { children: React.ReactNode }) {
   const { isReady, currentUser } = useStore();
   const router = useRouter();

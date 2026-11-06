@@ -4,7 +4,7 @@ import { useState } from "react";
 import { actionDanger } from "@/components/admin/tableStyles";
 import { useStore } from "@/context/StoreContext";
 
-// "Xóa" button: asks for confirmation, then removes the product from localStorage
+// Nút "Xóa": hỏi xác nhận, rồi xóa sản phẩm khỏi localStorage
 export default function DeleteProductButton({ id, name }: { id: string; name: string }) {
   const { deleteProduct } = useStore();
   const [error, setError] = useState("");

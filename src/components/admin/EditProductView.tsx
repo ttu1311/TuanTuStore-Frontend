@@ -6,7 +6,7 @@ import { btnBase, btnPrimary, btnSmall } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
 import { productToFormValues } from "@/lib/products";
 
-// /admin/san-pham/[id]/sua: the form filled with the product saved in localStorage
+// /admin/san-pham/[id]/sua: form được điền sẵn bằng sản phẩm đã lưu trong localStorage
 export default function EditProductView({ id }: { id: string }) {
   const { products, updateProduct } = useStore();
   const product = products.find((item) => item.id === id);
@@ -25,11 +25,12 @@ export default function EditProductView({ id }: { id: string }) {
 
   return (
     <ProductForm
-      // key: if the product changes in another tab, the form starts again from the saved values
+      // key: nếu sản phẩm thay đổi ở tab khác, form bắt đầu lại từ các giá trị đã lưu
       key={product.id}
       initialValues={productToFormValues(product)}
       submitLabel="Lưu thay đổi"
-      onSave={(input) => updateProduct(product.id, input)}
+      editingId={product.id}
+      onSave={(input, replaceRank) => updateProduct(product.id, input, replaceRank)}
     />
   );
 }

@@ -6,7 +6,7 @@ type NotFoundMessageProps = {
   description?: string;
 };
 
-// The "Lỗi 404" card. Used by app/not-found.tsx (unknown address) and by the product page (unknown product).
+// Thẻ "Lỗi 404". Dùng bởi app/not-found.tsx (địa chỉ không tồn tại) và bởi trang sản phẩm (sản phẩm không tồn tại).
 export default function NotFoundMessage({
   title = "Không tìm thấy trang",
   description = "Trang bạn đang tìm không tồn tại hoặc đã được di chuyển. Hãy quay về trang chủ hoặc xem các sản phẩm của cửa hàng.",

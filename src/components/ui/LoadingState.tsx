@@ -1,5 +1,5 @@
-// Shown while the data is being read from localStorage (it takes a split second after the page opens).
-// The server and the first browser render both show this, so there is no hydration error.
+// Hiển thị trong lúc dữ liệu đang được đọc từ localStorage (mất một khoảnh khắc sau khi mở trang).
+// Server và lần render đầu tiên ở trình duyệt đều hiển thị nó, nên không có lỗi hydration.
 export default function LoadingState({ text = "Đang tải…" }: { text?: string }) {
   return (
     <p role="status" className="py-16 text-ink-muted">

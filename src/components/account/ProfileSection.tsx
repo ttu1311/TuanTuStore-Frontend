@@ -7,7 +7,7 @@ import { useStore } from "@/context/StoreContext";
 import { validateProfile, type ProfileErrors } from "@/lib/validation";
 import type { User } from "@/types";
 
-// Name and phone can be changed. The email is shown but cannot be changed.
+// Tên và số điện thoại đổi được. Email được hiển thị nhưng không đổi được.
 export default function ProfileSection({ user }: { user: User }) {
   const { updateProfile } = useStore();
   const [fullName, setFullName] = useState(user.name);
@@ -26,7 +26,7 @@ export default function ProfileSection({ user }: { user: User }) {
     const firstInvalid = (["fullName", "phone"] as const).find((field) => newErrors[field]);
     if (firstInvalid) return document.getElementById(firstInvalid)?.focus();
 
-    // Saved into the user list in localStorage
+    // Lưu vào danh sách người dùng trong localStorage
     const result = updateProfile(fullName, phone);
     if (result.ok) setSuccess(true);
     else setSaveError(result.message);
@@ -47,7 +47,7 @@ export default function ProfileSection({ user }: { user: User }) {
           setErrors({ ...errors, fullName: undefined });
         }}
       />
-      {/* The email identifies the account, so it cannot be changed */}
+      {/* Email dùng để định danh tài khoản nên không đổi được */}
       <Field id="email" label="Email" type="email" value={user.email} autoComplete="email" readOnly />
       <Field
         id="phone"

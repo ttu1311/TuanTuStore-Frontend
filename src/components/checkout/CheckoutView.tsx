@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import ContentSidebar from "@/components/layout/PageLayout";
 import { btnBase, btnPrimary, btnSecondary } from "@/components/ui/buttons";
 import LoadingState from "@/components/ui/LoadingState";
 import { useStore } from "@/context/StoreContext";
@@ -32,15 +33,15 @@ type CheckoutFormProps = {
   onPlaced: (order: Order) => void;
 };
 
-// The delivery form + order summary. Shown only when the cart has products.
+// Form giao hàng + tóm tắt đơn hàng. Chỉ hiển thị khi giỏ hàng có sản phẩm.
 function CheckoutForm({ lines, initialValues, onPlaced }: CheckoutFormProps) {
   const { placeOrder } = useStore();
   const [values, setValues] = useState<CheckoutFields>(initialValues);
   const [errors, setErrors] = useState<CheckoutErrors>({});
   const [payment, setPayment] = useState<PaymentMethod>("COD");
-  const [saveError, setSaveError] = useState(""); // error that is not about one field
+  const [saveError, setSaveError] = useState(""); // lỗi không thuộc về một ô nào
 
-  // Prices come from the current product list in localStorage
+  // Giá lấy từ danh sách sản phẩm hiện tại trong localStorage
   const { subtotal, shippingFee, discount, total } = calculateTotals(
     lines.reduce((sum, line) => sum + line.product.price * line.quantity, 0)
   );
@@ -48,7 +49,7 @@ function CheckoutForm({ lines, initialValues, onPlaced }: CheckoutFormProps) {
   function handleChange(field: keyof CheckoutFields, value: string) {
     setValues({ ...values, [field]: value });
     setSaveError("");
-    // Remove the error of this field as soon as the user edits it
+    // Xóa lỗi của ô này ngay khi người dùng sửa nó
     if (errors[field]) setErrors({ ...errors, [field]: undefined });
   }
 
@@ -63,15 +64,15 @@ function CheckoutForm({ lines, initialValues, onPlaced }: CheckoutFormProps) {
       document.getElementById(firstInvalid[0])?.focus();
       return;
     }
-    if (Object.keys(newErrors).length > 0) return; // a "too long" error on the note field
+    if (Object.keys(newErrors).length > 0) return; // lỗi "quá dài" ở ô ghi chú
 
-    // Saves the order in localStorage. The cart is emptied only if the order was saved.
+    // Lưu đơn hàng vào localStorage. Giỏ hàng chỉ được làm trống nếu đơn đã lưu thành công.
     const result = placeOrder(values, payment);
     if (result.ok) onPlaced(result.order);
     else setSaveError(result.message);
   }
 
-  // One labelled text field with its error message
+  // Một ô nhập chữ có nhãn kèm thông báo lỗi
   function renderField(field: keyof CheckoutFields, label: string, options: { type?: string; autoComplete?: string } = {}) {
     const error = errors[field];
     return (
@@ -106,107 +107,115 @@ function CheckoutForm({ lines, initialValues, onPlaced }: CheckoutFormProps) {
   ];
 
   return (
-    <form noValidate onSubmit={handleSubmit} className="grid items-start gap-8 lg:grid-cols-[1fr_400px]">
-      <div className="min-w-0 space-y-8">
-        <section aria-labelledby="shipping-title" className="rounded-xl border border-line bg-white p-6">
-          <h2 id="shipping-title" className="font-display text-2xl font-semibold text-ink">
-            Thông tin giao hàng
-          </h2>
-          <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            {renderField("fullName", "Họ và tên", { autoComplete: "name" })}
-            {renderField("phone", "Số điện thoại", { type: "tel", autoComplete: "tel" })}
-            <div className="sm:col-span-2">{renderField("email", "Email", { type: "email", autoComplete: "email" })}</div>
-            {renderField("province", "Tỉnh / Thành phố")}
-            {renderField("district", "Quận / Huyện")}
-            {renderField("ward", "Phường / Xã")}
-            {renderField("address", "Địa chỉ cụ thể", { autoComplete: "street-address" })}
-            <div className="sm:col-span-2">
-              <label htmlFor="note" className="mb-2 block font-medium text-ink">
-                Ghi chú đơn hàng <span className="font-normal text-ink-muted">(không bắt buộc)</span>
-              </label>
-              <textarea
-                id="note"
-                rows={3}
-                value={values.note}
-                maxLength={MAX_LENGTH.note}
-                onChange={(event) => handleChange("note", event.target.value)}
-                className="w-full rounded-lg border border-line bg-white px-4 py-3 text-ink transition-colors duration-200 focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-soft"
-              />
-            </div>
-          </div>
-        </section>
+    // Cả trang là một <form>: Nội dung (trái) = các ô giao hàng và phương thức thanh toán,
+    // Sidebar (phải) = tóm tắt đơn hàng cùng nút "Đặt hàng", luôn nằm trong tầm nhìn khi cuộn.
+    <form noValidate onSubmit={handleSubmit}>
+      <ContentSidebar
+        sidebarLabel="Đơn hàng của bạn"
+        sticky
+        sidebar={
+          <div className="rounded-xl border border-line bg-white p-6">
+            <h2 className="font-display text-2xl font-semibold text-ink">Đơn hàng của bạn</h2>
 
-        <fieldset className="m-0 rounded-xl border border-line bg-white p-6">
-          <legend className="float-left mb-4 w-full p-0 font-display text-2xl font-semibold text-ink">
-            Phương thức thanh toán
-          </legend>
-          <div className="clear-both space-y-1">
-            {paymentOptions.map((option) => (
-              <label key={option.value} className="flex min-h-11 cursor-pointer items-center gap-3 text-ink">
-                <input
-                  type="radio"
-                  name="payment"
-                  value={option.value}
-                  checked={payment === option.value}
-                  onChange={() => setPayment(option.value)}
-                  className="h-5 w-5 shrink-0 cursor-pointer accent-primary"
-                />
-                {option.label}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      </div>
+            <ul className="mt-4 divide-y divide-line">
+              {lines.map((line) => (
+                <li key={line.product.id} className="flex justify-between gap-4 py-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-ink">{line.product.name}</p>
+                    <p className="text-sm text-ink-muted">Số lượng: {line.quantity}</p>
+                  </div>
+                  <span className="whitespace-nowrap font-medium text-ink">{formatVND(line.product.price * line.quantity)}</span>
+                </li>
+              ))}
+            </ul>
 
-      <aside aria-label="Đơn hàng của bạn" className="min-w-0 rounded-xl border border-line bg-white p-6">
-        <h2 className="font-display text-2xl font-semibold text-ink">Đơn hàng của bạn</h2>
-
-        <ul className="mt-4 divide-y divide-line">
-          {lines.map((line) => (
-            <li key={line.product.id} className="flex justify-between gap-4 py-3">
-              <div className="min-w-0">
-                <p className="font-medium text-ink">{line.product.name}</p>
-                <p className="text-sm text-ink-muted">Số lượng: {line.quantity}</p>
+            <dl className="mt-2 space-y-3 border-t border-line pt-4">
+              {summaryRows.map((row) => (
+                <div key={row.label} className="flex justify-between gap-4">
+                  <dt className="text-ink-muted">{row.label}</dt>
+                  <dd className="font-medium text-ink">{row.value}</dd>
+                </div>
+              ))}
+              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-line pt-4">
+                <dt className="text-lg font-semibold text-ink">Tổng cộng</dt>
+                <dd className="text-2xl font-bold text-primary">{formatVND(total)}</dd>
               </div>
-              <span className="whitespace-nowrap font-medium text-ink">{formatVND(line.product.price * line.quantity)}</span>
-            </li>
-          ))}
-        </ul>
+            </dl>
 
-        <dl className="mt-2 space-y-3 border-t border-line pt-4">
-          {summaryRows.map((row) => (
-            <div key={row.label} className="flex justify-between gap-4">
-              <dt className="text-ink-muted">{row.label}</dt>
-              <dd className="font-medium text-ink">{row.value}</dd>
-            </div>
-          ))}
-          <div className="flex justify-between gap-4 border-t border-line pt-4">
-            <dt className="text-lg font-semibold text-ink">Tổng cộng</dt>
-            <dd className="text-2xl font-bold text-primary">{formatVND(total)}</dd>
+            <button type="submit" className={`${btnBase} ${btnPrimary} mt-6 w-full`}>
+              Đặt hàng
+            </button>
+
+            {Object.values(errors).some(Boolean) && (
+              <p role="alert" className="mt-4 text-sm text-sale">
+                Vui lòng kiểm tra lại các thông tin được đánh dấu.
+              </p>
+            )}
+            {saveError && (
+              <p role="alert" className="mt-4 text-sm text-sale">
+                {saveError}
+              </p>
+            )}
+            <Link
+              href="/gio-hang"
+              className="mt-1 block py-3 text-center text-sm font-medium text-primary underline underline-offset-4"
+            >
+              Quay lại giỏ hàng
+            </Link>
           </div>
-        </dl>
+        }
+      >
+        <div className="space-y-8">
+          <section aria-labelledby="shipping-title" className="rounded-xl border border-line bg-white p-6">
+            <h2 id="shipping-title" className="font-display text-2xl font-semibold text-ink">
+              Thông tin giao hàng
+            </h2>
+            <div className="mt-6 grid gap-5 sm:grid-cols-2">
+              {renderField("fullName", "Họ và tên", { autoComplete: "name" })}
+              {renderField("phone", "Số điện thoại", { type: "tel", autoComplete: "tel" })}
+              <div className="sm:col-span-2">{renderField("email", "Email", { type: "email", autoComplete: "email" })}</div>
+              {renderField("province", "Tỉnh / Thành phố")}
+              {renderField("district", "Quận / Huyện")}
+              {renderField("ward", "Phường / Xã")}
+              {renderField("address", "Địa chỉ cụ thể", { autoComplete: "street-address" })}
+              <div className="sm:col-span-2">
+                <label htmlFor="note" className="mb-2 block font-medium text-ink">
+                  Ghi chú đơn hàng <span className="font-normal text-ink-muted">(không bắt buộc)</span>
+                </label>
+                <textarea
+                  id="note"
+                  rows={3}
+                  value={values.note}
+                  maxLength={MAX_LENGTH.note}
+                  onChange={(event) => handleChange("note", event.target.value)}
+                  className="w-full rounded-lg border border-line bg-white px-4 py-3 text-ink transition-colors duration-200 focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-soft"
+                />
+              </div>
+            </div>
+          </section>
 
-        <button type="submit" className={`${btnBase} ${btnPrimary} mt-6 w-full`}>
-          Đặt hàng
-        </button>
-
-        {Object.values(errors).some(Boolean) && (
-          <p role="alert" className="mt-4 text-sm text-sale">
-            Vui lòng kiểm tra lại các thông tin được đánh dấu.
-          </p>
-        )}
-        {saveError && (
-          <p role="alert" className="mt-4 text-sm text-sale">
-            {saveError}
-          </p>
-        )}
-        <Link
-          href="/gio-hang"
-          className="mt-1 block py-3 text-center text-sm font-medium text-primary underline underline-offset-4"
-        >
-          Quay lại giỏ hàng
-        </Link>
-      </aside>
+          <fieldset className="m-0 rounded-xl border border-line bg-white p-6">
+            <legend className="float-left mb-4 w-full p-0 font-display text-2xl font-semibold text-ink">
+              Phương thức thanh toán
+            </legend>
+            <div className="clear-both space-y-1">
+              {paymentOptions.map((option) => (
+                <label key={option.value} className="flex min-h-11 cursor-pointer items-center gap-3 text-ink">
+                  <input
+                    type="radio"
+                    name="payment"
+                    value={option.value}
+                    checked={payment === option.value}
+                    onChange={() => setPayment(option.value)}
+                    className="h-5 w-5 shrink-0 cursor-pointer accent-primary"
+                  />
+                  {option.label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        </div>
+      </ContentSidebar>
     </form>
   );
 }
@@ -215,10 +224,10 @@ export default function CheckoutView() {
   const { isReady, cart, products, currentUser } = useStore();
   const [placedOrder, setPlacedOrder] = useState<Order | null>(null);
 
-  // Wait for localStorage, otherwise the empty message would flash on every page load
+  // Chờ localStorage, nếu không thông báo giỏ trống sẽ nháy lên mỗi lần tải trang
   if (!isReady) return <LoadingState text="Đang tải giỏ hàng…" />;
 
-  // The order is saved and the cart is empty: show the order code instead of "Giỏ hàng của bạn đang trống"
+  // Đơn đã lưu và giỏ đã trống: hiện mã đơn hàng thay vì "Giỏ hàng của bạn đang trống"
   if (placedOrder) {
     return (
       <div role="status" className="rounded-xl border border-line bg-surface px-6 py-16 text-center">
@@ -257,7 +266,7 @@ export default function CheckoutView() {
     );
   }
 
-  // A logged-in customer does not need to type their name, phone and email again
+  // Khách đã đăng nhập không cần gõ lại họ tên, số điện thoại và email
   const initialValues: CheckoutFields = {
     fullName: currentUser?.name ?? "",
     phone: currentUser?.phone ?? "",
@@ -269,7 +278,7 @@ export default function CheckoutView() {
     note: "",
   };
 
-  // The success message replaces the (long) form: scroll up so it is visible, also on phones
+  // Thông báo thành công thay thế form (dài): cuộn lên để nhìn thấy nó, cả trên điện thoại
   function handlePlaced(order: Order) {
     setPlacedOrder(order);
     window.scrollTo({ top: 0 });

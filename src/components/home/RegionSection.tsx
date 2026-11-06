@@ -34,7 +34,7 @@ const regionCards: {
   {
     region: "nam",
     taste: "Ngọt ngào và phóng khoáng",
-    description: "Kẹo dừa Bến Tre, bánh pía Sóc Trăng, nước mắm Phú Quốc.",
+    description: "Kẹo dừa Bến Tre, bánh pía Sóc Trăng, nước mắm Phú Quốc, cua biển Cà Mau.",
     image: "/images/region-nam.jpg",
     width: 1280,
     height: 853,
@@ -44,42 +44,40 @@ const regionCards: {
 
 export default function RegionSection() {
   return (
-    <section id="ba-mien" aria-labelledby="regions-title" className="bg-surface py-16 lg:py-24">
-      <div className="mx-auto w-full max-w-container px-4 md:px-6 lg:px-8">
-        <SectionHeader
-          id="regions-title"
-          title="Ba miền, ba khẩu vị"
-          description="Mỗi vùng đất một hương vị riêng. Chọn miền bạn muốn mua quà."
-        />
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-3 md:gap-8">
-          {regionCards.map((card) => {
-            const region = regions[card.region];
-            return (
-              <article key={card.region} id={`mien-${card.region}`} className="flex flex-col">
-                {/* The same colour as this region's part of the route at the top of the page */}
-                <span className={`mb-5 block h-1 w-full rounded-full ${region.dotClass}`} aria-hidden="true" />
-                <h3 className="font-display text-4xl font-bold leading-none text-ink">{region.label}</h3>
-                <p className={`mt-2 font-semibold ${region.textClass}`}>{card.taste}</p>
-                <Image
-                  src={card.image}
-                  width={card.width}
-                  height={card.height}
-                  alt={card.alt}
-                  sizes="(min-width: 1280px) 395px, (min-width: 768px) 31vw, 100vw"
-                  className="mt-5 block aspect-[4/3] h-auto w-full rounded-lg object-cover"
-                />
-                <p className="mt-4 text-ink-muted">{card.description}</p>
-                {/* Opens the product list already filtered by this region */}
-                <Link
-                  href={`/san-pham?region=${card.region}`}
-                  className="mt-3 self-start font-semibold text-primary underline decoration-primary/30 decoration-2 underline-offset-[6px] transition-colors duration-200 hover:decoration-primary"
-                >
-                  Xem đặc sản {region.label.replace("Miền", "miền")}
-                </Link>
-              </article>
-            );
-          })}
-        </div>
+    <section id="ba-mien" aria-labelledby="regions-title" className="rounded-lg bg-surface p-5 md:p-8">
+      <SectionHeader
+        id="regions-title"
+        title="Ba miền, ba khẩu vị"
+        description="Mỗi vùng đất một hương vị riêng. Chọn miền bạn muốn mua quà."
+      />
+      <div className="grid grid-cols-1 gap-10 min-[640px]:grid-cols-3 min-[640px]:gap-6">
+        {regionCards.map((card) => {
+          const region = regions[card.region];
+          return (
+            <article key={card.region} id={`mien-${card.region}`} className="flex flex-col">
+              {/* Cùng màu với phần của vùng này trên tuyến ở đầu trang */}
+              <span className={`mb-5 block h-1 w-full rounded-full ${region.dotClass}`} aria-hidden="true" />
+              <h3 className="font-display text-3xl font-bold leading-none text-ink">{region.label}</h3>
+              <p className={`mt-2 font-semibold ${region.textClass}`}>{card.taste}</p>
+              <Image
+                src={card.image}
+                width={card.width}
+                height={card.height}
+                alt={card.alt}
+                sizes="(min-width: 1280px) 260px, (min-width: 640px) 28vw, 100vw"
+                className="mt-5 block aspect-[4/3] h-auto w-full rounded-lg object-cover"
+              />
+              <p className="mt-4 text-ink-muted">{card.description}</p>
+              {/* Mở danh sách sản phẩm đã lọc sẵn theo vùng này */}
+              <Link
+                href={`/san-pham?region=${card.region}`}
+                className="mt-3 self-start font-semibold text-primary underline decoration-primary/30 decoration-2 underline-offset-[6px] transition-colors duration-200 hover:decoration-primary"
+              >
+                Xem đặc sản {region.label.replace("Miền", "miền")}
+              </Link>
+            </article>
+          );
+        })}
       </div>
     </section>
   );

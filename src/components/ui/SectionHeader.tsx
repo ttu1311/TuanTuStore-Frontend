@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 
 type SectionHeaderProps = {
-  id: string; // id of the <h2>, used by aria-labelledby
+  id: string; // id của <h2>, dùng cho aria-labelledby
   title: string;
   description?: string;
-  action?: ReactNode; // e.g. a "Xem tất cả" link
+  action?: ReactNode; // ví dụ liên kết "Xem tất cả"
 };
 
 export default function SectionHeader({ id, title, description, action }: SectionHeaderProps) {

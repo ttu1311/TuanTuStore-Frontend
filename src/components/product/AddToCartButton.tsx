@@ -5,8 +5,8 @@ import Icon from "@/components/ui/Icon";
 import { btnBase, btnPrimary, btnSmall } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
 
-// The "Thêm vào giỏ" button of a product card. Adds 1 unit to the cart in localStorage,
-// then says "Đã thêm vào giỏ" for 2 seconds so the customer sees that it worked.
+// Nút "Thêm vào giỏ" của thẻ sản phẩm. Thêm 1 sản phẩm vào giỏ trong localStorage,
+// rồi hiện "Đã thêm vào giỏ" trong 2 giây để khách thấy đã thành công.
 export default function AddToCartButton({
   productId,
   productName,
@@ -37,10 +37,10 @@ export default function AddToCartButton({
       >
         <Icon name={added ? "check" : "plus"} size={16} />
         {added ? "Đã thêm vào giỏ" : "Thêm vào giỏ"}
-        {/* Screen readers hear which product the button belongs to */}
+        {/* Trình đọc màn hình đọc được nút này thuộc về sản phẩm nào */}
         <span className="sr-only">: {productName}</span>
       </button>
-      {/* Outside the button, so it is announced once and does not become part of the button's name */}
+      {/* Nằm ngoài nút, để được đọc một lần và không trở thành một phần tên của nút */}
       <span className="sr-only" aria-live="polite">
         {added ? `Đã thêm ${productName} vào giỏ hàng` : ""}
       </span>

@@ -4,19 +4,19 @@ import AdminOrderRow from "@/components/admin/AdminOrderRow";
 import { table, tableWrap, td, th } from "@/components/admin/tableStyles";
 import { useStore } from "@/context/StoreContext";
 
-// All orders created by the checkout, newest first
+// Tất cả đơn hàng tạo từ trang thanh toán, mới nhất lên đầu
 export default function AdminOrderTable() {
   const { orders, users } = useStore();
   const sorted = [...orders].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
-  // The account email of an order, or "Khách vãng lai" for a guest order
+  // Email tài khoản của đơn hàng, hoặc "Khách vãng lai" với đơn của khách chưa đăng nhập
   function accountText(userId: string | null) {
     const user = users.find((u) => u.id === userId);
     return user ? user.email : "Khách vãng lai";
   }
 
   return (
-    // [container-type:inline-size]: lets the order details use 100cqw = the visible width of this card
+    // [container-type:inline-size]: cho phần chi tiết đơn dùng 100cqw = chiều rộng đang nhìn thấy của thẻ này
     <div className={`${tableWrap} [container-type:inline-size]`}>
       <table className={`${table} min-w-[760px]`}>
         <thead>

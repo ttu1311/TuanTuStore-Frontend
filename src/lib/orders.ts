@@ -1,8 +1,8 @@
-// Labels, colors, order codes and checkout rules. Shared by checkout, the account page and the Admin pages.
+// Nhãn, màu sắc, mã đơn hàng và quy tắc thanh toán. Dùng chung cho trang thanh toán, trang tài khoản và các trang Admin.
 import type { OrderStatus, PaymentMethod } from "@/types";
 import { isValidEmail, isValidPhone } from "@/lib/validation";
 
-// The 4 statuses, in the order an order moves through them
+// 4 trạng thái, theo thứ tự một đơn hàng đi qua
 export const orderStatuses: OrderStatus[] = ["PENDING", "CONFIRMED", "SHIPPING", "COMPLETED"];
 
 export const orderStatusLabels: Record<OrderStatus, string> = {
@@ -12,7 +12,7 @@ export const orderStatusLabels: Record<OrderStatus, string> = {
   COMPLETED: "Hoàn thành",
 };
 
-// Badge colors
+// Màu của huy hiệu
 export const orderStatusStyles: Record<OrderStatus, string> = {
   PENDING: "bg-gold-soft text-gold-ink",
   CONFIRMED: "bg-surface text-ink",
@@ -35,7 +35,7 @@ export function orderNumberFromCode(code: string) {
   return Number(code.replace(/\D/g, "")) || 0;
 }
 
-// ---------- Checkout form ----------
+// ---------- Form thanh toán ----------
 
 export type CheckoutFields = {
   fullName: string;
@@ -50,7 +50,7 @@ export type CheckoutFields = {
 
 export type CheckoutErrors = Partial<Record<keyof CheckoutFields, string>>;
 
-// Checked in this order, so the first error is also the first field on the page
+// Kiểm tra theo thứ tự này, nên lỗi đầu tiên cũng là ô đầu tiên trên trang
 export const requiredMessages: [keyof CheckoutFields, string][] = [
   ["fullName", "Vui lòng nhập họ và tên"],
   ["phone", "Vui lòng nhập số điện thoại"],
@@ -61,7 +61,7 @@ export const requiredMessages: [keyof CheckoutFields, string][] = [
   ["address", "Vui lòng nhập địa chỉ cụ thể"],
 ];
 
-// Longest text allowed in each field
+// Độ dài tối đa cho phép của từng ô
 export const MAX_LENGTH: Record<keyof CheckoutFields, number> = {
   fullName: 100,
   phone: 20,

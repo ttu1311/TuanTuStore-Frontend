@@ -8,33 +8,31 @@ import { btnBase, btnGhost } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
 import { getFeaturedProducts } from "@/lib/products";
 
-// "Sản phẩm nổi bật": the products the Admin marked as featured
+// "Sản phẩm nổi bật": các sản phẩm Admin đã đánh dấu nổi bật. Thuộc cột Nội dung của trang chủ.
 export default function FeaturedProducts() {
   const { isReady, products } = useStore();
   const featured = getFeaturedProducts(products);
 
   return (
-    <section id="san-pham" aria-labelledby="featured-title" className="py-16 lg:py-24">
-      <div className="mx-auto w-full max-w-container px-4 md:px-6 lg:px-8">
-        <SectionHeader
-          id="featured-title"
-          title="Sản phẩm nổi bật"
-          action={
-            <Link href="/san-pham" className={`${btnBase} ${btnGhost}`}>
-              Xem tất cả sản phẩm
-            </Link>
-          }
-        />
-        {isReady && featured.length === 0 ? (
-          <p className="text-ink-muted">Chưa có sản phẩm nổi bật.</p>
-        ) : (
-          <div className="grid grid-cols-1 gap-x-6 gap-y-12 min-[480px]:grid-cols-2 lg:grid-cols-4">
-            {isReady
-              ? featured.map((product) => <ProductCard key={product.id} product={product} />)
-              : [1, 2, 3, 4].map((n) => <ProductCardSkeleton key={n} />)}
-          </div>
-        )}
-      </div>
+    <section id="san-pham" aria-labelledby="featured-title">
+      <SectionHeader
+        id="featured-title"
+        title="Sản phẩm nổi bật"
+        action={
+          <Link href="/san-pham" className={`${btnBase} ${btnGhost}`}>
+            Xem tất cả sản phẩm
+          </Link>
+        }
+      />
+      {isReady && featured.length === 0 ? (
+        <p className="text-ink-muted">Chưa có sản phẩm nổi bật.</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-x-6 gap-y-10 min-[480px]:grid-cols-2 xl:grid-cols-3">
+          {isReady
+            ? featured.map((product) => <ProductCard key={product.id} product={product} />)
+            : [1, 2, 3].map((n) => <ProductCardSkeleton key={n} />)}
+        </div>
+      )}
     </section>
   );
 }

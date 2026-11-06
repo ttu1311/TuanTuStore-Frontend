@@ -79,8 +79,8 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 
 | Route | Page |
 | --- | --- |
-| `/` | Homepage: hero, 3 regions, featured products, best sellers |
-| `/san-pham` | Product list: search, filter by region / brand / price, sort. Reads `?q=` and `?region=` |
+| `/` | Homepage: hero, 3 regions, featured products. Sidebar: best sellers, new arrivals, a clickable map of the three regions (regions and provinces), recently viewed |
+| `/san-pham` | Product list: search, filter by region / province / brand / price, sort. Reads `?q=`, `?region=`, `?province=` and `?brand=` |
 | `/san-pham/[id]` | Product detail: price, description, information, quantity, "Thêm vào giỏ hàng", "Mua ngay", related products |
 | `/gio-hang` | Cart: change quantity, remove, totals |
 | `/thanh-toan` | Checkout: delivery form, COD or bank transfer (simulated), creates an order |
@@ -100,15 +100,23 @@ Unknown pages and unknown products show a Vietnamese "Lỗi 404" message.
 
 | Key | Content | First visit |
 | --- | --- | --- |
-| `tuantustore-products` | all products | the 8 specialties of `src/data/initialData.ts` |
+| `tuantustore-products` | all products | the 13 specialties of `src/data/initialData.ts` |
 | `tuantustore-users` | all accounts | the demo ADMIN account |
 | `tuantustore-current-user` | id of the logged-in user | — (guest) |
 | `tuantustore-cart` | cart: product id + quantity | `[]` |
 | `tuantustore-orders` | all orders | `[]` |
 | `tuantustore-order-seq` | last order number used | `0` |
+| `tuantustore-seed-batches` | groups of products added after the first version that this browser already received | `["ca-mau"]` |
+| `tuantustore-recently-viewed` | ids of the products this browser opened last (shown in "Đã xem gần đây") | — (not created until a product is opened) |
 
 - **First visit:** a key that does not exist yet is filled with its default value. A key that already has data is
   **never overwritten**, so refreshing the page keeps every change (new products, accounts, orders…).
+- **Products added in a later version** (the 5 specialties of Cà Mau): a browser that already had a product list
+  receives them **once**, added at the end of its list. Nothing it saved is changed, a product with the same id is not
+  added twice, and a product the Admin deletes afterwards does not come back (see `addNewSeedBatches` in `src/lib/storage.ts`).
+- **Updating the sample products later** (real brands, real photos, a corrected description): a browser that already saved
+  the old sample values gets the new ones, but only for a field that **still equals the old sample value**. A field the Admin
+  edited is never changed. The rules are listed in `src/data/seedUpdates.ts` and applied by `applySeedUpdates` in `src/lib/storage.ts`.
 - **Start again from zero:** in the browser developer tools → Application → Local Storage, delete the keys that
   start with `tuantustore-`, then reload the page.
 - **"Ghi nhớ đăng nhập"** ticked: the login is kept in `localStorage` (stays after closing the browser).
@@ -126,7 +134,9 @@ src/
 ├── context/
 │   └── StoreContext.tsx the ONE place that holds the data and saves it to localStorage
 ├── data/
-│   └── initialData.ts   the 8 products and the demo ADMIN of the first visit
+│   ├── initialData.ts   the 13 products and the demo ADMIN of the first visit
+│   ├── brands.ts        what each brand is (kind, place, short introduction)
+│   └── seedUpdates.ts   changes to sample products that were already saved in a browser
 ├── lib/                 small helper functions without React (validation, prices, order codes, storage…)
 └── types/index.ts       the data types: Product, User, CartItem, Order…
 ```
@@ -142,7 +152,17 @@ read from `localStorage`. This avoids hydration errors, because the server has n
 
 ## Notes and limitations
 
-- Product brands are still the placeholder values of the original project ("Thương hiệu A" … "Thương hiệu D").
+- **Brands** are real brands / labels, written from public information (sources in "Credits"). `src/data/brands.ts` says what
+  each one is; which products a brand makes comes from the product list. In the Cà Mau products the "brand" is the
+  **collective trademark of the place** (e.g. "Mật ong U Minh Hạ"), not one company. TuanTuStore is a student project, **not** a
+  dealer of these brands, and the prices and packs are sample values. Admin can only choose a brand from this list.
+- Prices and packs are sample values for this project, not checked market prices.
+- The province is part of the "Xuất xứ" text (e.g. "Năm Căn, Cà Mau"). There is no separate province field: the
+  province is the last part of "Xuất xứ", and it is used for the "Tỉnh / thành" filter (with the number of products). The search also
+  looks in "Xuất xứ" ("Cà Mau" or "ca mau" finds them).
+- The photo of "Mật ong rừng U Minh Hạ" shows a bottle of honey in general (no free photo of U Minh honey was found), and
+  the photo of "Kẹo dừa" shows cocoa coconut candy from Bến Tre. Replace them in Admin → Sản phẩm when you have your own photos.
+- "Khô cá bổi" is dried **cá bổi (cá sặc rằn)**, a freshwater fish farmed around U Minh, not a sea fish.
 - Product photos must be files inside `public/images` (there is no upload). The Admin form checks that the photo exists.
 - Passwords are plain text in `localStorage` (see the warning in "Demo accounts and passwords"). That simplicity is what lets
   login work on `localhost`, on plain `http://` LAN addresses and on `https://` alike.
@@ -160,5 +180,35 @@ read from `localStorage`. This avoids hydration errors, because the server has n
 
 ## Credits
 
-Photos: Wikimedia Commons (credited in the footer). Fonts: Phudu and Be Vietnam Pro (Google Fonts).
-Hãy luôn trả lời tôi bằng tiếng việt
+Photos: Wikimedia Commons. The footer links to the page `/nguon-anh`, which lists the author and licence of each photo below (keep the two lists the same). Fonts: Phudu and Be Vietnam Pro (Google Fonts).
+
+Photos of the Cà Mau products (cropped and resized):
+
+- `p-cua-bien-nam-can.jpg`: "Cua Cà Mau bán trên đường NS, ng30th7n2023 (3)" by Phương Huy, CC BY-SA 4.0 —
+  https://commons.wikimedia.org/wiki/File:Cua_C%C3%A0_Mau_b%C3%A1n_tr%C3%AAn_%C4%91%C6%B0%E1%BB%9Dng_NS,_ng30th7n2023_(3).jpg
+- `p-tom-kho-rach-goc.jpg`: "Đặc sản Tôm khô Cà Mau" by Dongson.vmvn, CC BY-SA 3.0 —
+  https://commons.wikimedia.org/wiki/File:%C4%90%E1%BA%B7c_s%E1%BA%A3n_T%C3%B4m_kh%C3%B4_C%C3%A0_Mau.jpg
+- `p-ba-khia-muoi.jpg`: "Ba khía muối" by Baoothersks, CC BY-SA 4.0 —
+  https://commons.wikimedia.org/wiki/File:Ba_kh%C3%ADa_mu%E1%BB%91i.jpg
+- `p-kho-ca-boi.jpg`: "Khô cá sặc rằn" by Bùi Thụy Đào Nguyên, CC BY-SA 3.0 (cropped; the fish were photographed at a market in Bạc Liêu) —
+  https://commons.wikimedia.org/wiki/File:Kh%C3%B4_c%C3%A1_s%E1%BA%B7c_r%E1%BA%B1n.jpg
+- `p-mat-ong-u-minh-ha.jpg`: "Honey Bottle" by JJ Harrison, CC BY-SA 3.0 (background extended to make it square) —
+  https://commons.wikimedia.org/wiki/File:Honey_Bottle.jpg
+- `p-keo-dua-ben-tre.jpg`: "Ben Tre Cocoa-coconut candy (1)" by Fumikas Sagisavas, CC0 (cropped) —
+  https://commons.wikimedia.org/wiki/File:Ben_Tre_Cocoa-coconut_candy_(1).jpg
+
+Sources for the brand introductions in `src/data/brands.ts` (public articles, checked in November 2026; they may change):
+
+- Cà Mau collective trademarks (honey, dried bổi fish, dried shrimp, crab): Nhân Dân, "Cà Mau có 14 sản phẩm được bảo hộ" —
+  https://nhandan.vn/ca-mau-co-14-san-pham-duoc-bao-ho-post731394.html
+- Dried bổi fish ("Khô cá bổi U Minh", owner: Hội Nông dân huyện Trần Văn Thời): Thương hiệu & Công luận —
+  https://thuonghieucongluan.com.vn/agribank-dong-hanh-ho-tro-phat-trien-dac-san-kho-ca-boi-tinh-ca-mau-a234654.html
+- Ba khía (heritage decision 4612/QĐ-BVHTTDL, 20/12/2019): Báo Quốc tế —
+  https://baoquocte.vn/muoi-ba-khia-ca-mau-tu-mon-an-dan-da-den-di-san-van-hoa-phi-vat-the-quoc-gia-322686.html
+- Tân Huê Viên: https://tapchicongthuong.vn/banh-pia-tan-hue-vien---tinh-yeu-voi-que-me-soc-trang-66731.htm
+- Bà Liễu Mẹ (OCOP Đà Nẵng): https://danangfantasticity.com/natural/banh-kho-me-ba-lieu-me-san-pham-ocop-da-nang
+- Hồng Lam: https://mia.vn/cam-nang-du-lich/top-hang-banh-com-noi-tieng-18814
+- Kẹo dừa Cô Hai Tỏ: https://mytour.vn/vi/blog/bai-viet/keo-dua-co-hai-to-mon-ngon-dac-san-hap-dan.html
+- Chỉ dẫn địa lý "Tân Cương": https://vov.vn/kinh-te/tang-cuong-bao-ve-thuong-hieu-che-tan-cuong-post1140083.vov
+- Khải Hoàn: https://vinpearl.com/vi/tong-hop-cac-nha-thung-nuoc-mam-phu-quoc-noi-tieng-nhat
+- Trung Nguyên: https://en.wikipedia.org/wiki/Trung_Nguy%C3%AAn

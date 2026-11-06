@@ -7,15 +7,15 @@ import { btnBase, btnPrimary, btnSecondary } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
 import { MAX_QUANTITY, cleanQuantity } from "@/lib/cart";
 
-// Quantity field + buttons of the product detail page.
+// Ô số lượng + các nút của trang chi tiết sản phẩm.
 export default function ProductPurchase({ productId }: { productId: string }) {
   const { addToCart } = useStore();
   const router = useRouter();
-  // Kept as text so the user can clear the field while typing
+  // Giữ dạng chữ để người dùng có thể xóa trống ô khi đang gõ
   const [quantity, setQuantity] = useState("1");
   const [message, setMessage] = useState("");
 
-  // The number of units in the field, from 1 to 99
+  // Số sản phẩm trong ô, từ 1 đến 99
   function currentAmount() {
     return cleanQuantity(Number(quantity));
   }
@@ -27,7 +27,7 @@ export default function ProductPurchase({ productId }: { productId: string }) {
     setMessage(`Đã thêm ${amount} sản phẩm vào giỏ hàng.`);
   }
 
-  // "Mua ngay": add the selected quantity to the cart, then go straight to the checkout
+  // "Mua ngay": thêm số lượng đã chọn vào giỏ, rồi chuyển thẳng tới trang thanh toán
   function handleBuyNow() {
     addToCart(productId, currentAmount());
     router.push("/thanh-toan");

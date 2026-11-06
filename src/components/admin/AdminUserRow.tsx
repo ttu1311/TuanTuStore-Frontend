@@ -11,8 +11,8 @@ const roles: Role[] = ["USER", "ADMIN"];
 const selectStyle =
   "h-9 rounded-lg border border-line bg-white px-3 text-sm text-ink transition-colors duration-200 focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-soft disabled:cursor-not-allowed disabled:bg-surface disabled:text-ink-muted";
 
-// A table row of the users list: change the role (USER / ADMIN) or delete the account.
-// isSelf = the Admin who is logged in: their own row cannot be changed or deleted.
+// Một dòng của bảng danh sách người dùng: đổi vai trò (USER / ADMIN) hoặc xóa tài khoản.
+// isSelf = Admin đang đăng nhập: dòng của chính họ không được đổi hay xóa.
 export default function AdminUserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
   const { changeUserRole, deleteUser } = useStore();
   const [selected, setSelected] = useState<Role>(user.role);
@@ -24,7 +24,7 @@ export default function AdminUserRow({ user, isSelf }: { user: User; isSelf: boo
       setMessage({ ok: true, text: "Đã cập nhật vai trò." });
     } else {
       setMessage({ ok: false, text: result.message });
-      setSelected(user.role); // the change was refused: show the real role again
+      setSelected(user.role); // thay đổi bị từ chối: hiện lại vai trò thật
     }
   }
 

@@ -6,8 +6,8 @@ import { discountPercent } from "@/lib/products";
 import { regions } from "@/lib/regions";
 import type { Product } from "@/types";
 
-// eager: load the photo right away (for the first cards at the top of a page)
-// showRank: show the small "Top 1" label (the homepage best-seller list shows the rank itself, so it turns this off)
+// eager: tải ảnh ngay (cho các thẻ đầu tiên ở đầu trang)
+// showRank: hiện nhãn nhỏ "Top 1" (danh sách bán chạy ở trang chủ tự hiện thứ hạng, nên tắt tùy chọn này)
 export default function ProductCard({
   product,
   eager = false,
@@ -24,9 +24,9 @@ export default function ProductCard({
   return (
     <article className="group flex flex-1 flex-col">
       <div className="relative overflow-hidden rounded-lg bg-surface">
-        {/* The image links to the detail page. The name below is the keyboard-friendly link. */}
+        {/* Ảnh liên kết tới trang chi tiết. Tên bên dưới là liên kết thân thiện với bàn phím. */}
         <Link href={detailUrl} tabIndex={-1} aria-hidden="true" className="block">
-          {/* Every product photo is shown cropped to a square, so one fixed size works for next/image */}
+          {/* Mọi ảnh sản phẩm được cắt thành hình vuông, nên một kích thước cố định là đủ cho next/image */}
           <Image
             src={product.image}
             width={960}
@@ -50,7 +50,7 @@ export default function ProductCard({
       </div>
 
       <div className="flex flex-1 flex-col pt-4">
-        {/* The region dot links this card to the colours of the homepage route */}
+        {/* Chấm vùng miền gắn thẻ này với màu của tuyến ở trang chủ */}
         <p className="flex items-center gap-2 text-sm text-ink-muted">
           <span className={`h-2 w-2 shrink-0 rounded-full ${region.dotClass}`} aria-hidden="true" />
           <span className="sr-only">{region.label}, </span>

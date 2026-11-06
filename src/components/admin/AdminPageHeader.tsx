@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-// Page title + optional action button on the right
+// Tiêu đề trang + nút hành động tùy chọn ở bên phải
 export default function AdminPageHeader({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">

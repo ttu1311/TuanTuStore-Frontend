@@ -1,10 +1,10 @@
-// Simple checks shared by the register, login, account and checkout forms.
+// Các kiểm tra đơn giản dùng chung cho form đăng ký, đăng nhập, tài khoản và thanh toán.
 
 export function isValidEmail(email: string) {
   return /^\S+@\S+\.\S+$/.test(email.trim());
 }
 
-// Vietnamese phone: 10 digits starting with 0 (or +84 followed by 9 digits). Spaces, dots and dashes are ignored.
+// Số điện thoại Việt Nam: 10 chữ số bắt đầu bằng 0 (hoặc +84 theo sau là 9 chữ số). Bỏ qua dấu cách, dấu chấm và dấu gạch ngang.
 export function isValidPhone(phone: string) {
   return /^(0|\+84)\d{9}$/.test(normalizePhone(phone));
 }
@@ -14,17 +14,17 @@ export function normalizePhone(phone: string) {
   return phone.replace(/[\s.-]/g, "");
 }
 
-// Emails are compared in lower case, so "An@Mail.com" and "an@mail.com" are the same account
+// Email được so sánh theo chữ thường, nên "An@Mail.com" và "an@mail.com" là cùng một tài khoản
 export function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
-// Minimum password length for accounts (NIST recommends at least 8)
+// Độ dài mật khẩu tối thiểu cho tài khoản (NIST khuyến nghị ít nhất 8)
 export const MIN_PASSWORD_LENGTH = 8;
 
 export const MAX_NAME_LENGTH = 100;
 
-// ---------- Register ----------
+// ---------- Đăng ký ----------
 
 export type RegisterValues = {
   fullName: string;
@@ -58,7 +58,7 @@ export function validateRegister(values: RegisterValues): RegisterErrors {
   return errors;
 }
 
-// ---------- Profile ----------
+// ---------- Hồ sơ ----------
 
 export type ProfileErrors = { fullName?: string; phone?: string };
 
@@ -71,7 +71,7 @@ export function validateProfile(fullName: string, phone: string): ProfileErrors 
   return errors;
 }
 
-// ---------- Change password ----------
+// ---------- Đổi mật khẩu ----------
 
 export type PasswordValues = { currentPassword: string; newPassword: string; confirmPassword: string };
 export type PasswordErrors = Partial<Record<keyof PasswordValues, string>>;

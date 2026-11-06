@@ -1,10 +1,10 @@
-// The homepage route "Bắc vào Nam": the products ordered from north to south by where they are made.
+// Tuyến "Bắc vào Nam" ở trang chủ: các sản phẩm xếp từ bắc xuống nam theo nơi sản xuất.
 import type { Product, Region } from "@/types";
 import { simplifyText } from "@/lib/text";
 
-// Approximate latitude (°N) of the places where specialties usually come from.
-// The origin text of a product ("Tân Cương, Thái Nguyên") is matched against these names, without accents.
-// The more precise names come first, so "phu quoc" wins over "kien giang".
+// Vĩ độ gần đúng (°B) của những nơi thường cho ra đặc sản.
+// Chữ xuất xứ của sản phẩm ("Tân Cương, Thái Nguyên") được khớp với các tên này, không tính dấu.
+// Tên cụ thể hơn đứng trước, nên "phu quoc" thắng "kien giang".
 const knownPlaces: [name: string, latitude: number][] = [
   ["ha giang", 22.8],
   ["lao cai", 22.5],
@@ -63,19 +63,22 @@ const knownPlaces: [name: string, latitude: number][] = [
   ["hau giang", 9.8],
   ["soc trang", 9.6],
   ["bac lieu", 9.3],
+  ["u minh ha", 9.3],
+  ["nam can", 8.8],
+  ["rach goc", 8.7],
   ["ca mau", 9.2],
 ];
 
-// A place we do not know is put in the middle of its region
+// Nơi ta không biết sẽ được đặt ở giữa vùng của nó
 const regionLatitude: Record<Region, number> = { bac: 21, trung: 14.5, nam: 10 };
 
 const regionOrder: Region[] = ["bac", "trung", "nam"];
 
 export type RouteStop = {
   product: Product;
-  place: string; // the first part of the origin: "Tân Cương, Thái Nguyên" -> "Tân Cương"
-  area: string; // the rest: "Thái Nguyên" ("" when the origin has one part)
-  latitude?: number; // only when the place is known, so a guessed value is never shown
+  place: string; // phần đầu của xuất xứ: "Tân Cương, Thái Nguyên" -> "Tân Cương"
+  area: string; // phần còn lại: "Thái Nguyên" ("" khi xuất xứ chỉ có một phần)
+  latitude?: number; // chỉ khi biết nơi đó, để không bao giờ hiển thị một giá trị đoán mò
 };
 
 function findLatitude(origin: string) {
@@ -91,14 +94,14 @@ export function buildRoute(products: Product[]): RouteStop[] {
     })
     .sort(
       (a, b) =>
-        // Regions keep their order even if a latitude would mix them (e.g. Huế and Đà Nẵng are both Trung)
+        // Các vùng giữ nguyên thứ tự dù vĩ độ có thể làm lẫn lộn (ví dụ Huế và Đà Nẵng đều thuộc Trung)
         regionOrder.indexOf(a.product.region) - regionOrder.indexOf(b.product.region) ||
         (b.latitude ?? regionLatitude[b.product.region]) - (a.latitude ?? regionLatitude[a.product.region]) ||
         a.product.name.localeCompare(b.product.name, "vi"),
     );
 }
 
-// 21.6 -> "21,6° B" (Vietnamese decimal comma, B = Bắc / north)
+// 21.6 -> "21,6° B" (dấu phẩy thập phân kiểu Việt, B = Bắc)
 export function formatLatitude(latitude: number) {
   return `${latitude.toLocaleString("vi-VN", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}° B`;
 }

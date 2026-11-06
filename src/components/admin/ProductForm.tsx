@@ -14,12 +14,14 @@ import {
   type ProductFormValues,
   type ProductInput,
 } from "@/lib/products";
+import { brandNames } from "@/lib/brands";
 import { regionKeys, regions } from "@/lib/regions";
 
 type ProductFormProps = {
-  initialValues?: ProductFormValues; // empty when adding, the product when editing
+  initialValues?: ProductFormValues; // trống khi thêm, là sản phẩm hiện có khi sửa
   submitLabel: string;
-  onSave: (input: ProductInput) => ActionResult; // addProduct or updateProduct
+  onSave: (input: ProductInput, replaceRank?: boolean) => ActionResult; // addProduct hoặc updateProduct
+  editingId?: string; // id sản phẩm đang sửa: chính nó không tính là trùng thứ hạng
 };
 
 const labelStyle = "mb-1.5 block text-sm font-medium text-ink";
@@ -29,7 +31,7 @@ const fieldOk = "border-line focus:border-primary focus:ring-primary-soft";
 const fieldBad = "border-sale focus:border-sale focus:ring-sale/20";
 const hintStyle = "mt-1 text-xs text-ink-muted";
 
-// Field order = order on the page, so the first error found is also the first one on screen
+// Thứ tự trường = thứ tự trên trang, nên lỗi đầu tiên tìm thấy cũng là lỗi đầu tiên trên màn hình
 const fieldOrder: (keyof ProductFormErrors)[] = [
   "name",
   "price",
@@ -44,25 +46,31 @@ const fieldOrder: (keyof ProductFormErrors)[] = [
   "rank",
 ];
 
-// Add / edit product form (Admin). The product is saved in localStorage.
-export default function ProductForm({ initialValues = emptyProductForm, submitLabel, onSave }: ProductFormProps) {
+// Form thêm / sửa sản phẩm (Admin). Sản phẩm được lưu vào localStorage.
+export default function ProductForm({ initialValues = emptyProductForm, submitLabel, onSave, editingId }: ProductFormProps) {
   const { products } = useStore();
   const router = useRouter();
   const [values, setValues] = useState<ProductFormValues>(initialValues);
   const [errors, setErrors] = useState<ProductFormErrors>({});
   const [saveError, setSaveError] = useState("");
-  // Did the preview image load? Remembered per path, so a wrong path can be reported before saving.
+  // Thứ hạng nhập vào đang do sản phẩm khác giữ: chờ Admin chọn thay thế hay không
+  const [rankConflict, setRankConflict] = useState<{ input: ProductInput; holderName: string } | null>(null);
+  // Ảnh xem trước đã tải được chưa? Nhớ theo từng đường dẫn, để báo đường dẫn sai trước khi lưu.
   const [imageCheck, setImageCheck] = useState<{ path: string; ok: boolean } | null>(null);
 
   const imagePath = values.image.trim();
   const showPreview = IMAGE_PATH_PATTERN.test(imagePath);
   const imageFailed = imageCheck?.path === imagePath && !imageCheck.ok;
-  // Suggestions for the image field: the photos already used by products
+  // Gợi ý cho ô ảnh: các ảnh mà sản phẩm đang dùng
   const imageSuggestions = Array.from(new Set(products.map((product) => product.image))).sort();
+
+  // Chỉ được chọn thương hiệu có sẵn (danh mục trong src/data/brands.ts, cộng thương hiệu đang có ở sản phẩm), không tự ghi tên mới
+  const brandOptions = brandNames(products);
 
   function setField(field: keyof ProductFormValues, value: string | boolean) {
     setValues({ ...values, [field]: value });
     setSaveError("");
+    if (field === "rank") setRankConflict(null);
     if (errors[field]) setErrors({ ...errors, [field]: undefined });
   }
 
@@ -74,6 +82,7 @@ export default function ProductForm({ initialValues = emptyProductForm, submitLa
     if (!newErrors.image && imageFailed) {
       newErrors.image = "Không tải được ảnh này. Hãy kiểm tra tên tệp trong thư mục public/images.";
     }
+    if (!newErrors.brand && !brandOptions.includes(values.brand.trim())) newErrors.brand = "Vui lòng chọn một thương hiệu có sẵn";
     setErrors(newErrors);
 
     const firstInvalid = fieldOrder.find((field) => newErrors[field]);
@@ -82,12 +91,26 @@ export default function ProductForm({ initialValues = emptyProductForm, submitLa
       return;
     }
 
-    const result = onSave(input);
+    const holder = input.rank === undefined ? undefined : products.find((p) => p.rank === input.rank && p.id !== editingId);
+    if (holder) {
+      setRankConflict({ input, holderName: holder.name });
+      return;
+    }
+    save(input, false);
+  }
+
+  function save(input: ProductInput, replaceRank: boolean) {
+    const result = onSave(input, replaceRank);
     if (result.ok) router.push("/admin/san-pham");
     else setSaveError(result.message);
   }
 
-  // Props for one text/number input and its error message
+  function keepOtherRank() {
+    setRankConflict(null);
+    document.getElementById("rank")?.focus();
+  }
+
+  // Props cho một ô nhập chữ/số và thông báo lỗi của nó
   function field(name: keyof ProductFormErrors) {
     return {
       id: name,
@@ -156,7 +179,14 @@ export default function ProductForm({ initialValues = emptyProductForm, submitLa
           <label htmlFor="brand" className={labelStyle}>
             Thương hiệu
           </label>
-          <input type="text" maxLength={100} {...field("brand")} className={inputClass("brand")} />
+          <select {...field("brand")} className={inputClass("brand")}>
+            <option value="">Chọn thương hiệu</option>
+            {brandOptions.map((brand) => (
+              <option key={brand} value={brand}>
+                {brand}
+              </option>
+            ))}
+          </select>
           {error("brand")}
         </div>
 
@@ -196,7 +226,7 @@ export default function ProductForm({ initialValues = emptyProductForm, submitLa
               <p className={hintStyle}>Ảnh nằm trong thư mục public của dự án, ví dụ /images/p-o-mai.jpg.</p>
               {error("image")}
             </div>
-            {/* Live preview of the photo (not optimized, so a wrong path is detected right away) */}
+            {/* Xem trước ảnh trực tiếp (không tối ưu hóa, để phát hiện đường dẫn sai ngay lập tức) */}
             <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-surface">
               {showPreview && !imageFailed ? (
                 <Image
@@ -262,6 +292,34 @@ export default function ProductForm({ initialValues = emptyProductForm, submitLa
           </label>
         </div>
       </div>
+
+      {rankConflict && (
+        <div role="alertdialog" aria-labelledby="rank-conflict-title" className="mt-5 rounded-lg border border-sale/40 bg-sale/5 p-4">
+          <p id="rank-conflict-title" className="text-sm font-semibold text-sale">
+            Top {rankConflict.input.rank} đã có sản phẩm
+          </p>
+          <p className="mt-1 text-sm text-ink">
+            &quot;{rankConflict.holderName}&quot; đang là Top {rankConflict.input.rank}. Bạn có muốn thay thế không? Sản phẩm
+            đó sẽ không còn thứ hạng.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => save(rankConflict.input, true)}
+              className={`${btnBase} ${btnPrimary} ${btnSmall}`}
+            >
+              Thay thế
+            </button>
+            <button
+              type="button"
+              onClick={keepOtherRank}
+              className="inline-flex min-h-11 items-center px-2 text-sm font-medium text-ink-muted underline underline-offset-4 hover:text-ink"
+            >
+              Chọn thứ hạng khác
+            </button>
+          </div>
+        </div>
+      )}
 
       {saveError && (
         <p role="alert" className="mt-5 text-sm text-sale">

@@ -1,9 +1,9 @@
-import Link from "next/link";
+import SameRouteLink from "@/components/layout/SameRouteLink";
 import Icon, { type IconName } from "@/components/ui/Icon";
 
-// Quick links start with "/" so they work from any page.
-// "/#id" means: go to the homepage, then scroll to the section with that id.
-// An item WITHOUT `href` has no page behind it yet: it is shown as plain text, never as a fake link.
+// Các liên kết nhanh bắt đầu bằng "/" nên dùng được từ mọi trang.
+// "/#id" nghĩa là: về trang chủ, rồi cuộn tới phần có id đó.
+// Mục KHÔNG có `href` thì chưa có trang phía sau: nó hiển thị như chữ thường, không bao giờ giả làm liên kết.
 type FooterItem = { label: string; href?: string };
 
 const linkColumns: { title: string; links: FooterItem[] }[] = [
@@ -22,7 +22,7 @@ const linkColumns: { title: string; links: FooterItem[] }[] = [
     links: [
       { label: "Hướng dẫn mua hàng" },
       { label: "Phương thức thanh toán" },
-      { label: "Theo dõi đơn hàng", href: "/tai-khoan?tab=orders" }, // the order list in the customer's account
+      { label: "Theo dõi đơn hàng", href: "/tai-khoan?tab=orders" }, // danh sách đơn hàng trong tài khoản của khách
       { label: "Câu hỏi thường gặp" },
     ],
   },
@@ -37,42 +37,46 @@ const linkColumns: { title: string; links: FooterItem[] }[] = [
   },
 ];
 
-// Only real contact details belong here. The placeholder phone number and support email were removed;
-// add the real ones back to this list when they are known.
+// Chỉ thông tin liên hệ thật mới thuộc về đây. Số điện thoại và email hỗ trợ giữ chỗ đã được gỡ bỏ;
+// khi có thông tin thật thì thêm lại vào danh sách này.
 const contacts: { icon: IconName; text: string }[] = [
   { icon: "clock", text: "8:00 – 21:00, Thứ 2 – Chủ nhật" },
 ];
 
 export default function Footer() {
   return (
-    <footer id="lien-he" className="bg-footer pt-16 text-footer-text">
+    <footer id="lien-he" className="border-t border-line bg-paper pt-14 text-ink">
       <div className="mx-auto w-full max-w-container px-4 md:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 pb-12 min-[480px]:grid-cols-2 xl:grid-cols-[1.6fr_1fr_1fr_1fr_1.3fr]">
           <div className="min-[480px]:col-span-2 xl:col-span-1">
-            <Link href="/" className="whitespace-nowrap font-display text-[32px] font-bold leading-none text-white">
+            <SameRouteLink href="/" className="whitespace-nowrap font-display text-[32px] font-bold leading-none text-ink">
               TuanTuStore
-            </Link>
-            <p className="mt-4 max-w-[320px] text-footer-muted">
+            </SameRouteLink>
+            <p className="mt-4 max-w-[320px] text-ink-muted">
               Cửa hàng đặc sản ba miền Việt Nam — chọn lọc kỹ, rõ nguồn gốc, mang hương vị quê nhà đến mọi gia đình.
             </p>
           </div>
 
           {linkColumns.map((column) => {
-            // A column made only of plain text is not a navigation menu
+            // Một cột chỉ gồm chữ thường thì không phải là menu điều hướng
             const hasLinks = column.links.some((link) => link.href);
             const Wrapper = hasLinks ? "nav" : "div";
             return (
               <Wrapper key={column.title} aria-label={hasLinks ? column.title : undefined}>
-                <h3 className="mb-4 text-base font-semibold text-white">{column.title}</h3>
+                <h3 className="mb-4 text-base font-semibold text-ink">{column.title}</h3>
                 <ul className="space-y-2">
                   {column.links.map((link) => (
                     <li key={link.label}>
                       {link.href ? (
-                        <Link href={link.href} className="text-footer-muted transition-colors duration-200 hover:text-white">
+                        // Bấm khi đang ở đúng trang đó thì cuộn lên đầu trang
+                        <SameRouteLink
+                          href={link.href}
+                          className="text-ink-muted transition-colors duration-200 hover:text-primary"
+                        >
                           {link.label}
-                        </Link>
+                        </SameRouteLink>
                       ) : (
-                        <span className="text-footer-muted">{link.label}</span>
+                        <span className="text-ink-muted">{link.label}</span>
                       )}
                     </li>
                   ))}
@@ -82,11 +86,11 @@ export default function Footer() {
           })}
 
           <div>
-            <h3 className="mb-4 text-base font-semibold text-white">Liên hệ</h3>
+            <h3 className="mb-4 text-base font-semibold text-ink">Liên hệ</h3>
             <ul className="space-y-2">
               {contacts.map((contact) => (
-                <li key={contact.icon} className="flex gap-3 text-footer-muted">
-                  <Icon name={contact.icon} size={16} className="mt-1 text-gold-light" />
+                <li key={contact.icon} className="flex gap-3 text-ink-muted">
+                  <Icon name={contact.icon} size={16} className="mt-1 text-primary" />
                   <span>{contact.text}</span>
                 </li>
               ))}
@@ -94,9 +98,12 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="flex flex-col justify-between gap-4 border-t border-white/[0.12] py-6 text-sm text-footer-muted md:flex-row">
+        <div className="flex flex-col justify-between gap-4 border-t border-line py-6 text-sm text-ink-muted md:flex-row">
           <span>© 2026 TuanTuStore. Bảo lưu mọi quyền.</span>
-          <span>Ảnh: Wikimedia Commons</span>
+          {/* Tác giả và giấy phép của từng ảnh (CC BY-SA yêu cầu ghi rõ) */}
+          <SameRouteLink href="/nguon-anh" className="transition-colors duration-200 hover:text-primary">
+            Ảnh: Wikimedia Commons — tác giả và giấy phép
+          </SameRouteLink>
         </div>
       </div>
     </footer>

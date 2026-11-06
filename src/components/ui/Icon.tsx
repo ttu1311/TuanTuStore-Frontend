@@ -1,4 +1,4 @@
-// One icon family (outline, 1.75 stroke). Usage: <Icon name="search" />
+// Một bộ biểu tượng (nét viền, độ dày 1.75). Cách dùng: <Icon name="search" />
 const paths = {
   search: (
     <>
@@ -74,7 +74,7 @@ export type IconName = keyof typeof paths;
 
 type IconProps = {
   name: IconName;
-  size?: number; // 16 (small), 20 (default), 24 (large)
+  size?: number; // 16 (nhỏ), 20 (mặc định), 24 (lớn)
   className?: string;
 };
 

@@ -3,7 +3,7 @@ import { Be_Vietnam_Pro, Phudu } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "@/context/StoreContext";
 
-// Phudu: a condensed display face made in Vietnam, close to hand-painted shop signs. Full Vietnamese accents.
+// Phudu: kiểu chữ tiêu đề hẹp do người Việt thiết kế, gần với biển hiệu quán vẽ tay. Đủ dấu tiếng Việt.
 const displayFont = Phudu({
   subsets: ["latin", "vietnamese"],
   weight: ["500", "600", "700", "800"],
@@ -25,11 +25,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // data-scroll-behavior="smooth": smooth scrolling stays for "#section" links on a page,
-    // but Next.js turns it off while changing pages, so every new page opens at the top
+    // data-scroll-behavior="smooth": cuộn mượt vẫn giữ cho các liên kết "#section" trong một trang,
+    // nhưng Next.js tắt nó khi chuyển trang, nên mỗi trang mới luôn mở ở đầu trang
     <html lang="vi" data-scroll-behavior="smooth" className={`${displayFont.variable} ${sansFont.variable}`}>
       <body>
-        {/* All website data (products, users, orders, cart) lives in the browser: see src/context/StoreContext.tsx */}
+        {/* Toàn bộ dữ liệu website (sản phẩm, người dùng, đơn hàng, giỏ hàng) nằm trong trình duyệt: xem src/context/StoreContext.tsx */}
         <StoreProvider>{children}</StoreProvider>
       </body>
     </html>

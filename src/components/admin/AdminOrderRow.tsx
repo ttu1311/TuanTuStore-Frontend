@@ -11,8 +11,8 @@ import type { Order, OrderStatus } from "@/types";
 const selectStyle =
   "h-9 rounded-lg border border-line bg-white px-3 text-sm text-ink transition-colors duration-200 focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-soft";
 
-// A table row of the orders list. "Xem chi tiết" opens the details right under it,
-// with the status control and the delete button.
+// Một dòng của bảng danh sách đơn hàng. "Xem chi tiết" mở phần chi tiết ngay bên dưới,
+// kèm ô đổi trạng thái và nút xóa.
 export default function AdminOrderRow({ order, accountText }: { order: Order; accountText: string }) {
   const { updateOrderStatus, deleteOrder } = useStore();
   const [isOpen, setIsOpen] = useState(false);
@@ -72,8 +72,8 @@ export default function AdminOrderRow({ order, accountText }: { order: Order; ac
       {isOpen && (
         <tr>
           <td colSpan={6} className="border-b border-line bg-surface p-0">
-            {/* Pinned to the left edge and as wide as the visible card (100cqw), so on a phone the details
-                are never wider than the screen while the table itself scrolls sideways */}
+            {/* Ghim vào mép trái và rộng bằng thẻ đang nhìn thấy (100cqw), nên trên điện thoại phần chi tiết
+               không bao giờ rộng hơn màn hình trong khi bảng vẫn cuộn ngang */}
             <div className="sticky left-0 box-border w-[100cqw] px-4 py-5">
               <div className="grid gap-6 lg:grid-cols-2">
                 <dl className="min-w-0 space-y-2 text-sm">

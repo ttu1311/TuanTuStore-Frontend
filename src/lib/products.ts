@@ -1,14 +1,14 @@
-// Helpers for products: what the pages show, and the rules of the Admin product form.
+// Các hàm hỗ trợ cho sản phẩm: những gì các trang hiển thị, và quy tắc của form sản phẩm Admin.
 import type { Product } from "@/types";
 import { isRegion } from "@/lib/regions";
 import { slugify } from "@/lib/text";
 
-// 185000 with an old price of 220000 -> 16 (%)
+// 185000 với giá cũ 220000 -> 16 (%)
 export function discountPercent(product: Product) {
   return product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
 }
 
-// The description is saved as one text with a blank line between paragraphs
+// Mô tả được lưu thành một đoạn văn bản, giữa các đoạn có một dòng trống
 export function descriptionParagraphs(product: Product) {
   return product.description
     .split(/\n\s*\n/)
@@ -16,24 +16,40 @@ export function descriptionParagraphs(product: Product) {
     .filter(Boolean);
 }
 
-// Newest first ("Mới nhất")
+// Tỉnh là phần cuối của xuất xứ: "Năm Căn, Cà Mau" -> "Cà Mau". Xuất xứ chỉ có một phần thì lấy cả chuỗi.
+export function provinceOf(origin: string) {
+  const parts = origin.split(",").map((part) => part.trim()).filter(Boolean);
+  return parts[parts.length - 1] ?? origin.trim();
+}
+
+// Nhóm sản phẩm theo một khóa (tỉnh, thương hiệu…): mỗi nhóm có tên và các sản phẩm của nó, tên xếp A đến Z
+export function groupProducts(products: Product[], keyOf: (product: Product) => string) {
+  const groups = new Map<string, Product[]>();
+  for (const product of products) {
+    const key = keyOf(product);
+    groups.set(key, [...(groups.get(key) ?? []), product]);
+  }
+  return Array.from(groups, ([name, items]) => ({ name, items })).sort((a, b) => a.name.localeCompare(b.name, "vi"));
+}
+
+// Mới nhất lên đầu ("Mới nhất")
 export function sortNewestFirst(products: Product[]) {
   return [...products].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-// Homepage "Sản phẩm nổi bật"
+// "Sản phẩm nổi bật" ở trang chủ
 export function getFeaturedProducts(products: Product[]) {
   return sortNewestFirst(products.filter((product) => product.isFeatured));
 }
 
-// Homepage "Đặc sản bán chạy": products with a rank, Top 1 first
+// "Đặc sản bán chạy" ở trang chủ: các sản phẩm có thứ hạng, Top 1 lên đầu
 export function getBestSellers(products: Product[]) {
   return products
     .filter((product) => product.rank !== undefined)
     .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0));
 }
 
-// Up to `count` other products: the same region first, then the other regions
+// Tối đa `count` sản phẩm khác: cùng vùng trước, rồi đến các vùng khác
 export function getRelatedProducts(products: Product[], current: Product, count = 4) {
   const others = sortNewestFirst(products.filter((item) => item.id !== current.id));
   const sameRegion = others.filter((item) => item.region === current.region);
@@ -41,8 +57,8 @@ export function getRelatedProducts(products: Product[], current: Product, count 
   return [...sameRegion, ...otherRegions].slice(0, count);
 }
 
-// The id of a new product comes from its name: "Bánh tráng trộn" -> "banh-trang-tron".
-// If that id is already used, a number is added: "banh-trang-tron-2".
+// Id của sản phẩm mới được tạo từ tên: "Bánh tráng trộn" -> "banh-trang-tron".
+// Nếu id đó đã được dùng, thêm một số: "banh-trang-tron-2".
 export function createProductId(name: string, existingIds: string[]) {
   const base = slugify(name) || "san-pham";
   let id = base;
@@ -50,9 +66,9 @@ export function createProductId(name: string, existingIds: string[]) {
   return id;
 }
 
-// ---------- Admin product form ----------
+// ---------- Form sản phẩm Admin ----------
 
-// The form keeps every value as text (that is what <input> gives us)
+// Form giữ mọi giá trị dạng chữ (đó là những gì <input> trả về)
 export type ProductFormValues = {
   name: string;
   shortDescription: string;
@@ -70,7 +86,7 @@ export type ProductFormValues = {
 
 export type ProductFormErrors = Partial<Record<keyof ProductFormValues, string>>;
 
-// Everything the Admin can edit (the id and the creation date are set automatically)
+// Mọi thứ Admin có thể sửa (id và ngày tạo được đặt tự động)
 export type ProductInput = Omit<Product, "id" | "createdAt">;
 
 export const emptyProductForm: ProductFormValues = {
@@ -107,16 +123,16 @@ export function productToFormValues(product: Product): ProductFormValues {
 
 const MAX_PRICE = 100_000_000; // 100 triệu đồng
 
-// An image inside the public folder, e.g. /images/p-o-mai.jpg
+// Một ảnh trong thư mục public, ví dụ /images/p-o-mai.jpg
 export const IMAGE_PATH_PATTERN = /^\/[A-Za-z0-9_\-./]+\.(jpe?g|png|webp|avif|gif)$/i;
 
-// "185000" -> 185000. Returns null if it is not a whole number between 1 and `max`.
+// "185000" -> 185000. Trả về null nếu không phải số nguyên từ 1 đến `max`.
 function toPositiveInt(value: string, max: number) {
   const number = Number(value);
   return Number.isInteger(number) && number > 0 && number <= max ? number : null;
 }
 
-// Checks the form. Returns the errors, and the product data when there is no error.
+// Kiểm tra form. Trả về các lỗi, và dữ liệu sản phẩm khi không có lỗi.
 export function validateProductForm(values: ProductFormValues): { errors: ProductFormErrors; input?: ProductInput } {
   const errors: ProductFormErrors = {};
   const text = (field: keyof Omit<ProductFormValues, "isFeatured">) => values[field].trim();
@@ -142,7 +158,7 @@ export function validateProductForm(values: ProductFormValues): { errors: Produc
   const region = text("region");
   if (!isRegion(region)) errors.region = "Vui lòng chọn vùng miền";
 
-  if (!text("brand")) errors.brand = "Vui lòng nhập thương hiệu";
+  if (!text("brand")) errors.brand = "Vui lòng chọn thương hiệu";
   if (!text("origin")) errors.origin = "Vui lòng nhập xuất xứ";
   if (!text("pack")) errors.pack = "Vui lòng nhập quy cách";
   if (!text("shortDescription")) errors.shortDescription = "Vui lòng nhập mô tả ngắn";
@@ -162,7 +178,7 @@ export function validateProductForm(values: ProductFormValues): { errors: Produc
     input: {
       name: text("name"),
       shortDescription: text("shortDescription"),
-      // Browsers may send line breaks as "\r\n". Paragraphs are split on blank lines.
+      // Trình duyệt có thể gửi xuống dòng là "\r\n". Các đoạn văn được tách bằng dòng trống.
       description: values.description.replace(/\r\n/g, "\n").trim(),
       price,
       oldPrice,

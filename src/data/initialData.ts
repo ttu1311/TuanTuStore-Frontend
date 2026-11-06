@@ -1,11 +1,100 @@
 import type { Product, User } from "@/types";
 
-// The data written into localStorage on the FIRST visit only (see initializeStorage in src/lib/storage.ts).
-// After that, the website always uses what is saved in localStorage, so Admin changes are kept.
+// Dữ liệu chỉ được ghi vào localStorage ở lần truy cập ĐẦU TIÊN (xem initializeStorage trong src/lib/storage.ts).
+// Sau đó, website luôn dùng những gì đã lưu trong localStorage, nên thay đổi của Admin được giữ lại.
 
-// Dates go from newest to oldest in this list, so the default "Mới nhất" order
-// shows the products in the same order as below. Products added by the Admin are newer and come first.
+// Các đặc sản Cà Mau (Miền Nam), được thêm sau phiên bản đầu tiên của website.
+// Trình duyệt đã lưu danh sách sản phẩm trước khi chúng xuất hiện sẽ nhận chúng MỘT LẦN (xem seedBatches trong src/lib/storage.ts).
+// Giá và quy cách là giá trị mẫu cho đồ án đại học này, KHÔNG phải giá thị trường đã kiểm chứng.
+// Thương hiệu của các đặc sản Cà Mau là NHÃN HIỆU TẬP THỂ của địa phương (xem src/data/brands.ts), không phải một công ty cụ thể.
+export const caMauProducts: Product[] = [
+  {
+    id: "cua-bien-nam-can",
+    name: "Cua biển Năm Căn",
+    shortDescription: "Cua biển nuôi dưới tán rừng ngập mặn Năm Căn, thịt chắc và ngọt, hợp hấp, rang me hoặc nấu lẩu.",
+    description:
+      "Năm Căn nằm ở vùng rừng ngập mặn phía nam tỉnh Cà Mau. Cua biển ở đây được nuôi quảng canh trong các vuông nuôi xen giữa rừng đước, sống trong môi trường nước lợ tự nhiên.\n\n" +
+      "Cua có thịt chắc, vị ngọt, cua gạch có phần gạch béo. Cách chế biến đơn giản nhất là hấp hoặc luộc rồi chấm muối tiêu chanh; cua cũng hợp để rang me, nấu lẩu hoặc nấu cháo.",
+    price: 360000,
+    image: "/images/p-cua-bien-nam-can.jpg",
+    region: "nam",
+    brand: "Cua Năm Căn",
+    origin: "Năm Căn, Cà Mau",
+    pack: "1kg (3–4 con)",
+    isFeatured: false,
+    createdAt: "2026-10-25T05:00:00.000Z",
+  },
+  {
+    id: "tom-kho-rach-goc",
+    name: "Tôm khô Rạch Gốc",
+    shortDescription: "Tôm khô từ vùng cửa biển Rạch Gốc, màu đỏ cam tự nhiên, vị ngọt đậm, dùng nấu canh hoặc ăn với củ kiệu.",
+    description:
+      "Rạch Gốc là vùng cửa biển ở phía nam tỉnh Cà Mau, nổi tiếng với nghề làm tôm khô. Tôm tươi được luộc chín, phơi khô dưới nắng rồi chà bỏ vỏ, giữ lại phần thịt tôm.\n\n" +
+      "Tôm khô có màu đỏ cam tự nhiên và vị ngọt đậm. Bạn có thể dùng để nấu canh, xào rau, trộn gỏi, hoặc ăn cùng củ kiệu trong những ngày Tết.",
+    price: 380000,
+    image: "/images/p-tom-kho-rach-goc.jpg",
+    region: "nam",
+    brand: "Tôm khô Rạch Gốc",
+    origin: "Rạch Gốc, Cà Mau",
+    pack: "Túi 250g",
+    isFeatured: false,
+    createdAt: "2026-10-25T04:00:00.000Z",
+  },
+  {
+    id: "ba-khia-muoi-rach-goc",
+    name: "Ba khía muối Rạch Gốc",
+    shortDescription: "Ba khía bắt ở rừng ngập mặn Rạch Gốc, muối mặn để dành, trộn tỏi ớt chanh đường ăn với cơm.",
+    description:
+      "Ba khía là loài cua nhỏ sống trong rừng ngập mặn, có càng màu đỏ tím. Ở vùng Rạch Gốc, Cà Mau, người dân bắt ba khía vào mùa rồi muối mặn trong hũ để dùng dần.\n\n" +
+      "Trước khi ăn, ba khía muối thường được bóp với tỏi, ớt, chanh và đường cho có vị chua ngọt. Món này ăn kèm cơm trắng là món quen thuộc của người miền Tây.",
+    price: 65000,
+    image: "/images/p-ba-khia-muoi.jpg",
+    region: "nam",
+    brand: "Ba khía Rạch Gốc",
+    origin: "Rạch Gốc, Cà Mau",
+    pack: "Hũ 500g",
+    isFeatured: false,
+    createdAt: "2026-10-25T03:00:00.000Z",
+  },
+  {
+    id: "mat-ong-rung-u-minh-ha",
+    name: "Mật ong rừng U Minh Hạ",
+    shortDescription: "Mật ong lấy từ rừng tràm U Minh Hạ theo nghề gác kèo ong truyền thống, thơm mùi hoa tràm.",
+    description:
+      "U Minh Hạ là vùng rừng tràm lớn của tỉnh Cà Mau. Người dân nơi đây có nghề gác kèo ong: đặt những thanh kèo dưới tán rừng để đàn ong rừng đến làm tổ, rồi chỉ cắt phần tổ chứa mật, chừa lại phần còn lại để đàn ong tiếp tục ở lại.\n\n" +
+      "Mật ong có màu vàng sậm và mùi thơm của hoa tràm. Bạn có thể pha với nước ấm, chanh hoặc gừng, hoặc dùng để ướp các món nướng. Không dùng mật ong cho trẻ dưới 1 tuổi.",
+    price: 280000,
+    image: "/images/p-mat-ong-u-minh-ha.jpg",
+    region: "nam",
+    brand: "Mật ong U Minh Hạ",
+    origin: "U Minh Hạ, Cà Mau",
+    pack: "Chai 500ml",
+    isFeatured: false,
+    createdAt: "2026-10-25T02:00:00.000Z",
+  },
+  {
+    id: "kho-ca-boi-ca-mau",
+    name: "Khô cá bổi Cà Mau",
+    shortDescription:
+      "Khô từ cá bổi (cá sặc rằn) vùng U Minh, Cà Mau; thịt thơm, dai, vị ngọt, chiên giòn hoặc nướng đều ngon.",
+    description:
+      "Cá bổi (còn gọi là cá sặc rằn) là loài cá nước ngọt, sống nhiều ở vùng quanh rừng U Minh Hạ của Cà Mau. Hiện nay cá chủ yếu được nuôi trong ao, tập trung ở huyện Trần Văn Thời và huyện U Minh. Cá được làm sạch rồi phơi nắng cho khô.\n\n" +
+      "Khô cá bổi có thịt thơm, dai và vị ngọt. Bạn có thể chiên giòn hoặc nướng, ăn với cơm trắng hay dùng làm món nhắm. “Khô cá bổi U Minh” là nhãn hiệu tập thể đã được bảo hộ của Cà Mau.",
+    price: 165000,
+    image: "/images/p-kho-ca-boi.jpg",
+    region: "nam",
+    brand: "Khô cá bổi U Minh",
+    origin: "Trần Văn Thời, Cà Mau",
+    pack: "Túi 500g",
+    isFeatured: false,
+    createdAt: "2026-10-25T01:00:00.000Z",
+  },
+];
+
+// Ngày đi từ mới nhất đến cũ nhất trong danh sách này, nên thứ tự "Mới nhất" mặc định
+// hiển thị sản phẩm đúng thứ tự bên dưới. Sản phẩm do Admin thêm có ngày của thời điểm thêm.
 export const initialProducts: Product[] = [
+  ...caMauProducts,
   {
     id: "tra-thai-nguyen",
     name: "Chè Thái Nguyên",
@@ -17,7 +106,7 @@ export const initialProducts: Product[] = [
     oldPrice: 220000,
     image: "/images/p-tra-thai-nguyen.jpg",
     region: "bac",
-    brand: "Thương hiệu A",
+    brand: "Chè Tân Cương",
     origin: "Tân Cương, Thái Nguyên",
     pack: "Gói 200g",
     isFeatured: true,
@@ -33,7 +122,7 @@ export const initialProducts: Product[] = [
     price: 120000,
     image: "/images/p-o-mai.jpg",
     region: "bac",
-    brand: "Thương hiệu B",
+    brand: "Hồng Lam",
     origin: "Phố Hàng Đường, Hà Nội",
     pack: "Hộp 300g",
     isFeatured: true,
@@ -50,7 +139,7 @@ export const initialProducts: Product[] = [
     oldPrice: 75000,
     image: "/images/p-banh-kho-me.jpg",
     region: "trung",
-    brand: "Thương hiệu C",
+    brand: "Bà Liễu Mẹ",
     origin: "Cẩm Lệ, Đà Nẵng",
     pack: "Túi 250g",
     isFeatured: true,
@@ -66,8 +155,8 @@ export const initialProducts: Product[] = [
     price: 98000,
     image: "/images/p-banh-pia.jpg",
     region: "nam",
-    brand: "Thương hiệu D",
-    origin: "Vũng Thơm, Sóc Trăng",
+    brand: "Tân Huê Viên",
+    origin: "Sóc Trăng",
     pack: "Hộp 4 bánh",
     isFeatured: true,
     createdAt: "2026-01-05T00:00:00.000Z",
@@ -82,8 +171,8 @@ export const initialProducts: Product[] = [
     price: 90000,
     image: "/images/p-banh-com.jpg",
     region: "bac",
-    brand: "Thương hiệu B",
-    origin: "Hàng Than, Hà Nội",
+    brand: "Hồng Lam",
+    origin: "Hà Nội",
     pack: "Hộp 10 bánh",
     isFeatured: false,
     rank: 1,
@@ -100,7 +189,7 @@ export const initialProducts: Product[] = [
     oldPrice: 240000,
     image: "/images/p-ca-phe.jpg",
     region: "trung",
-    brand: "Thương hiệu C",
+    brand: "Trung Nguyên",
     origin: "Buôn Ma Thuột, Đắk Lắk",
     pack: "Gói 500g",
     isFeatured: false,
@@ -117,7 +206,7 @@ export const initialProducts: Product[] = [
     price: 145000,
     image: "/images/p-nuoc-mam.jpg",
     region: "nam",
-    brand: "Thương hiệu D",
+    brand: "Khải Hoàn",
     origin: "Phú Quốc, Kiên Giang",
     pack: "Chai 500ml",
     isFeatured: false,
@@ -127,28 +216,26 @@ export const initialProducts: Product[] = [
   {
     id: "keo-dua",
     name: "Kẹo dừa",
-    shortDescription: "Kẹo dẻo từ nước cốt dừa và đường, thơm béo, đặc sản của xứ dừa Bến Tre.",
+    shortDescription: "Kẹo dừa vị ca cao: kẹo dẻo từ nước cốt dừa, đường và ca cao, thơm béo, đặc sản của xứ dừa Bến Tre.",
     description:
-      "Bến Tre được gọi là xứ dừa, và kẹo dừa là món quà đặc trưng của vùng đất này. Kẹo được nấu từ nước cốt dừa và đường, sau đó cắt thành từng viên nhỏ.\n\n" +
-      "Kẹo dẻo, béo nhẹ và thơm mùi dừa. Có thể ăn trực tiếp hoặc dùng làm quà tặng.",
+      "Bến Tre được gọi là xứ dừa, và kẹo dừa là món quà đặc trưng của vùng đất này. Kẹo được nấu từ nước cốt dừa và đường, loại này có thêm ca cao nên có màu nâu, sau đó cắt thành từng viên nhỏ.\n\n" +
+      "Kẹo dẻo, béo nhẹ, thơm mùi dừa và ca cao. Có thể ăn trực tiếp hoặc dùng làm quà tặng.",
     price: 55000,
     oldPrice: 65000,
-    image: "/images/p-keo-dua.jpg",
+    image: "/images/p-keo-dua-ben-tre.jpg",
     region: "nam",
-    brand: "Thương hiệu A",
-    origin: "Cồn Phụng, Bến Tre",
+    brand: "Cô Hai Tỏ",
+    origin: "Bến Tre",
     pack: "Hộp 400g",
     isFeatured: false,
     rank: 4,
     createdAt: "2026-01-01T00:00:00.000Z",
   },
 ];
-
-// The demo ADMIN account of this university project (documented in README.md):
 //   Email:    admin@tuantustore.vn
 //   Password: Admin@123
-// The password is saved as plain text, like every password of this demo (see src/lib/password.ts).
-// This is a front-end simulation, NOT real security.
+// Mật khẩu được lưu dạng chữ thường, như mọi mật khẩu của bản demo này (xem src/lib/password.ts).
+// Đây là mô phỏng front-end, KHÔNG phải bảo mật thật.
 export const initialUsers: User[] = [
   {
     id: "u-admin",

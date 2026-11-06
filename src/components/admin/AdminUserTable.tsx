@@ -4,7 +4,7 @@ import AdminUserRow from "@/components/admin/AdminUserRow";
 import { table, tableWrap, th } from "@/components/admin/tableStyles";
 import { useStore } from "@/context/StoreContext";
 
-// All accounts created by the registration page (plus the demo Admin), oldest first
+// Tất cả tài khoản tạo từ trang đăng ký (cộng với Admin demo), cũ nhất lên đầu
 export default function AdminUserTable() {
   const { users, currentUser } = useStore();
   const sorted = [...users].sort((a, b) => a.createdAt.localeCompare(b.createdAt));

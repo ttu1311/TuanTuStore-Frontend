@@ -1,6 +1,7 @@
-// The ONLY place that talks to localStorage / sessionStorage.
-// These functions must run in the browser (inside useEffect or an event handler), never during server rendering.
-import { initialProducts, initialUsers } from "@/data/initialData";
+// Nơi DUY NHẤT làm việc với localStorage / sessionStorage.
+// Các hàm này phải chạy ở trình duyệt (trong useEffect hoặc trình xử lý sự kiện), không bao giờ chạy khi render trên server.
+import { caMauProducts, initialProducts, initialUsers } from "@/data/initialData";
+import { renamedImages, seedUpdates } from "@/data/seedUpdates";
 import type { CartItem, Order, Product, User } from "@/types";
 
 export const STORAGE_KEYS = {
@@ -9,10 +10,16 @@ export const STORAGE_KEYS = {
   currentUser: "tuantustore-current-user",
   cart: "tuantustore-cart",
   orders: "tuantustore-orders",
-  orderSeq: "tuantustore-order-seq", // the last order number used (1 -> "TT-000001")
+  orderSeq: "tuantustore-order-seq", // số thứ tự đơn hàng đã dùng gần nhất (1 -> "TT-000001")
+  seedBatches: "tuantustore-seed-batches", // các seedBatches bên dưới mà trình duyệt này đã nhận
+  recentlyViewed: "tuantustore-recently-viewed", // id các sản phẩm vừa xem, mới nhất đứng đầu
 } as const;
 
-// Reads a JSON value. Returns null when the key is missing, the text is not valid JSON or storage is blocked.
+// Các nhóm sản phẩm được thêm vào dữ liệu mẫu SAU phiên bản đầu tiên của website.
+// Để thêm sản phẩm về sau: đưa chúng vào initialProducts VÀ thêm một nhóm mới ở đây với id mới.
+const seedBatches: { id: string; products: Product[] }[] = [{ id: "ca-mau", products: caMauProducts }];
+
+// Đọc một giá trị JSON. Trả về null khi thiếu khóa, văn bản không phải JSON hợp lệ hoặc storage bị chặn.
 export function readJSON<T>(key: string, storage: Storage = window.localStorage): T | null {
   try {
     const text = storage.getItem(key);
@@ -22,7 +29,7 @@ export function readJSON<T>(key: string, storage: Storage = window.localStorage)
   }
 }
 
-// Saves a value as JSON. Returns false when the browser refuses (storage full or blocked).
+// Lưu một giá trị dạng JSON. Trả về false khi trình duyệt từ chối (storage đầy hoặc bị chặn).
 export function writeJSON(key: string, value: unknown, storage: Storage = window.localStorage): boolean {
   try {
     storage.setItem(key, JSON.stringify(value));
@@ -32,27 +39,91 @@ export function writeJSON(key: string, value: unknown, storage: Storage = window
   }
 }
 
-// First visit: fill every key that is missing (or unreadable) with its default value.
-// A key that already holds valid data is NEVER overwritten, so refreshing the page keeps all changes.
+// Lần truy cập đầu: điền giá trị mặc định cho mọi khóa còn thiếu (hoặc không đọc được).
+// Khóa đã có dữ liệu hợp lệ thì KHÔNG BAO GIỜ bị ghi đè, nên tải lại trang vẫn giữ mọi thay đổi.
 export function initializeStorage() {
-  if (!Array.isArray(readJSON(STORAGE_KEYS.products))) writeJSON(STORAGE_KEYS.products, initialProducts);
+  if (!Array.isArray(readJSON(STORAGE_KEYS.products))) {
+    // initialProducts đã chứa mọi nhóm, nên đánh dấu tất cả là đã nhận
+    if (writeJSON(STORAGE_KEYS.products, initialProducts)) {
+      writeJSON(STORAGE_KEYS.seedBatches, seedBatches.map((batch) => batch.id));
+    }
+  }
   if (!Array.isArray(readJSON(STORAGE_KEYS.users))) writeJSON(STORAGE_KEYS.users, initialUsers);
   if (!Array.isArray(readJSON(STORAGE_KEYS.cart))) writeJSON(STORAGE_KEYS.cart, []);
   if (!Array.isArray(readJSON(STORAGE_KEYS.orders))) writeJSON(STORAGE_KEYS.orders, []);
   if (typeof readJSON(STORAGE_KEYS.orderSeq) !== "number") writeJSON(STORAGE_KEYS.orderSeq, 0);
+  addNewSeedBatches();
+  applySeedUpdates();
   repairDemoAdmin();
 }
 
-// A user as it may be saved in an older browser: an EARLIER version of this project kept a `passwordHash`
-// (a hash that cannot be checked any more) instead of `password`.
+// Trình duyệt đã lưu danh sách sản phẩm TRƯỚC khi một nhóm tồn tại sẽ nhận nhóm đó ở đây, MỘT LẦN:
+// - các sản phẩm được THÊM vào cuối danh sách đã lưu; không có gì đã lưu (sản phẩm, giỏ hàng, đơn hàng, người dùng) bị đổi;
+// - sản phẩm có id đã có trong danh sách thì bị bỏ qua (ví dụ Admin đã tự tạo "Cua biển Năm Căn");
+// - id của nhóm sau đó được ghi nhớ, nên tải lại trang không bao giờ thêm hai lần
+//   và sản phẩm Admin đã xóa sau đó không quay lại.
+function addNewSeedBatches() {
+  const products = readJSON<Product[]>(STORAGE_KEYS.products);
+  if (!Array.isArray(products)) return; // storage bị chặn hoặc đầy: thử lại ở lần truy cập sau
+
+  const savedIds = readJSON<string[]>(STORAGE_KEYS.seedBatches);
+  const received = Array.isArray(savedIds) ? savedIds : [];
+  const newBatches = seedBatches.filter((batch) => !received.includes(batch.id));
+  if (newBatches.length === 0) return;
+
+  const existingIds = new Set(products.map((product) => product.id));
+  const added = newBatches.flatMap((batch) => batch.products).filter((product) => !existingIds.has(product.id));
+
+  // Các nhóm chỉ được đánh dấu sau khi sản phẩm đã được lưu, nên lần ghi thất bại sẽ được thử lại lần sau
+  if (added.length > 0 && !writeJSON(STORAGE_KEYS.products, [...products, ...added])) return;
+  writeJSON(STORAGE_KEYS.seedBatches, [...received, ...newBatches.map((batch) => batch.id)]);
+}
+
+// Cập nhật sản phẩm mẫu đã được lưu từ trước (thương hiệu thật, sửa mô tả và giá sai), theo danh sách trong seedUpdates.
+// Chỉ đổi một trường khi nó VẪN LÀ giá trị mẫu cũ, nên chỗ nào Admin đã tự sửa thì được giữ nguyên.
+// Riêng ảnh cũ đã bị xóa (renamedImages) thì được đổi ở MỌI sản phẩm, vì để nguyên chỉ ra ảnh hỏng.
+function applySeedUpdates() {
+  const products = readJSON<Product[]>(STORAGE_KEYS.products);
+  if (!Array.isArray(products)) return;
+
+  const seedById = new Map(initialProducts.map((product) => [product.id, product]));
+  let changed = false;
+
+  const updated = products.map((product) => {
+    let next = product;
+    const newImage = renamedImages[product.image];
+    if (newImage) {
+      next = { ...next, image: newImage };
+      changed = true;
+    }
+
+    const seed = seedById.get(product.id);
+    if (!seed) return next;
+
+    for (const update of seedUpdates) {
+      if (update.id !== product.id) continue;
+      const current = next[update.field];
+      const isOld = update.from instanceof RegExp ? update.from.test(String(current)) : current === update.from;
+      if (!isOld || current === seed[update.field]) continue;
+      next = { ...next, [update.field]: seed[update.field] };
+      changed = true;
+    }
+    return next;
+  });
+
+  if (changed) writeJSON(STORAGE_KEYS.products, updated);
+}
+
+// Một người dùng như có thể được lưu trong trình duyệt cũ: một phiên bản TRƯỚC của dự án giữ `passwordHash`
+// (mã băm không kiểm tra được nữa) thay vì `password`.
 type SavedUser = Partial<User> & { passwordHash?: string };
 
-// The demo ADMIN of README.md is the only seeded account.
+// ADMIN demo trong README.md là tài khoản mẫu duy nhất.
 const demoAdmin = initialUsers[0];
 
-// If the demo ADMIN was saved by the earlier version (no `password`), give it its documented password back,
-// so the login written in README.md also works in a browser that already holds old data.
-// Nothing else is touched: other old accounts stay as they are (login() explains what to do with them).
+// Nếu ADMIN demo được lưu bởi phiên bản trước (không có `password`), trả lại cho nó mật khẩu đã ghi trong tài liệu,
+// để thông tin đăng nhập ghi trong README.md cũng dùng được trên trình duyệt đang giữ dữ liệu cũ.
+// Không đụng tới gì khác: các tài khoản cũ khác giữ nguyên (login() giải thích cách xử lý chúng).
 function repairDemoAdmin() {
   const users = readJSON<SavedUser[]>(STORAGE_KEYS.users);
   if (!Array.isArray(users)) return;
@@ -65,7 +136,7 @@ function repairDemoAdmin() {
     users.map((user) => {
       if (!needsRepair(user)) return user;
       const repaired = { ...user, password: demoAdmin.password };
-      delete repaired.passwordHash; // the old hash is useless now
+      delete repaired.passwordHash; // mã băm cũ giờ vô dụng
       return repaired;
     })
   );
@@ -79,7 +150,7 @@ export type StoredData = {
   currentUserId: string | null;
 };
 
-// Reads everything the website needs from storage
+// Đọc mọi thứ website cần từ storage
 export function loadStoredData(): StoredData {
   return {
     products: readJSON<Product[]>(STORAGE_KEYS.products) ?? [],
@@ -90,9 +161,9 @@ export function loadStoredData(): StoredData {
   };
 }
 
-// ---------- Logged-in user ----------
-// "Ghi nhớ đăng nhập" ticked   -> the user id is kept in localStorage (stays after closing the browser).
-// "Ghi nhớ đăng nhập" unticked -> the user id is kept in sessionStorage (only this tab, gone when the tab closes).
+// ---------- Người đang đăng nhập ----------
+// "Ghi nhớ đăng nhập" được tích   -> id người dùng được giữ trong localStorage (còn sau khi đóng trình duyệt).
+// "Ghi nhớ đăng nhập" không tích  -> id người dùng được giữ trong sessionStorage (chỉ tab này, mất khi đóng tab).
 
 export function readCurrentUserId(): string | null {
   return (
@@ -111,11 +182,11 @@ export function clearCurrentUserId() {
     window.localStorage.removeItem(STORAGE_KEYS.currentUser);
     window.sessionStorage.removeItem(STORAGE_KEYS.currentUser);
   } catch {
-    // storage blocked: nothing to clear
+    // storage bị chặn: không có gì để xóa
   }
 }
 
-// A short unique id for new records, e.g. "u-lx3k9a-4f2b"
+// Một id ngắn, duy nhất cho các bản ghi mới, ví dụ "u-lx3k9a-4f2b"
 export function createId(prefix: string) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 }

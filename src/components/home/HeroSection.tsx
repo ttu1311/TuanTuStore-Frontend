@@ -2,7 +2,7 @@ import Link from "next/link";
 import ProductRoute from "@/components/home/ProductRoute";
 import { btnBase, btnPrimary, btnSecondary } from "@/components/ui/buttons";
 
-// The first screen: the headline stays in place on large screens while the route "Bắc vào Nam" runs beside it.
+// Màn hình đầu tiên: tiêu đề đứng yên trên màn hình lớn trong khi tuyến "Bắc vào Nam" chạy bên cạnh.
 export default function HeroSection() {
   return (
     <section id="top" aria-labelledby="hero-title" className="pb-16 pt-10 lg:pb-24 lg:pt-16">

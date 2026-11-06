@@ -3,14 +3,16 @@
 import { useState } from "react";
 import ProductCard from "@/components/product/ProductCard";
 import ProductCardSkeleton from "@/components/product/ProductCardSkeleton";
+import ContentSidebar from "@/components/layout/PageLayout";
 import ProductFilters from "@/components/products/ProductFilters";
 import ProductToolbar from "@/components/products/ProductToolbar";
 import { useStore } from "@/context/StoreContext";
-import { sortNewestFirst } from "@/lib/products";
+import { brandSummaries } from "@/lib/brands";
+import { groupProducts, provinceOf, sortNewestFirst } from "@/lib/products";
 import { simplifyText } from "@/lib/text";
 import type { Product, Region } from "@/types";
 
-// Add the value if it is not in the list, remove it if it is
+// Thêm giá trị nếu chưa có trong danh sách, bỏ đi nếu đã có
 function toggle<T>(list: T[], value: T) {
   return list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
 }
@@ -19,57 +21,96 @@ function matchesPrice(price: number, range: string) {
   if (range === "under-100") return price < 100000;
   if (range === "100-200") return price >= 100000 && price <= 200000;
   if (range === "over-200") return price > 200000;
-  return true; // "all"
+  return true; // "tất cả"
 }
 
-// Lower case, and the same Unicode form for every Vietnamese letter
+// Chữ thường, và cùng một dạng Unicode cho mọi chữ cái tiếng Việt
 function lowerText(text: string) {
   return text.toLowerCase().normalize("NFC");
 }
 
-// Search in the name, origin, brand and short description.
-// - Typed WITHOUT accents ("o mai", "tra"): accents are ignored everywhere, so "o mai" finds "Ô mai".
-// - Typed WITH accents ("trà"): accents must match, so "trà" finds the tea but not "Sóc Trăng".
+// Tách thành từng từ (bỏ dấu câu)
+function splitWords(text: string) {
+  return text.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+}
+
+// Các từ liền nhau của `words` có khớp từ khóa không? Từ cuối của từ khóa được phép chưa gõ xong.
+function matchesWords(words: string[], termWords: string[]) {
+  return words.some((_, start) =>
+    termWords.every((termWord, i) => {
+      const word = words[start + i];
+      if (word === undefined) return false;
+      return i === termWords.length - 1 ? word.startsWith(termWord) : word === termWord;
+    })
+  );
+}
+
+// Tìm theo TỪ NGUYÊN VẸN (không phải chuỗi con), từ khóa nhiều từ phải khớp các từ liền nhau.
+// - Tên, xuất xứ, thương hiệu: bỏ qua dấu, nên "o mai" tìm ra "Ô mai", "ca mau" tìm ra "Cà Mau".
+// - Mô tả ngắn: dấu phải khớp. Nếu bỏ dấu thì "cua" khớp nhầm "của" và "cửa" ("vùng cửa biển"),
+//   nên gõ không dấu sẽ không tìm trong mô tả. Gõ có dấu ("trà", "cửa") thì có.
 function matchesSearch(product: Product, search: string) {
   const term = lowerText(search.trim());
   if (!term) return true;
 
   const typedWithAccents = simplifyText(term) !== term;
-  const fields = [product.name, product.origin, product.brand, product.shortDescription];
-  return fields.some((text) =>
-    typedWithAccents ? lowerText(text).includes(term) : simplifyText(text).includes(simplifyText(term))
-  );
+
+  const plainTerm = splitWords(simplifyText(term));
+  if (plainTerm.length === 0) return true;
+  const plainFields = [product.name, product.origin, product.brand];
+  if (plainFields.some((text) => matchesWords(splitWords(simplifyText(text)), plainTerm))) return true;
+
+  return typedWithAccents && matchesWords(splitWords(lowerText(product.shortDescription)), splitWords(term));
 }
 
 type ProductListingProps = {
-  initialSearch?: string; // from the header search box: /san-pham?q=...
-  initialRegion?: Region; // from the region cards on the homepage: /san-pham?region=bac
+  initialSearch?: string; // từ ô tìm kiếm ở header: /san-pham?q=...
+  initialRegion?: Region; // từ các thẻ vùng miền ở trang chủ: /san-pham?region=bac
+  initialProvince?: string; // từ bản đồ ở trang chủ: /san-pham?province=Cà Mau
+  initialBrand?: string; // từ phần "Về thương hiệu" ở trang chi tiết: /san-pham?brand=Hồng Lam
 };
 
-// Holds the search / filter / sort state and shows the filtered products from localStorage.
-export default function ProductListing({ initialSearch = "", initialRegion }: ProductListingProps) {
+// Giữ state tìm kiếm / lọc / sắp xếp và hiển thị các sản phẩm đã lọc từ localStorage.
+export default function ProductListing({
+  initialSearch = "",
+  initialRegion,
+  initialProvince = "",
+  initialBrand = "",
+}: ProductListingProps) {
   const { isReady, products } = useStore();
   const [search, setSearch] = useState(initialSearch);
   const [regions, setRegions] = useState<Region[]>(initialRegion ? [initialRegion] : []);
-  const [brands, setBrands] = useState<string[]>([]);
+  const [brands, setBrands] = useState<string[]>(initialBrand ? [initialBrand] : []);
+  const [provinces, setProvinces] = useState<string[]>(initialProvince ? [initialProvince] : []);
   const [price, setPrice] = useState("all");
   const [sort, setSort] = useState("newest");
 
-  // Brand checkboxes: every brand found in the products, A to Z
-  const brandOptions = Array.from(new Set(products.map((product) => product.brand))).sort((a, b) =>
-    a.localeCompare(b, "vi")
-  );
+  // Các ô chọn thương hiệu: mọi thương hiệu đang có sản phẩm, kèm số sản phẩm và tên các sản phẩm đó, xếp A đến Z
+  const brandOptions = brandSummaries(products);
 
-  // 1. Filter. An empty region/brand list means "no filter".
+  // Các ô chọn tỉnh kèm số sản phẩm của tỉnh đó, xếp A đến Z
+  const provinceOptions = groupProducts(products, (product) => provinceOf(product.origin)).map(({ name, items }) => ({
+    name,
+    count: items.length,
+  }));
+
+  // Tên tỉnh trên địa chỉ không có trong dữ liệu (gõ sai, hoặc sản phẩm đã bị xóa) thì bỏ qua, để không lọc ra rỗng mà không thấy ô nào được tích
+  const activeProvinces = isReady ? provinces.filter((province) => provinceOptions.some((option) => option.name === province)) : provinces;
+
+  // Tên thương hiệu trên địa chỉ không có trong dữ liệu thì bỏ qua, giống như tỉnh ở trên
+  const activeBrands = isReady ? brands.filter((brand) => brandOptions.some((option) => option.name === brand)) : brands;
+
+  // 1. Lọc. Danh sách vùng/thương hiệu rỗng nghĩa là "không lọc".
   const filtered = products.filter(
     (product) =>
       matchesSearch(product, search) &&
       (regions.length === 0 || regions.includes(product.region)) &&
-      (brands.length === 0 || brands.includes(product.brand)) &&
+      (activeBrands.length === 0 || activeBrands.includes(product.brand)) &&
+      (activeProvinces.length === 0 || activeProvinces.includes(provinceOf(product.origin))) &&
       matchesPrice(product.price, price)
   );
 
-  // 2. Sort
+  // 2. Sắp xếp
   let visible = sortNewestFirst(filtered);
   if (sort === "price-asc") visible = [...filtered].sort((a, b) => a.price - b.price);
   if (sort === "price-desc") visible = [...filtered].sort((a, b) => b.price - a.price);
@@ -78,22 +119,33 @@ export default function ProductListing({ initialSearch = "", initialRegion }: Pr
     setSearch("");
     setRegions([]);
     setBrands([]);
+    setProvinces([]);
     setPrice("all");
   }
 
   return (
-    <div className="grid items-start gap-8 lg:grid-cols-[260px_1fr]">
-      <ProductFilters
-        regions={regions}
-        brandOptions={brandOptions}
-        brands={brands}
-        price={price}
-        onToggleRegion={(region) => setRegions(toggle(regions, region))}
-        onToggleBrand={(brand) => setBrands(toggle(brands, brand))}
-        onPriceChange={setPrice}
-        onReset={resetFilters}
-      />
-
+    // Nội dung: thanh công cụ và các sản phẩm. Sidebar (phải): các bộ lọc.
+    // Trên điện thoại, các bộ lọc nằm PHÍA TRÊN sản phẩm, gập lại sau nút "Bộ lọc".
+    <ContentSidebar
+      sidebarLabel="Bộ lọc sản phẩm"
+      sidebarFirst
+      sticky
+      sidebar={
+        <ProductFilters
+          regions={regions}
+          brandOptions={brandOptions}
+          brands={activeBrands}
+          provinceOptions={provinceOptions}
+          provinces={activeProvinces}
+          price={price}
+          onToggleRegion={(region) => setRegions(toggle(regions, region))}
+          onToggleBrand={(brand) => setBrands(toggle(brands, brand))}
+          onToggleProvince={(province) => setProvinces(toggle(provinces, province))}
+          onPriceChange={setPrice}
+          onReset={resetFilters}
+        />
+      }
+    >
       <section aria-label="Danh sách sản phẩm">
         <ProductToolbar
           total={isReady ? visible.length : 0}
@@ -121,6 +173,6 @@ export default function ProductListing({ initialSearch = "", initialRegion }: Pr
           </div>
         )}
       </section>
-    </div>
+    </ContentSidebar>
   );
 }

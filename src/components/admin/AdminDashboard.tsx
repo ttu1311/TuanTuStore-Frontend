@@ -5,11 +5,11 @@ import { table, tableWrap, td, th } from "@/components/admin/tableStyles";
 import { useStore } from "@/context/StoreContext";
 import { formatDate, formatVND } from "@/lib/format";
 
-// "Tổng quan": every number is counted from the data in localStorage
+// "Tổng quan": mọi con số đều được đếm từ dữ liệu trong localStorage
 export default function AdminDashboard() {
   const { products, orders, users } = useStore();
 
-  // Revenue = the total of the orders that are COMPLETED
+  // Doanh thu = tổng của các đơn đã HOÀN THÀNH (COMPLETED)
   const revenue = orders
     .filter((order) => order.status === "COMPLETED")
     .reduce((sum, order) => sum + order.total, 0);

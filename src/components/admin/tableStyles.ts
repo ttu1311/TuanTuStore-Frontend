@@ -1,4 +1,4 @@
-// Shared table classes for the admin pages
+// Các class bảng dùng chung cho các trang admin
 export const tableWrap = "overflow-x-auto rounded-xl border border-line bg-white";
 export const table = "w-full min-w-[640px] border-collapse text-left text-sm";
 export const th = "whitespace-nowrap border-b border-line bg-surface px-4 py-3 font-semibold text-ink";

@@ -11,15 +11,15 @@ import { discountPercent } from "@/lib/products";
 import { regions } from "@/lib/regions";
 import { buildRoute, formatLatitude } from "@/lib/route";
 
-// The route line sits in the first 48px of each row; its centre is at 16px, and so is the centre of every stop dot.
+// Đường tuyến nằm trong 48px đầu của mỗi hàng; tâm của nó ở 16px, và tâm của mọi chấm điểm dừng cũng vậy.
 const lineClass = "absolute left-[14px] w-1";
 
-// The homepage route "Bắc vào Nam": every product is a stop, ordered from north to south.
-// Choosing a stop opens its product right there: photo, price and "Thêm vào giỏ".
+// Tuyến "Bắc vào Nam" ở trang chủ: mỗi sản phẩm là một điểm dừng, xếp từ bắc xuống nam.
+// Chọn một điểm dừng sẽ mở sản phẩm ngay tại đó: ảnh, giá và "Thêm vào giỏ".
 export default function ProductRoute() {
   const { isReady, products } = useStore();
   const stops = buildRoute(products);
-  // undefined = nothing chosen yet, so the first stop is open; null = the customer closed every stop
+  // undefined = chưa chọn gì, nên điểm dừng đầu tiên đang mở; null = khách đã đóng mọi điểm dừng
   const [chosenId, setChosenId] = useState<string | null>();
   const openId = chosenId === undefined ? stops[0]?.product.id : chosenId;
 
@@ -54,7 +54,7 @@ export default function ProductRoute() {
 
         return (
           <li key={product.id}>
-            {/* Where a new region begins, the line changes colour and the region is named */}
+            {/* Nơi một vùng mới bắt đầu, đường tuyến đổi màu và tên vùng được ghi ra */}
             {startsRegion && (
               <div className={`relative pb-2 pl-12 ${index === 0 ? "" : "pt-6"}`}>
                 <span className={`${lineClass} bottom-0 ${index === 0 ? "top-3" : "top-0"} ${region.dotClass}`} />
@@ -64,7 +64,7 @@ export default function ProductRoute() {
 
             <div className="relative pl-12">
               <span className={`${lineClass} top-0 ${isLast ? "h-[30px]" : "bottom-0"} ${region.dotClass}`} />
-              {/* The stop: a dot on the line. The open stop is larger, with a light centre. */}
+              {/* Điểm dừng: một chấm trên đường tuyến. Điểm dừng đang mở to hơn, tâm sáng màu. */}
               <span
                 aria-hidden="true"
                 className={`absolute top-[30px] flex -translate-y-1/2 items-center justify-center rounded-full ring-4 ring-paper transition-all duration-200 ${region.dotClass} ${
@@ -106,7 +106,7 @@ export default function ProductRoute() {
                 </button>
               </h3>
 
-              {/* Opens by growing its height. `invisible` keeps a closed stop out of the keyboard order. */}
+              {/* Mở bằng cách tăng dần chiều cao. `invisible` giữ điểm dừng đang đóng ra khỏi thứ tự tab bàn phím. */}
               <div
                 id={panelId}
                 className={`grid transition-[grid-template-rows,visibility] duration-300 ease-out ${

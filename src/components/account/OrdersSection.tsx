@@ -7,13 +7,13 @@ import { btnBase, btnPrimary } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
 import { formatDate, formatVND } from "@/lib/format";
 
-// "Đơn hàng của tôi": only the orders of the logged-in user, newest first
+// "Đơn hàng của tôi": chỉ gồm đơn của người đang đăng nhập, mới nhất lên đầu
 export default function OrdersSection({ userId }: { userId: string }) {
   const { orders } = useStore();
   const myOrders = orders
     .filter((order) => order.userId === userId)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  // Code of the order whose details are open
+  // Mã của đơn hàng đang mở chi tiết
   const [openCode, setOpenCode] = useState<string | null>(null);
 
   return (

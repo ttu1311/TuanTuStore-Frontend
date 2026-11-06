@@ -1,23 +1,34 @@
-// Data types of TuanTuStore.
-// Every list below is saved in the browser's localStorage (see src/lib/storage.ts).
+// Các kiểu dữ liệu của TuanTuStore.
+// Mọi danh sách bên dưới đều được lưu trong localStorage của trình duyệt (xem src/lib/storage.ts).
 
 export type Region = "bac" | "trung" | "nam";
 
 export interface Product {
-  id: string; // e.g. "tra-thai-nguyen", used in the URL /san-pham/tra-thai-nguyen. Never changes.
+  id: string; // ví dụ "tra-thai-nguyen", dùng trong URL /san-pham/tra-thai-nguyen. Không bao giờ đổi.
   name: string;
-  shortDescription: string; // shown next to the price on the detail page
-  description: string; // paragraphs separated by a blank line
-  price: number; // in VND (whole number)
-  oldPrice?: number; // optional: shows a strike-through price and a discount
-  image: string; // path inside /public, e.g. "/images/p-o-mai.jpg"
+  shortDescription: string; // hiển thị cạnh giá ở trang chi tiết
+  description: string; // các đoạn văn cách nhau bằng một dòng trống
+  price: number; // tính bằng VND (số nguyên)
+  oldPrice?: number; // tùy chọn: hiện giá gạch ngang và phần giảm giá
+  image: string; // đường dẫn trong /public, ví dụ "/images/p-o-mai.jpg"
   region: Region;
   brand: string;
-  origin: string; // where it is made
-  pack: string; // e.g. "Gói 200g"
-  isFeatured: boolean; // shown in "Sản phẩm nổi bật" on the homepage
-  rank?: number; // best-seller position: 1 = "Top 1". Empty for other products.
-  createdAt: string; // ISO date, used by the "Mới nhất" sort
+  origin: string; // nơi sản xuất
+  pack: string; // ví dụ "Gói 200g"
+  isFeatured: boolean; // hiển thị trong "Sản phẩm nổi bật" ở trang chủ
+  rank?: number; // vị trí bán chạy: 1 = "Top 1". Để trống với sản phẩm khác.
+  createdAt: string; // ngày ISO, dùng cho cách sắp xếp "Mới nhất"
+}
+
+// Loại thương hiệu, để khách biết "thương hiệu" này thực chất là gì
+export type BrandKind = "Thương hiệu" | "Nhãn hiệu tập thể" | "Chỉ dẫn địa lý" | "Nghề truyền thống";
+
+// Thông tin về một thương hiệu (xem src/data/brands.ts). Sản phẩm chỉ giữ TÊN thương hiệu (Product.brand).
+export interface Brand {
+  name: string; // trùng với Product.brand
+  kind: BrandKind;
+  place: string; // nơi gắn với thương hiệu, ví dụ "Năm Căn, Cà Mau"
+  about: string; // vài câu giới thiệu
 }
 
 export type Role = "USER" | "ADMIN";
@@ -25,16 +36,16 @@ export type Role = "USER" | "ADMIN";
 export interface User {
   id: string;
   name: string;
-  email: string; // always stored in lower case, unique
-  phone: string; // "" when unknown
-  // PLAIN TEXT, on purpose: this is a front-end demo with no server, so a password cannot be protected anyway.
-  // See src/lib/password.ts and "Demo accounts" in README.md. Never use a real password here.
+  email: string; // luôn lưu bằng chữ thường, duy nhất
+  phone: string; // "" khi chưa biết
+  // CHỮ THƯỜNG, có chủ đích: đây là bản demo front-end không có server, nên mật khẩu vốn không thể được bảo vệ.
+  // Xem src/lib/password.ts và "Demo accounts" trong README.md. Đừng bao giờ dùng mật khẩu thật ở đây.
   password: string;
   role: Role;
-  createdAt: string; // ISO date
+  createdAt: string; // ngày ISO
 }
 
-// The cart only stores which product and how many. Name, price and image come from the product list.
+// Giỏ hàng chỉ lưu sản phẩm nào và bao nhiêu. Tên, giá và ảnh lấy từ danh sách sản phẩm.
 export interface CartItem {
   productId: string;
   quantity: number;
@@ -44,18 +55,18 @@ export type OrderStatus = "PENDING" | "CONFIRMED" | "SHIPPING" | "COMPLETED";
 
 export type PaymentMethod = "COD" | "BANK_TRANSFER";
 
-// A copy of the product at the moment of purchase,
-// so later changes to the product (name, price) never change an old order.
+// Bản sao của sản phẩm tại thời điểm mua,
+// để thay đổi sản phẩm về sau (tên, giá) không bao giờ làm đổi một đơn hàng cũ.
 export interface OrderItem {
   productId: string;
   name: string;
-  price: number; // unit price at purchase time
+  price: number; // đơn giá tại thời điểm mua
   quantity: number;
 }
 
 export interface Order {
-  code: string; // "TT-000001": unique, shown to customers
-  userId: string | null; // null = guest checkout
+  code: string; // "TT-000001": duy nhất, hiển thị cho khách hàng
+  userId: string | null; // null = khách chưa đăng nhập
   customerName: string;
   phone: string;
   email: string;
@@ -63,7 +74,7 @@ export interface Order {
   district: string;
   ward: string;
   address: string;
-  note: string; // "" when the customer wrote nothing
+  note: string; // "" khi khách không viết gì
   paymentMethod: PaymentMethod;
   status: OrderStatus;
   items: OrderItem[];
@@ -71,5 +82,5 @@ export interface Order {
   shippingFee: number;
   discount: number;
   total: number;
-  createdAt: string; // ISO date
+  createdAt: string; // ngày ISO
 }

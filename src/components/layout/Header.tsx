@@ -1,39 +1,25 @@
 import Form from "next/form";
-import Link from "next/link";
 import HeaderActions from "@/components/layout/HeaderActions";
+import SameRouteLink from "@/components/layout/SameRouteLink";
 import Icon from "@/components/ui/Icon";
-import { regions } from "@/lib/regions";
-import type { Region } from "@/types";
+import MainNav from "@/components/layout/MainNav";
 
-// Every link starts with "/" so it works from any page.
-// "/#id" means: go to the homepage, then scroll to the section with that id.
-// The region items carry the dot colour of their region, as on the homepage route.
-const navItems: { label: string; href: string; region?: Region }[] = [
-  { label: "Trang chủ", href: "/" },
-  { label: "Sản phẩm", href: "/san-pham" },
-  { label: "Miền Bắc", href: "/#mien-bac", region: "bac" },
-  { label: "Miền Trung", href: "/#mien-trung", region: "trung" },
-  { label: "Miền Nam", href: "/#mien-nam", region: "nam" },
-  { label: "Giới thiệu", href: "/#gioi-thieu" },
-  { label: "Liên hệ", href: "/#lien-he" },
-];
-
-// currentPath: the route of the page that shows this header, used to highlight its menu item.
-// Each page passes its own path, e.g. <Header currentPath="/san-pham" />.
-export default function Header({ currentPath = "/" }: { currentPath?: string }) {
+// Phần đầu của mọi trang cửa hàng: logo, tìm kiếm, biểu tượng tài khoản + giỏ hàng, và menu chính.
+// Mục menu nào sáng lên do MainNav quyết định, dựa vào địa chỉ của trang.
+export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-paper/[0.97]">
       <div className="mx-auto flex w-full max-w-container flex-wrap items-center gap-3 px-4 py-3 md:px-6 lg:h-[76px] lg:flex-nowrap lg:gap-8 lg:px-8 lg:py-0">
-        <Link
+        <SameRouteLink
           href="/"
           aria-label="TuanTuStore — Trang chủ"
           className="whitespace-nowrap font-display text-[32px] font-bold leading-none text-ink"
         >
           TuanTuStore
-        </Link>
+        </SameRouteLink>
 
-        {/* next/form: pressing Enter opens /san-pham?q=<search term> without reloading the page.
-            The listing page reads "q" and starts with that term in its search field. */}
+        {/* next/form: nhấn Enter mở /san-pham?q=<từ khóa> mà không tải lại trang.
+           Trang danh sách đọc "q" và bắt đầu với từ khóa đó trong ô tìm kiếm của nó. */}
         <Form
           role="search"
           action="/san-pham"
@@ -57,34 +43,7 @@ export default function Header({ currentPath = "/" }: { currentPath?: string }) 
         <HeaderActions />
       </div>
 
-      <nav aria-label="Điều hướng chính" className="border-t border-line">
-        <div className="mx-auto w-full max-w-container px-4 md:px-6 lg:px-8">
-          <ul className="flex h-[52px] items-stretch gap-6 overflow-x-auto lg:gap-8 lg:overflow-visible">
-            {navItems.map((item) => {
-              const isActive = item.href === currentPath;
-
-              return (
-                <li key={item.label} className="flex">
-                  <Link
-                    href={item.href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={`flex h-full items-center gap-2 whitespace-nowrap border-b-2 text-base transition-colors duration-200 ${
-                      isActive
-                        ? "border-primary font-semibold text-primary"
-                        : "border-transparent font-medium text-ink-muted hover:text-ink"
-                    }`}
-                  >
-                    {item.region && (
-                      <span className={`h-2 w-2 rounded-full ${regions[item.region].dotClass}`} aria-hidden="true" />
-                    )}
-                    {item.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </nav>
+      <MainNav />
     </header>
   );
 }

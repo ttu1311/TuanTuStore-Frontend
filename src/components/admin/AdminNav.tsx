@@ -13,7 +13,7 @@ const items = [
 
 const itemStyle = "flex min-h-10 items-center whitespace-nowrap rounded-lg px-3 text-sm transition-colors duration-200";
 
-// Sidebar menu of the Admin pages (a horizontal, scrollable bar on small screens)
+// Menu bên của các trang Admin (thanh ngang có thể cuộn trên màn hình nhỏ)
 export default function AdminNav() {
   const pathname = usePathname();
   const { logout } = useStore();
@@ -22,7 +22,7 @@ export default function AdminNav() {
     <nav aria-label="Quản trị" className="px-3 pb-3 lg:pb-0">
       <ul className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
         {items.map((item) => {
-          // "/admin" must match exactly, otherwise it would be active on every admin page
+          // "/admin" phải khớp chính xác, nếu không nó sẽ sáng ở mọi trang admin
           const isActive = item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
           return (
             <li key={item.href} className="shrink-0">
@@ -46,7 +46,7 @@ export default function AdminNav() {
           </Link>
         </li>
         <li className="shrink-0">
-          {/* Forgets the logged-in Admin; AdminShell then opens /dang-nhap */}
+          {/* Quên Admin đang đăng nhập; AdminShell sẽ mở /dang-nhap */}
           <button
             type="button"
             onClick={logout}

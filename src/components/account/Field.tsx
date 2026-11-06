@@ -1,13 +1,13 @@
-// One labelled input with its error message. Used by the account forms.
+// Một ô nhập có nhãn kèm thông báo lỗi. Dùng cho các form tài khoản.
 type FieldProps = {
   id: string;
   label: string;
   value: string;
-  onChange?: (value: string) => void; // not needed for a read-only field
+  onChange?: (value: string) => void; // không cần cho ô chỉ đọc
   error?: string;
   type?: string;
   autoComplete?: string;
-  readOnly?: boolean; // shown but cannot be changed (muted background)
+  readOnly?: boolean; // hiển thị nhưng không đổi được (nền mờ)
 };
 
 const fieldStyle =

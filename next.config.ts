@@ -1,20 +1,20 @@
 import type { NextConfig } from "next";
 
-// Addresses that may open the DEVELOPMENT server (`npm run dev`) besides http://localhost.
-// A phone on the same Wi-Fi opens it by the computer's LAN address, e.g. http://192.168.1.20:3000.
-// Without this list Next.js blocks such an address in development and the page never finishes loading
-// (it stays on "Đang tải…"). `npm run build` + `npm run start` do not need it.
+// Các địa chỉ được phép mở server PHÁT TRIỂN (`npm run dev`), ngoài http://localhost.
+// Điện thoại cùng Wi-Fi mở web bằng địa chỉ mạng nội bộ của máy tính, ví dụ http://192.168.1.20:3000.
+// Nếu thiếu danh sách này, Next.js chặn các địa chỉ đó khi chạy dev và trang không bao giờ tải xong
+// (cứ hiện "Đang tải…"). `npm run build` + `npm run start` thì không cần.
 const privateNetworkAddresses = [
-  "192.168.*.*", // most home routers and phone hotspots
-  "10.*.*.*", // many campus and company networks
+  "192.168.*.*", // hầu hết router gia đình và điểm phát Wi-Fi từ điện thoại
+  "10.*.*.*", // nhiều mạng trường học và công ty
   ...Array.from({ length: 16 }, (_, i) => `172.${16 + i}.*.*`), // 172.16.0.0 – 172.31.255.255
-  "*.local", // computer names such as my-mac.local
+  "*.local", // tên máy tính dạng my-mac.local
 ];
 
 const nextConfig: NextConfig = {
-  // Put the page <title> in the first HTML (instead of streaming it in later).
-  // The product page then sets the real product name in the tab after reading localStorage,
-  // and nothing overwrites it afterwards.
+  // Đưa <title> của trang vào HTML đầu tiên (thay vì gửi bổ sung sau).
+  // Trang sản phẩm sẽ đặt tên sản phẩm thật lên tab sau khi đọc localStorage,
+  // và về sau không có gì ghi đè lên nó.
   htmlLimitedBots: /.*/,
   allowedDevOrigins: privateNetworkAddresses,
 };

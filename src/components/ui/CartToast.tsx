@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useEffect } from "react";
 import Icon from "@/components/ui/Icon";
 
-// A small notice at the bottom-right of the screen: "Đã thêm ... vào giỏ hàng" + a link to the cart.
-// `id` changes on every add, so adding the same product again restarts the 3 seconds.
+// Một thông báo nhỏ ở góc dưới bên phải màn hình: "Đã thêm ... vào giỏ hàng" + liên kết tới giỏ hàng.
+// `id` đổi mỗi lần thêm, nên thêm lại cùng một sản phẩm sẽ tính lại 3 giây từ đầu.
 export default function CartToast({
   toast,
   onClose,

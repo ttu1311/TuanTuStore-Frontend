@@ -9,7 +9,7 @@ import { useStore } from "@/context/StoreContext";
 import { formatVND } from "@/lib/format";
 import { sortNewestFirst } from "@/lib/products";
 
-// Product list of the Admin, newest first, with "Sửa" and "Xóa" on every row
+// Danh sách sản phẩm của Admin, mới nhất lên đầu, mỗi dòng có "Sửa" và "Xóa"
 export default function AdminProductTable() {
   const { products } = useStore();
 

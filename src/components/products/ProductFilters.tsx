@@ -3,10 +3,11 @@
 import { useState } from "react";
 import FilterGroup from "@/components/products/FilterGroup";
 import { btnBase, btnGhost, btnSmall } from "@/components/ui/buttons";
+import type { BrandSummary } from "@/lib/brands";
 import { regions as allRegions } from "@/lib/regions";
 import type { Region } from "@/types";
 
-// Price ranges (the matching rule is in ProductListing)
+// Các mức giá (quy tắc khớp nằm trong ProductListing)
 const priceRanges = [
   { value: "all", label: "Tất cả mức giá" },
   { value: "under-100", label: "Dưới 100.000₫" },
@@ -18,34 +19,41 @@ const optionLabel = "flex min-h-11 cursor-pointer items-center gap-3 text-ink";
 const optionInput = "h-5 w-5 shrink-0 cursor-pointer accent-primary";
 
 type ProductFiltersProps = {
-  brandOptions: string[]; // all brands that can be ticked
-  regions: Region[]; // ticked regions
-  brands: string[]; // ticked brands
-  price: string; // selected price range value
+  brandOptions: BrandSummary[]; // mọi thương hiệu đang có sản phẩm, kèm số sản phẩm và tên các sản phẩm
+  regions: Region[]; // các vùng đã tích
+  brands: string[]; // các thương hiệu đã tích
+  provinceOptions: { name: string; count: number }[]; // mọi tỉnh có sản phẩm, kèm số sản phẩm
+  provinces: string[]; // các tỉnh đã tích
+  price: string; // giá trị mức giá đang chọn
   onToggleRegion: (region: Region) => void;
   onToggleBrand: (brand: string) => void;
+  onToggleProvince: (province: string) => void;
   onPriceChange: (price: string) => void;
   onReset: () => void;
 };
 
-// Sidebar filters. The state lives in ProductListing; this component only shows it.
+// Các bộ lọc, hiển thị trong Sidebar của danh sách sản phẩm (ContentSidebar cung cấp thẻ <aside>).
+// State nằm ở ProductListing; component này chỉ hiển thị nó.
 export default function ProductFilters({
   brandOptions,
   regions,
   brands,
+  provinceOptions,
+  provinces,
   price,
   onToggleRegion,
   onToggleBrand,
+  onToggleProvince,
   onPriceChange,
   onReset,
 }: ProductFiltersProps) {
-  // On phones the filters are folded away behind the "Bộ lọc" button, so the products are not pushed far down.
-  // From the lg size up the filters are always open (see the lg: classes below).
+  // Trên điện thoại, các bộ lọc được gập lại sau nút "Bộ lọc", để sản phẩm không bị đẩy xuống quá xa.
+  // Từ cỡ lg trở lên các bộ lọc luôn mở (xem các class lg: bên dưới).
   const [isOpen, setIsOpen] = useState(false);
-  const activeCount = regions.length + brands.length + (price === "all" ? 0 : 1);
+  const activeCount = regions.length + brands.length + provinces.length + (price === "all" ? 0 : 1);
 
   return (
-    <aside aria-label="Bộ lọc sản phẩm">
+    <div>
       <button
         type="button"
         aria-expanded={isOpen}
@@ -63,7 +71,7 @@ export default function ProductFilters({
         id="product-filters"
         className={`${isOpen ? "mt-3" : "hidden"} rounded-xl border border-line bg-white p-6 lg:mt-0 lg:block`}
         onReset={(event) => {
-          event.preventDefault(); // we reset our own state instead of the browser's
+          event.preventDefault(); // ta reset state của riêng mình thay vì của trình duyệt
           onReset();
         }}
       >
@@ -83,18 +91,42 @@ export default function ProductFilters({
           ))}
         </FilterGroup>
 
+        <FilterGroup title="Tỉnh / thành">
+          {provinceOptions.map((province) => (
+            <label key={province.name} className={optionLabel}>
+              <input
+                type="checkbox"
+                name="province"
+                value={province.name}
+                checked={provinces.includes(province.name)}
+                onChange={() => onToggleProvince(province.name)}
+                className={optionInput}
+              />
+              <span>
+                {province.name} <span className="text-ink-muted">({province.count})</span>
+              </span>
+            </label>
+          ))}
+        </FilterGroup>
+
         <FilterGroup title="Thương hiệu">
           {brandOptions.map((brand) => (
-            <label key={brand} className={optionLabel}>
+            // Dòng nhỏ bên dưới cho biết thương hiệu này làm những sản phẩm nào
+            <label key={brand.name} className="flex min-h-11 cursor-pointer items-center gap-3 py-1 text-ink">
               <input
                 type="checkbox"
                 name="brand"
-                value={brand}
-                checked={brands.includes(brand)}
-                onChange={() => onToggleBrand(brand)}
+                value={brand.name}
+                checked={brands.includes(brand.name)}
+                onChange={() => onToggleBrand(brand.name)}
                 className={optionInput}
               />
-              {brand}
+              <span className="min-w-0">
+                <span className="block">
+                  {brand.name} <span className="text-ink-muted">({brand.count})</span>
+                </span>
+                <span className="block text-sm leading-snug text-ink-muted">{brand.productNames}</span>
+              </span>
             </label>
           ))}
         </FilterGroup>
@@ -119,6 +151,6 @@ export default function ProductFilters({
           Xóa bộ lọc
         </button>
       </form>
-    </aside>
+    </div>
   );
 }

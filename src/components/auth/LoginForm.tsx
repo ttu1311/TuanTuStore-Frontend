@@ -15,8 +15,8 @@ const fieldStyle =
 const fieldOk = "border-line focus:border-primary focus:ring-primary-soft";
 const fieldBad = "border-sale focus:border-sale focus:ring-sale/20";
 
-// One login form for customers AND the Admin.
-// After login: ADMIN -> /admin, USER -> /tai-khoan (the effect below does the redirect).
+// Một form đăng nhập cho khách hàng VÀ Admin.
+// Sau khi đăng nhập: ADMIN -> /admin, USER -> /tai-khoan (effect bên dưới thực hiện việc chuyển trang).
 export default function LoginForm() {
   const { isReady, currentUser, login } = useStore();
   const router = useRouter();
@@ -24,9 +24,9 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
-  const [loginError, setLoginError] = useState(""); // e.g. "Email hoặc mật khẩu không đúng"
+  const [loginError, setLoginError] = useState(""); // ví dụ "Email hoặc mật khẩu không đúng"
 
-  // Already logged in (or just logged in): go to the right page
+  // Đã đăng nhập (hoặc vừa đăng nhập xong): chuyển tới đúng trang
   useEffect(() => {
     if (isReady && currentUser) router.replace(currentUser.role === "ADMIN" ? "/admin" : "/tai-khoan");
   }, [isReady, currentUser, router]);
@@ -46,7 +46,7 @@ export default function LoginForm() {
     if (newErrors.email) return document.getElementById("email")?.focus();
     if (newErrors.password) return document.getElementById("password")?.focus();
 
-    // The password is checked against the accounts saved in localStorage
+    // Mật khẩu được kiểm tra với các tài khoản lưu trong localStorage
     const result = login(email, password, remember);
     if (!result.ok) {
       setLoginError(result.message);
@@ -105,7 +105,7 @@ export default function LoginForm() {
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        {/* Ticked: stay logged in after closing the browser (localStorage). Unticked: only this tab (sessionStorage). */}
+        {/* Được tích: giữ đăng nhập sau khi đóng trình duyệt (localStorage). Không tích: chỉ trong tab này (sessionStorage). */}
         <label className="flex min-h-11 cursor-pointer items-center gap-3 text-ink">
           <input
             type="checkbox"

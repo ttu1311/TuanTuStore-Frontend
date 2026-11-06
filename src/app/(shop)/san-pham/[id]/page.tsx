@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import ProductDetailView from "@/components/product/ProductDetailView";
 
-// The real product name is set in the browser tab by ProductDetailView, once localStorage has been read
+// Tên sản phẩm thật được ProductDetailView đặt lên tab trình duyệt, sau khi đã đọc xong localStorage
 export const metadata: Metadata = { title: "Chi tiết sản phẩm — TuanTuStore" };
 
 type ProductDetailPageProps = {
@@ -13,13 +11,5 @@ type ProductDetailPageProps = {
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { id } = await params;
 
-  return (
-    <>
-      <Header currentPath="/san-pham" />
-      <main id="main-content">
-        <ProductDetailView id={id} />
-      </main>
-      <Footer />
-    </>
-  );
+  return <ProductDetailView id={id} />;
 }

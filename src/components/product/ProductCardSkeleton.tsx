@@ -1,5 +1,5 @@
-// A grey placeholder with the size of a ProductCard, shown while the products load from localStorage.
-// It keeps the page from jumping when the real cards appear.
+// Khung xám giữ chỗ có kích thước bằng ProductCard, hiển thị trong lúc sản phẩm tải từ localStorage.
+// Nó giúp trang không bị giật khi các thẻ thật xuất hiện.
 export default function ProductCardSkeleton() {
   return (
     <div aria-hidden="true">

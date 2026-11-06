@@ -1,5 +1,4 @@
 import Icon, { type IconName } from "@/components/ui/Icon";
-import SectionHeader from "@/components/ui/SectionHeader";
 
 const benefits: { icon: IconName; title: string; text: string }[] = [
   {
@@ -24,21 +23,24 @@ const benefits: { icon: IconName; title: string; text: string }[] = [
   },
 ];
 
+// "Mua đặc sản an tâm": thông tin hữu ích ở Sidebar trang chủ (mục menu "Giới thiệu" mở tới đây)
 export default function TrustSection() {
   return (
-    <section id="gioi-thieu" aria-labelledby="trust-title" className="border-t border-line py-16 lg:py-24">
-      <div className="mx-auto w-full max-w-container px-4 md:px-6 lg:px-8">
-        <SectionHeader id="trust-title" title="Mua đặc sản an tâm" />
-        <ul className="grid grid-cols-1 gap-x-8 gap-y-10 min-[480px]:grid-cols-2 lg:grid-cols-4">
-          {benefits.map((item) => (
-            <li key={item.title}>
-              <Icon name={item.icon} size={28} className="text-primary" />
-              <h3 className="mt-4 text-lg font-semibold leading-snug">{item.title}</h3>
-              <p className="mt-2 max-w-[32ch] text-ink-muted">{item.text}</p>
-            </li>
-          ))}
-        </ul>
-      </div>
+    <section id="gioi-thieu" aria-labelledby="trust-title" className="rounded-lg bg-surface p-5">
+      <h2 id="trust-title" className="font-display text-2xl font-bold leading-none text-ink">
+        Mua đặc sản an tâm
+      </h2>
+      <ul className="mt-5 space-y-5">
+        {benefits.map((item) => (
+          <li key={item.title} className="flex gap-3">
+            <Icon name={item.icon} size={22} className="mt-0.5 text-primary" />
+            <div>
+              <h3 className="font-semibold leading-snug text-ink">{item.title}</h3>
+              <p className="mt-1 text-sm text-ink-muted">{item.text}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
