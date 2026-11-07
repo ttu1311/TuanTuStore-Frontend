@@ -7,7 +7,11 @@ import ContentSidebar, { PageContainer } from "@/components/layout/PageLayout";
 import ProductMiniCard from "@/components/product/ProductMiniCard";
 import RecentlyViewed from "@/components/product/RecentlyViewed";
 import ProductPurchase from "@/components/product/ProductPurchase";
+import ProductStory from "@/components/product/ProductStory";
+import { findOccasion } from "@/data/occasions";
 import RegionBadge from "@/components/product/RegionBadge";
+import ProductRatingLine from "@/components/reviews/ProductRatingLine";
+import ProductReviews from "@/components/reviews/ProductReviews";
 import Icon from "@/components/ui/Icon";
 import LoadingState from "@/components/ui/LoadingState";
 import NotFoundMessage from "@/components/ui/NotFoundMessage";
@@ -52,6 +56,8 @@ export default function ProductDetailView({ id }: { id: string }) {
   const relatedProducts = getRelatedProducts(products, product);
   // Thương hiệu của sản phẩm: thông tin từ danh mục, và các sản phẩm khác cùng thương hiệu
   const brandInfo = findBrand(product.brand);
+  // Dịp tặng của sản phẩm, theo thứ tự trong src/data/occasions.ts; id lạ (đã bị bỏ) thì bỏ qua
+  const productOccasions = (product.occasions ?? []).flatMap((id) => findOccasion(id) ?? []);
   const sameBrandProducts = products.filter((item) => item.brand === product.brand && item.id !== product.id);
   const brandHref = `/san-pham?brand=${encodeURIComponent(product.brand)}`;
 
@@ -128,6 +134,9 @@ export default function ProductDetailView({ id }: { id: string }) {
             >
               {product.name}
             </h1>
+            <div className="mt-2">
+              <ProductRatingLine productId={product.id} href="#danh-gia" />
+            </div>
 
             <dl className="mt-4 space-y-1 text-ink-muted">
               <div className="flex gap-2">
@@ -140,6 +149,22 @@ export default function ProductDetailView({ id }: { id: string }) {
                 <dd>{product.origin}</dd>
               </div>
             </dl>
+
+            {/* Dịp tặng phù hợp: bấm để xem các món khác cùng dịp */}
+            {productOccasions.length > 0 && (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="text-sm text-ink-muted">Hợp làm:</span>
+                {productOccasions.map((occasion) => (
+                  <Link
+                    key={occasion.id}
+                    href={`/san-pham?dip=${occasion.id}`}
+                    className="inline-flex min-h-8 items-center rounded-full bg-gold-soft px-3 text-sm font-medium text-gold-ink transition-colors duration-200 hover:bg-gold-light/40"
+                  >
+                    {occasion.label}
+                  </Link>
+                ))}
+              </div>
+            )}
 
             <div className="mt-6 flex flex-wrap items-baseline gap-3">
               <span className="whitespace-nowrap text-3xl font-bold text-primary">{formatVND(product.price)}</span>
@@ -173,6 +198,8 @@ export default function ProductDetailView({ id }: { id: string }) {
               ))}
             </div>
           </div>
+
+          <ProductStory story={product.story} />
 
           <div>
             <h2 className="font-display text-2xl font-semibold text-ink">Về thương hiệu</h2>
@@ -232,6 +259,8 @@ export default function ProductDetailView({ id }: { id: string }) {
               ))}
             </dl>
           </div>
+
+          <ProductReviews productId={product.id} />
         </section>
       </ContentSidebar>
     </PageContainer>

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 type ProductListingPageProps = {
-  searchParams: Promise<{ q?: string | string[]; region?: string | string[]; province?: string | string[]; brand?: string | string[] }>;
+  searchParams: Promise<{ q?: string | string[]; region?: string | string[]; province?: string | string[]; brand?: string | string[]; dip?: string | string[] }>;
 };
 
 // Giá trị đầu tiên khi một tham số truy vấn xuất hiện nhiều lần
@@ -27,6 +27,8 @@ export default async function ProductListingPage({ searchParams }: ProductListin
   const initialProvince = firstValue(params.province).trim().slice(0, 100);
   // Trang chi tiết sản phẩm mở /san-pham?brand=Hồng Lam để xem mọi sản phẩm của thương hiệu đó
   const initialBrand = firstValue(params.brand).trim().slice(0, 100);
+  // "Chọn quà theo dịp" ở trang chủ mở /san-pham?dip=qua-tet
+  const initialOccasion = firstValue(params.dip).trim().slice(0, 50);
 
   return (
     <PageContainer>
@@ -37,11 +39,12 @@ export default async function ProductListingPage({ searchParams }: ProductListin
 
       {/* key: tìm kiếm mới từ header (một ?q= khác) làm danh sách bắt đầu lại với từ khóa mới */}
       <ProductListing
-        key={`${initialSearch}|${initialRegion ?? ""}|${initialProvince}|${initialBrand}`}
+        key={`${initialSearch}|${initialRegion ?? ""}|${initialProvince}|${initialBrand}|${initialOccasion}`}
         initialSearch={initialSearch}
         initialRegion={initialRegion}
         initialProvince={initialProvince}
         initialBrand={initialBrand}
+        initialOccasion={initialOccasion}
       />
     </PageContainer>
   );

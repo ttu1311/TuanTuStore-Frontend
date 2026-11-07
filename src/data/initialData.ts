@@ -22,6 +22,11 @@ export const caMauProducts: Product[] = [
     origin: "Năm Căn, Cà Mau",
     pack: "1kg (3–4 con)",
     isFeatured: false,
+    occasions: ["bieu-nguoi-lon", "vao-bep"],
+    story: {
+      enjoy: "Hấp với sả hoặc bia khoảng 15–20 phút tùy cỡ cua, chấm muối tiêu chanh. Cua cũng hợp để rang me, nấu lẩu hoặc nấu cháo.",
+      storage: "Cua còn sống: để nơi thoáng mát, phủ khăn ẩm, không ngâm vào nước ngọt. Nên chế biến ngay trong ngày nhận hàng.",
+    },
     createdAt: "2026-10-25T05:00:00.000Z",
   },
   {
@@ -38,6 +43,11 @@ export const caMauProducts: Product[] = [
     origin: "Rạch Gốc, Cà Mau",
     pack: "Túi 250g",
     isFeatured: false,
+    occasions: ["qua-tet", "vao-bep"],
+    story: {
+      enjoy: "Ăn cùng củ kiệu ngày Tết, nấu canh, xào rau hoặc trộn gỏi. Ngâm tôm vào nước ấm vài phút cho mềm trước khi nấu.",
+      storage: "Đựng trong hũ hoặc túi kín, để nơi khô ráo. Muốn giữ lâu thì cất ngăn mát tủ lạnh.",
+    },
     createdAt: "2026-10-25T04:00:00.000Z",
   },
   {
@@ -54,6 +64,11 @@ export const caMauProducts: Product[] = [
     origin: "Rạch Gốc, Cà Mau",
     pack: "Hũ 500g",
     isFeatured: false,
+    occasions: ["vao-bep"],
+    story: {
+      enjoy: "Bóp ba khía với tỏi, ớt, chanh và đường cho vừa vị chua ngọt, ăn cùng cơm trắng.",
+      storage: "Sau khi mở, đậy kín hũ và cất ngăn mát tủ lạnh. Dùng đũa sạch, khô khi gắp.",
+    },
     createdAt: "2026-10-25T03:00:00.000Z",
   },
   {
@@ -70,6 +85,11 @@ export const caMauProducts: Product[] = [
     origin: "U Minh Hạ, Cà Mau",
     pack: "Chai 500ml",
     isFeatured: false,
+    occasions: ["qua-tet", "bieu-nguoi-lon"],
+    story: {
+      enjoy: "Pha với nước ấm (không quá nóng), thêm chanh hoặc gừng; dùng ướp các món nướng. Không dùng mật ong cho trẻ dưới 1 tuổi.",
+      storage: "Đậy kín nắp, để ở nhiệt độ phòng, tránh nắng; không cần cất tủ lạnh. Mật ong có thể kết tinh khi trời lạnh: ngâm chai vào nước ấm để mật lỏng lại.",
+    },
     createdAt: "2026-10-25T02:00:00.000Z",
   },
   {
@@ -87,6 +107,11 @@ export const caMauProducts: Product[] = [
     origin: "Trần Văn Thời, Cà Mau",
     pack: "Túi 500g",
     isFeatured: false,
+    occasions: ["vao-bep"],
+    story: {
+      enjoy: "Chiên giòn hoặc nướng than, xé nhỏ ăn cùng cơm trắng hay làm món nhắm, chấm nước mắm me hoặc tương ớt.",
+      storage: "Để nơi khô thoáng hoặc ngăn mát tủ lạnh. Muốn giữ lâu hơn thì cho vào ngăn đông.",
+    },
     createdAt: "2026-10-25T01:00:00.000Z",
   },
 ];
@@ -110,6 +135,12 @@ export const initialProducts: Product[] = [
     origin: "Tân Cương, Thái Nguyên",
     pack: "Gói 200g",
     isFeatured: true,
+    occasions: ["qua-tet", "bieu-nguoi-lon"],
+    story: {
+      enjoy: "Tráng ấm bằng nước sôi, cho khoảng 5–8g chè, rót nước khoảng 80–90°C, đợi 1–2 phút rồi rót ra chén. Nước đầu có thể đổ đi để chè nở đều.",
+      storage: "Đựng trong hộp kín, để nơi khô ráo, tránh nắng và tránh đồ có mùi mạnh vì chè dễ hút mùi.",
+      season: "Chè được hái nhiều lứa trong năm; chè vụ xuân thường được ưa chuộng vì búp non và hương thơm.",
+    },
     createdAt: "2026-01-08T00:00:00.000Z",
   },
   {
@@ -126,6 +157,11 @@ export const initialProducts: Product[] = [
     origin: "Phố Hàng Đường, Hà Nội",
     pack: "Hộp 300g",
     isFeatured: true,
+    occasions: ["qua-tet", "bieu-nguoi-lon", "an-vat"],
+    story: {
+      enjoy: "Nhâm nhi trực tiếp hoặc dùng cùng trà nóng; món quen thuộc trên khay bánh kẹo ngày Tết.",
+      storage: "Đậy kín hộp sau khi mở, để nơi thoáng mát. Trời nồm ẩm thì nên cất ngăn mát tủ lạnh.",
+    },
     createdAt: "2026-01-07T00:00:00.000Z",
   },
   {
@@ -143,6 +179,11 @@ export const initialProducts: Product[] = [
     origin: "Cẩm Lệ, Đà Nẵng",
     pack: "Túi 250g",
     isFeatured: true,
+    occasions: ["qua-tet", "an-vat"],
+    story: {
+      enjoy: "Ăn trực tiếp cùng trà hoặc cà phê; bẻ nhỏ rắc lên kem hay sữa chua cũng ngon.",
+      storage: "Bánh dễ hút ẩm và mất độ giòn: buộc kín túi ngay sau khi mở, để nơi khô ráo.",
+    },
     createdAt: "2026-01-06T00:00:00.000Z",
   },
   {
@@ -159,6 +200,11 @@ export const initialProducts: Product[] = [
     origin: "Sóc Trăng",
     pack: "Hộp 4 bánh",
     isFeatured: true,
+    occasions: ["qua-tet", "an-vat"],
+    story: {
+      enjoy: "Cắt bánh thành miếng vừa ăn, dùng cùng trà nóng. Có thể nướng lại vài phút cho vỏ bánh thơm và xốp hơn.",
+      storage: "Để nơi thoáng mát, tránh nắng; dùng trong hạn sử dụng in trên hộp, nhất là bánh có nhân trứng muối.",
+    },
     createdAt: "2026-01-05T00:00:00.000Z",
   },
   {
@@ -176,6 +222,12 @@ export const initialProducts: Product[] = [
     pack: "Hộp 10 bánh",
     isFeatured: false,
     rank: 1,
+    occasions: ["bieu-nguoi-lon", "an-vat"],
+    story: {
+      enjoy: "Dùng cùng trà nóng. Bánh cốm cũng thường có mặt trong lễ ăn hỏi, cưới hỏi của người Hà Nội.",
+      storage: "Bánh làm thủ công, ít chất bảo quản nên dùng trong vài ngày. Để nơi thoáng mát; không cất tủ lạnh vì bánh dễ bị cứng.",
+      season: "Cốm ngon nhất vào mùa thu, khi lúa nếp non vào mùa.",
+    },
     createdAt: "2026-01-04T00:00:00.000Z",
   },
   {
@@ -194,6 +246,12 @@ export const initialProducts: Product[] = [
     pack: "Gói 500g",
     isFeatured: false,
     rank: 2,
+    occasions: ["qua-tet"],
+    story: {
+      enjoy: "Xay vừa đủ dùng: xay thô hơn khi pha phin, mịn hơn khi pha máy. Pha phin khoảng 20–25g cà phê, rót ít nước sôi ủ 30 giây rồi rót tiếp.",
+      storage: "Đựng trong túi có van hoặc hộp kín, tránh nắng và ẩm. Chỉ xay lượng đủ dùng để giữ hương.",
+      season: "Ở Tây Nguyên, cà phê thường được thu hoạch vào khoảng tháng 10 đến tháng 12.",
+    },
     createdAt: "2026-01-03T00:00:00.000Z",
   },
   {
@@ -211,6 +269,11 @@ export const initialProducts: Product[] = [
     pack: "Chai 500ml",
     isFeatured: false,
     rank: 3,
+    occasions: ["bieu-nguoi-lon", "vao-bep"],
+    story: {
+      enjoy: "Pha nước chấm với tỏi, ớt, chanh và đường; khi nấu thì nêm vào cuối để giữ mùi thơm.",
+      storage: "Đậy kín nắp, để nơi thoáng mát, tránh nắng trực tiếp. Nước mắm truyền thống có thể có muối kết tinh ở đáy chai, đó là hiện tượng tự nhiên.",
+    },
     createdAt: "2026-01-02T00:00:00.000Z",
   },
   {
@@ -229,6 +292,11 @@ export const initialProducts: Product[] = [
     pack: "Hộp 400g",
     isFeatured: false,
     rank: 4,
+    occasions: ["qua-tet", "an-vat"],
+    story: {
+      enjoy: "Bóc từng viên ăn trực tiếp; hợp làm quà cho cả trẻ nhỏ và người lớn.",
+      storage: "Kẹo dẻo dễ chảy khi trời nóng: đậy kín, để nơi thoáng mát; mùa hè có thể cất ngăn mát tủ lạnh.",
+    },
     createdAt: "2026-01-01T00:00:00.000Z",
   },
 ];

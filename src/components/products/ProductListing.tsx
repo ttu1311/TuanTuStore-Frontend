@@ -7,6 +7,7 @@ import ContentSidebar from "@/components/layout/PageLayout";
 import ProductFilters from "@/components/products/ProductFilters";
 import ProductToolbar from "@/components/products/ProductToolbar";
 import { useStore } from "@/context/StoreContext";
+import { occasions } from "@/data/occasions";
 import { brandSummaries } from "@/lib/brands";
 import { groupProducts, provinceOf, sortNewestFirst } from "@/lib/products";
 import { simplifyText } from "@/lib/text";
@@ -68,6 +69,7 @@ type ProductListingProps = {
   initialRegion?: Region; // từ các thẻ vùng miền ở trang chủ: /san-pham?region=bac
   initialProvince?: string; // từ bản đồ ở trang chủ: /san-pham?province=Cà Mau
   initialBrand?: string; // từ phần "Về thương hiệu" ở trang chi tiết: /san-pham?brand=Hồng Lam
+  initialOccasion?: string; // từ "Chọn quà theo dịp" ở trang chủ: /san-pham?dip=qua-tet
 };
 
 // Giữ state tìm kiếm / lọc / sắp xếp và hiển thị các sản phẩm đã lọc từ localStorage.
@@ -76,12 +78,17 @@ export default function ProductListing({
   initialRegion,
   initialProvince = "",
   initialBrand = "",
+  initialOccasion = "",
 }: ProductListingProps) {
   const { isReady, products } = useStore();
   const [search, setSearch] = useState(initialSearch);
   const [regions, setRegions] = useState<Region[]>(initialRegion ? [initialRegion] : []);
   const [brands, setBrands] = useState<string[]>(initialBrand ? [initialBrand] : []);
   const [provinces, setProvinces] = useState<string[]>(initialProvince ? [initialProvince] : []);
+  // Dịp tặng lạ trên địa chỉ thì bỏ qua ngay (danh sách dịp cố định, không phụ thuộc localStorage)
+  const [occasionIds, setOccasionIds] = useState<string[]>(
+    occasions.some((occasion) => occasion.id === initialOccasion) ? [initialOccasion] : []
+  );
   const [price, setPrice] = useState("all");
   const [sort, setSort] = useState("newest");
 
@@ -100,12 +107,20 @@ export default function ProductListing({
   // Tên thương hiệu trên địa chỉ không có trong dữ liệu thì bỏ qua, giống như tỉnh ở trên
   const activeBrands = isReady ? brands.filter((brand) => brandOptions.some((option) => option.name === brand)) : brands;
 
+  // Các ô chọn dịp tặng, kèm số sản phẩm của mỗi dịp
+  const occasionOptions = occasions.map((occasion) => ({
+    id: occasion.id,
+    label: occasion.label,
+    count: products.filter((product) => product.occasions?.includes(occasion.id)).length,
+  }));
+
   // 1. Lọc. Danh sách vùng/thương hiệu rỗng nghĩa là "không lọc".
   const filtered = products.filter(
     (product) =>
       matchesSearch(product, search) &&
       (regions.length === 0 || regions.includes(product.region)) &&
       (activeBrands.length === 0 || activeBrands.includes(product.brand)) &&
+      (occasionIds.length === 0 || occasionIds.some((id) => product.occasions?.includes(id))) &&
       (activeProvinces.length === 0 || activeProvinces.includes(provinceOf(product.origin))) &&
       matchesPrice(product.price, price)
   );
@@ -120,6 +135,7 @@ export default function ProductListing({
     setRegions([]);
     setBrands([]);
     setProvinces([]);
+    setOccasionIds([]);
     setPrice("all");
   }
 
@@ -135,6 +151,9 @@ export default function ProductListing({
           regions={regions}
           brandOptions={brandOptions}
           brands={activeBrands}
+          occasionOptions={occasionOptions}
+          occasions={occasionIds}
+          onToggleOccasion={(id) => setOccasionIds(toggle(occasionIds, id))}
           provinceOptions={provinceOptions}
           provinces={activeProvinces}
           price={price}

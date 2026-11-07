@@ -5,6 +5,7 @@ import RegionSection from "@/components/home/RegionSection";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
 import BestSellerSection from "@/components/home/BestSellerSection";
 import NewArrivals from "@/components/home/NewArrivals";
+import OccasionSection from "@/components/home/OccasionSection";
 import PromoBanner from "@/components/home/PromoBanner";
 import RecentSection from "@/components/home/RecentSection";
 import TrustSection from "@/components/home/TrustSection";
@@ -46,6 +47,9 @@ export default function HomePage() {
           <div className="space-y-16 lg:space-y-20">
             <Reveal>
               <FeaturedProducts />
+            </Reveal>
+            <Reveal>
+              <OccasionSection />
             </Reveal>
             <Reveal>
               <RegionSection />

@@ -2,6 +2,7 @@
 import type { Product } from "@/types";
 import { isRegion } from "@/lib/regions";
 import { slugify } from "@/lib/text";
+import { occasions as allOccasions } from "@/data/occasions";
 
 // 185000 với giá cũ 220000 -> 16 (%)
 export function discountPercent(product: Product) {
@@ -82,7 +83,13 @@ export type ProductFormValues = {
   pack: string;
   rank: string;
   isFeatured: boolean;
+  occasions: string[]; // id các dịp tặng đã tích
+  enjoy: string; // câu chuyện sản phẩm: Cách thưởng thức
+  storage: string; // Bảo quản
+  season: string; // Mùa ngon nhất
 };
+
+export const MAX_STORY_LENGTH = 400;
 
 export type ProductFormErrors = Partial<Record<keyof ProductFormValues, string>>;
 
@@ -102,6 +109,10 @@ export const emptyProductForm: ProductFormValues = {
   pack: "",
   rank: "",
   isFeatured: false,
+  occasions: [],
+  enjoy: "",
+  storage: "",
+  season: "",
 };
 
 export function productToFormValues(product: Product): ProductFormValues {
@@ -118,6 +129,10 @@ export function productToFormValues(product: Product): ProductFormValues {
     pack: product.pack,
     rank: product.rank ? String(product.rank) : "",
     isFeatured: product.isFeatured,
+    occasions: product.occasions ?? [],
+    enjoy: product.story?.enjoy ?? "",
+    storage: product.story?.storage ?? "",
+    season: product.story?.season ?? "",
   };
 }
 
@@ -135,7 +150,7 @@ function toPositiveInt(value: string, max: number) {
 // Kiểm tra form. Trả về các lỗi, và dữ liệu sản phẩm khi không có lỗi.
 export function validateProductForm(values: ProductFormValues): { errors: ProductFormErrors; input?: ProductInput } {
   const errors: ProductFormErrors = {};
-  const text = (field: keyof Omit<ProductFormValues, "isFeatured">) => values[field].trim();
+  const text = (field: keyof Omit<ProductFormValues, "isFeatured" | "occasions">) => values[field].trim();
 
   if (!text("name")) errors.name = "Vui lòng nhập tên sản phẩm";
   else if (text("name").length > 100) errors.name = "Tên sản phẩm tối đa 100 ký tự";
@@ -164,6 +179,10 @@ export function validateProductForm(values: ProductFormValues): { errors: Produc
   if (!text("shortDescription")) errors.shortDescription = "Vui lòng nhập mô tả ngắn";
   if (!text("description")) errors.description = "Vui lòng nhập mô tả chi tiết";
 
+  for (const field of ["enjoy", "storage", "season"] as const) {
+    if (text(field).length > MAX_STORY_LENGTH) errors[field] = `Tối đa ${MAX_STORY_LENGTH} ký tự`;
+  }
+
   let rank: number | undefined;
   if (text("rank")) {
     const parsed = toPositiveInt(text("rank"), 99);
@@ -189,6 +208,13 @@ export function validateProductForm(values: ProductFormValues): { errors: Produc
       pack: text("pack"),
       rank,
       isFeatured: values.isFeatured,
+      // Luôn ghi cả hai trường (có thể rỗng), để dữ liệu mẫu không điền lại thứ Admin đã xóa (xem applySeedUpdates)
+      occasions: allOccasions.map((occasion) => occasion.id).filter((id) => values.occasions.includes(id)),
+      story: {
+        enjoy: text("enjoy"),
+        storage: text("storage"),
+        ...(text("season") ? { season: text("season") } : {}),
+      },
     },
   };
 }

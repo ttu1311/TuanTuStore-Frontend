@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import OrdersSection from "@/components/account/OrdersSection";
+import PassportSection from "@/components/account/PassportSection";
 import PasswordSection from "@/components/account/PasswordSection";
 import ProfileSection from "@/components/account/ProfileSection";
 import ContentSidebar from "@/components/layout/PageLayout";
@@ -11,11 +12,12 @@ import { useStore } from "@/context/StoreContext";
 const sections = [
   { id: "profile", label: "Thông tin cá nhân" },
   { id: "orders", label: "Đơn hàng của tôi" },
+  { id: "passport", label: "Hộ chiếu đặc sản" },
   { id: "password", label: "Đổi mật khẩu" },
   { id: "logout", label: "Đăng xuất" },
 ] as const;
 
-type SectionId = (typeof sections)[number]["id"];
+export type SectionId = (typeof sections)[number]["id"];
 
 // Trang tài khoản. Luôn nằm trong <RequireLogin>, nên ở đây chắc chắn đã có người đăng nhập.
 export default function AccountView({ initialSection = "profile" }: { initialSection?: SectionId }) {
@@ -60,6 +62,7 @@ export default function AccountView({ initialSection = "profile" }: { initialSec
         {/* key: form bắt đầu lại từ các giá trị đã lưu khi người dùng thay đổi */}
         {active === "profile" && <ProfileSection key={currentUser.id} user={currentUser} />}
         {active === "orders" && <OrdersSection userId={currentUser.id} />}
+        {active === "passport" && <PassportSection userId={currentUser.id} />}
         {active === "password" && <PasswordSection />}
         {active === "logout" && (
           <div>

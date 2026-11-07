@@ -30,8 +30,9 @@ const config: Config = {
       },
       fontSize: {
         // Phudu là kiểu chữ hẹp, nên tiêu đề lớn hơn một cỡ so với kiểu chữ có độ rộng thông thường
-        title: ["2.75rem", { lineHeight: "1.05" }], // tiêu đề các phần (44px)
-        hero: ["6rem", { lineHeight: "0.92" }], // tiêu đề hero (96px)
+        title: ["2.75rem", { lineHeight: "1.1" }], // tiêu đề các phần (44px)
+        // Khoảng cách dòng 1.08: chữ tiếng Việt có dấu chồng (Ừ, Ắ, Ố) cần chỗ, nếu sát hơn dấu sẽ chạm dòng trên
+        hero: ["6rem", { lineHeight: "1.08" }], // tiêu đề hero (96px)
       },
       maxWidth: {
         container: "1280px",

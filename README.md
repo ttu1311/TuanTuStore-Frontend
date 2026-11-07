@@ -80,13 +80,17 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 | Route | Page |
 | --- | --- |
 | `/` | Homepage: hero, 3 regions, featured products. Sidebar: best sellers, new arrivals, a clickable map of the three regions (regions and provinces), recently viewed |
-| `/san-pham` | Product list: search, filter by region / province / brand / price, sort. Reads `?q=`, `?region=`, `?province=` and `?brand=` |
+| `/san-pham` | Product list: search, filter by region / province / brand / price, sort. Reads `?q=`, `?region=`, `?province=`, `?brand=` and `?dip=` (occasion) |
 | `/san-pham/[id]` | Product detail: price, description, information, quantity, "Thêm vào giỏ hàng", "Mua ngay", related products |
-| `/gio-hang` | Cart: change quantity, remove, totals |
-| `/thanh-toan` | Checkout: delivery form, COD or bank transfer (simulated), creates an order |
+| `/gio-hang` | Cart: change quantity, remove, totals, progress towards free shipping |
+| `/thanh-toan` | Checkout: delivery form, COD or bank transfer (simulated), optional free gift wrap with a card message, creates an order |
 | `/dang-nhap` | Login (customers and Admin use the same page) |
 | `/dang-ky` | Registration |
-| `/tai-khoan` | My account: profile, my orders, change password, logout |
+| `/tai-khoan` | My account: profile, my orders, "Hộ chiếu đặc sản" (one stamp per province the customer has received), change password, logout. `?tab=orders` / `?tab=passport` open those tabs |
+| `/hop-qua` | "Hộp quà Ba Miền": pick one product from each region and add the whole box to the cart |
+| `/tra-cuu-don-hang` | Order lookup without login: order code + phone number. Reads `?ma=` (the "Đặt hàng thành công" screen links here) |
+| `/thong-tin/[slug]` | Help and policy pages (content in `src/data/infoPages.ts`): buying guide, payment, FAQ, shipping, returns, privacy, terms |
+| `/nguon-anh` | Photo credits: author and licence of each photo |
 | `/admin` | Admin dashboard: numbers and recent orders |
 | `/admin/san-pham` | Admin: product list, delete |
 | `/admin/san-pham/them` | Admin: add a product |
@@ -107,6 +111,7 @@ Unknown pages and unknown products show a Vietnamese "Lỗi 404" message.
 | `tuantustore-orders` | all orders | `[]` |
 | `tuantustore-order-seq` | last order number used | `0` |
 | `tuantustore-seed-batches` | groups of products added after the first version that this browser already received | `["ca-mau"]` |
+| `tuantustore-reviews` | product reviews (stars + comment) | `[]` (no sample reviews) |
 | `tuantustore-recently-viewed` | ids of the products this browser opened last (shown in "Đã xem gần đây") | — (not created until a product is opened) |
 
 - **First visit:** a key that does not exist yet is filled with its default value. A key that already has data is
@@ -167,7 +172,21 @@ read from `localStorage`. This avoids hydration errors, because the server has n
 - Passwords are plain text in `localStorage` (see the warning in "Demo accounts and passwords"). That simplicity is what lets
   login work on `localhost`, on plain `http://` LAN addresses and on `https://` alike.
 - Because the data is only in the browser, an unknown product address shows the 404 message with HTTP status 200.
-- Shipping fee (30.000₫) and discount (20.000₫) are fixed values, as in the original design.
+- Shipping fee is 30.000₫, free when the subtotal reaches 300.000₫; every order gets a fixed 20.000₫ discount. All three values are
+  in `src/lib/cart.ts`; the announcement bar, cart, checkout and help pages read them from there. Each order stores its own
+  shipping fee, so changing these values never changes an old order.
+- Order lookup only finds orders saved in the same browser (there is no server).
+- **Reviews** can only be written by a logged-in customer who has a **completed** order containing that product (one review
+  per customer per product; writing again replaces it). The author or an Admin can delete a review. There are no sample
+  reviews, and "Đã bán" counts the quantities in real orders, so new browsers show no stars and no sales until people buy.
+- **Occasions** ("Dịp tặng": Quà Tết, Biếu ông bà/bố mẹ, Ăn vặt, Cho gian bếp) are listed in `src/data/occasions.ts`; each product
+  has a list of them (`Product.occasions`). They are the shop's suggestions and can be changed in the Admin product form.
+- **Câu chuyện sản phẩm** (how to enjoy, storage, best season) is `Product.story`. "Mùa ngon nhất" is only filled in for products
+  with a well-known season; an empty field is not shown. Browsers that saved the products before these fields existed receive
+  them once; a product the Admin has saved keeps what the Admin wrote (see `applySeedUpdates`).
+- **Hộ chiếu đặc sản** stamps a province when one of the customer's orders containing a product from there is completed;
+  orders not completed yet show as "Đang trên đường tới bạn".
+- The help and policy pages are sample policies for this student project, and each page says so.
 
 ## Troubleshooting
 

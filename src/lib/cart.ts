@@ -1,7 +1,8 @@
 import type { CartItem, Product } from "@/types";
 
 export const MAX_QUANTITY = 99; // tối đa cho mỗi sản phẩm trong giỏ
-export const SHIPPING_FEE = 30000; // phí vận chuyển cố định (VND)
+export const SHIPPING_FEE = 30000; // phí vận chuyển (VND) cho đơn dưới FREE_SHIPPING_MIN
+export const FREE_SHIPPING_MIN = 300000; // tạm tính từ mức này trở lên thì miễn phí vận chuyển (VND)
 export const DISCOUNT = 20000; // giảm giá cố định cho mọi đơn hàng (VND)
 
 // Số lượng luôn là số nguyên từ 1 đến 99
@@ -19,7 +20,14 @@ export function getCartLines(cart: CartItem[], products: Product[]): CartLine[] 
   });
 }
 
+// Phí vận chuyển của một đơn: miễn phí khi tạm tính đạt FREE_SHIPPING_MIN
+export function shippingFeeFor(subtotal: number) {
+  return subtotal >= FREE_SHIPPING_MIN ? 0 : SHIPPING_FEE;
+}
+
 // Tạm tính + Phí vận chuyển − Giảm giá = Tổng cộng
+// Đơn hàng lưu lại phí vận chuyển của chính nó, nên đổi các mức ở trên không làm đổi đơn cũ.
 export function calculateTotals(subtotal: number) {
-  return { subtotal, shippingFee: SHIPPING_FEE, discount: DISCOUNT, total: subtotal + SHIPPING_FEE - DISCOUNT };
+  const shippingFee = shippingFeeFor(subtotal);
+  return { subtotal, shippingFee, discount: DISCOUNT, total: subtotal + shippingFee - DISCOUNT };
 }

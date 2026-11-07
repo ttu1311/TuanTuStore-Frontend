@@ -28,7 +28,8 @@ import {
   writeJSON,
 } from "@/lib/storage";
 import { normalizeEmail, normalizePhone, type RegisterValues } from "@/lib/validation";
-import type { CartItem, Order, OrderItem, OrderStatus, PaymentMethod, Product, Role, User } from "@/types";
+import { MAX_COMMENT_LENGTH, reviewEligibility } from "@/lib/reviews";
+import type { CartItem, Order, OrderItem, OrderStatus, PaymentMethod, Product, Review, Role, User } from "@/types";
 
 // Kết quả mà mọi thao tác trả về. `field` cho biết thông báo thuộc về ô nhập nào (nếu có).
 export type ActionResult = { ok: true } | { ok: false; message: string; field?: string };
@@ -54,6 +55,7 @@ type StoreValue = {
   users: User[];
   orders: Order[];
   cart: CartItem[];
+  reviews: Review[];
   currentUser: User | null;
 
   // Sản phẩm (Admin)
@@ -64,8 +66,11 @@ type StoreValue = {
 
   // Giỏ hàng
   addToCart: (productId: string, quantity: number) => void;
+  // Thêm nhiều sản phẩm (mỗi món 1) một lần, với MỘT thông báo (dùng cho "Hộp quà Ba Miền")
+  addManyToCart: (productIds: string[], message: string) => void;
   setCartQuantity: (productId: string, quantity: number) => void;
   removeFromCart: (productId: string) => void;
+  clearCart: () => void; // làm trống cả giỏ hàng
 
   // Tài khoản
   register: (values: RegisterValues) => ActionResult;
@@ -75,9 +80,14 @@ type StoreValue = {
   changePassword: (currentPassword: string, newPassword: string) => ActionResult;
 
   // Đơn hàng
-  placeOrder: (customer: CheckoutFields, paymentMethod: PaymentMethod) => PlaceOrderResult;
+  // gift: có = gói quà (miễn phí) kèm lời nhắn trên thiệp
+  placeOrder: (customer: CheckoutFields, paymentMethod: PaymentMethod, gift?: { message: string }) => PlaceOrderResult;
   updateOrderStatus: (code: string, status: OrderStatus) => ActionResult;
   deleteOrder: (code: string) => ActionResult;
+
+  // Đánh giá: chỉ khách đã nhận hàng; viết lại thì thay đánh giá cũ của chính mình
+  submitReview: (productId: string, rating: number, comment: string) => ActionResult;
+  deleteReview: (reviewId: string) => ActionResult; // người viết hoặc ADMIN
 
   // Người dùng (Admin)
   changeUserRole: (userId: string, role: Role) => ActionResult;
@@ -92,6 +102,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [users, setUsers] = useState<User[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ id: number; message: string } | null>(null);
   const closeToast = useCallback(() => setToast(null), []);
@@ -104,6 +115,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setUsers(data.users);
       setOrders(data.orders);
       setCart(data.cart);
+      setReviews(data.reviews);
       setCurrentUserId(data.currentUserId);
     }
 
@@ -140,6 +152,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   function saveOrders(next: Order[]) {
     if (!writeJSON(STORAGE_KEYS.orders, next)) return false;
     setOrders(next);
+    return true;
+  }
+
+  function saveReviews(next: Review[]) {
+    if (!writeJSON(STORAGE_KEYS.reviews, next)) return false;
+    setReviews(next);
     return true;
   }
 
@@ -210,9 +228,23 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   }
 
+  function addManyToCart(productIds: string[], message: string) {
+    let next = cart;
+    for (const productId of productIds) {
+      next = next.some((item) => item.productId === productId)
+        ? next.map((item) => (item.productId === productId ? { ...item, quantity: cleanQuantity(item.quantity + 1) } : item))
+        : [...next, { productId, quantity: 1 }];
+    }
+    setToast({ id: Date.now(), message: saveCart(next) ? message : SAVE_ERROR });
+  }
+
   function setCartQuantity(productId: string, quantity: number) {
     const amount = cleanQuantity(quantity);
     saveCart(cart.map((item) => (item.productId === productId ? { ...item, quantity: amount } : item)));
+  }
+
+  function clearCart() {
+    saveCart([]);
   }
 
   function removeFromCart(productId: string) {
@@ -281,7 +313,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   // ---------- Đơn hàng ----------
 
   // Tạo đơn hàng từ giỏ hàng, dùng giá HIỆN TẠI trong localStorage.
-  function placeOrder(customer: CheckoutFields, paymentMethod: PaymentMethod): PlaceOrderResult {
+  function placeOrder(customer: CheckoutFields, paymentMethod: PaymentMethod, gift?: { message: string }): PlaceOrderResult {
     const lines = getCartLines(cart, products);
     if (lines.length === 0) return { ok: false, message: "Giỏ hàng của bạn đang trống." };
 
@@ -318,6 +350,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       shippingFee: totals.shippingFee,
       discount: totals.discount,
       total: totals.total,
+      ...(gift ? { gift: { message: gift.message.trim().slice(0, 200) } } : {}),
       createdAt: new Date().toISOString(),
     };
 
@@ -341,6 +374,40 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   function deleteOrder(code: string): ActionResult {
     if (!isAdmin) return fail(NO_PERMISSION);
     return saveOrders(orders.filter((order) => order.code !== code)) ? OK : fail(SAVE_ERROR);
+  }
+
+  // ---------- Đánh giá ----------
+
+  function submitReview(productId: string, rating: number, comment: string): ActionResult {
+    if (!currentUser) return fail("Vui lòng đăng nhập để đánh giá.");
+    // Kiểm tra lại ở đây (không chỉ ở giao diện): chỉ khách đã nhận hàng mới được đánh giá
+    if (reviewEligibility(currentUser, orders, productId) !== "can-review") {
+      return fail("Bạn chỉ có thể đánh giá sản phẩm sau khi đã nhận hàng.");
+    }
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) return fail("Vui lòng chọn số sao (1–5)", "rating");
+    const text = comment.trim();
+    if (text.length < 10) return fail("Nhận xét cần ít nhất 10 ký tự", "comment");
+    if (text.length > MAX_COMMENT_LENGTH) return fail(`Nhận xét tối đa ${MAX_COMMENT_LENGTH} ký tự`, "comment");
+
+    const review: Review = {
+      id: createId("r"),
+      productId,
+      userId: currentUser.id,
+      userName: currentUser.name,
+      rating,
+      comment: text,
+      createdAt: new Date().toISOString(),
+    };
+    // Mỗi khách một đánh giá cho mỗi sản phẩm: viết lại thì thay bản cũ
+    const others = reviews.filter((r) => !(r.productId === productId && r.userId === currentUser.id));
+    return saveReviews([...others, review]) ? OK : fail(SAVE_ERROR);
+  }
+
+  function deleteReview(reviewId: string): ActionResult {
+    const review = reviews.find((r) => r.id === reviewId);
+    if (!review) return fail("Đánh giá này không còn tồn tại.");
+    if (!currentUser || (review.userId !== currentUser.id && !isAdmin)) return fail(NO_PERMISSION);
+    return saveReviews(reviews.filter((r) => r.id !== reviewId)) ? OK : fail(SAVE_ERROR);
   }
 
   // ---------- Người dùng (Admin) ----------
@@ -394,13 +461,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         users,
         orders,
         cart,
+        reviews,
         currentUser,
         addProduct,
         updateProduct,
         deleteProduct,
         addToCart,
+        addManyToCart,
         setCartQuantity,
         removeFromCart,
+        clearCart,
         register,
         login,
         logout,
@@ -409,6 +479,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         placeOrder,
         updateOrderStatus,
         deleteOrder,
+        submitReview,
+        deleteReview,
         changeUserRole,
         deleteUser,
       }}

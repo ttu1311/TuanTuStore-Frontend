@@ -11,7 +11,7 @@ export default function SectionHeader({ id, title, description, action }: Sectio
   return (
     <div className="mb-10 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end md:gap-6">
       <div>
-        <h2 id={id} className="font-display text-4xl font-bold leading-[1.05] text-ink md:text-title">
+        <h2 id={id} className="font-display text-4xl/[1.1] font-bold text-ink md:text-title/[1.1]">
           {title}
         </h2>
         {description && <p className="mt-3 max-w-[36rem] text-ink-muted">{description}</p>}

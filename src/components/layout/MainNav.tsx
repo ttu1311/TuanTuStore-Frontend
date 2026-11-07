@@ -17,6 +17,7 @@ const navItems: { label: string; href: string; region?: Region }[] = [
   { label: "Miền Bắc", href: "/#mien-bac", region: "bac" },
   { label: "Miền Trung", href: "/#mien-trung", region: "trung" },
   { label: "Miền Nam", href: "/#mien-nam", region: "nam" },
+  { label: "Hộp quà", href: "/hop-qua" },
   { label: "Giới thiệu", href: "/#gioi-thieu" },
   { label: "Liên hệ", href: "/#lien-he" },
 ];

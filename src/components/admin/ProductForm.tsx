@@ -8,12 +8,14 @@ import { btnBase, btnPrimary, btnSmall } from "@/components/ui/buttons";
 import { useStore, type ActionResult } from "@/context/StoreContext";
 import {
   IMAGE_PATH_PATTERN,
+  MAX_STORY_LENGTH,
   emptyProductForm,
   validateProductForm,
   type ProductFormErrors,
   type ProductFormValues,
   type ProductInput,
 } from "@/lib/products";
+import { occasions } from "@/data/occasions";
 import { brandNames } from "@/lib/brands";
 import { regionKeys, regions } from "@/lib/regions";
 
@@ -43,6 +45,9 @@ const fieldOrder: (keyof ProductFormErrors)[] = [
   "image",
   "shortDescription",
   "description",
+  "enjoy",
+  "storage",
+  "season",
   "rank",
 ];
 
@@ -269,6 +274,55 @@ export default function ProductForm({ initialValues = emptyProductForm, submitLa
           <textarea rows={6} maxLength={3000} {...field("description")} className={inputClass("description", "py-2")} />
           <p className={hintStyle}>Để một dòng trống giữa các đoạn văn.</p>
           {error("description")}
+        </div>
+
+        <fieldset className="m-0 border-0 p-0 sm:col-span-2">
+          <legend className={labelStyle}>Dịp tặng (không bắt buộc)</legend>
+          <div className="flex flex-wrap gap-x-6 gap-y-1">
+            {occasions.map((occasion) => (
+              <label key={occasion.id} className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-ink">
+                <input
+                  type="checkbox"
+                  checked={values.occasions.includes(occasion.id)}
+                  onChange={(event) =>
+                    setValues({
+                      ...values,
+                      occasions: event.target.checked
+                        ? [...values.occasions, occasion.id]
+                        : values.occasions.filter((id) => id !== occasion.id),
+                    })
+                  }
+                  className="h-5 w-5 shrink-0 cursor-pointer accent-primary"
+                />
+                {occasion.label}
+              </label>
+            ))}
+          </div>
+          <p className={hintStyle}>Khách lọc sản phẩm theo dịp ở trang Sản phẩm và mục &quot;Chọn quà theo dịp&quot; ở trang chủ.</p>
+        </fieldset>
+
+        {/* Câu chuyện sản phẩm: hiện ở trang chi tiết; ô nào để trống thì không hiện */}
+        <div className="sm:col-span-2">
+          <label htmlFor="enjoy" className={labelStyle}>
+            Cách thưởng thức (không bắt buộc)
+          </label>
+          <textarea rows={2} maxLength={MAX_STORY_LENGTH} {...field("enjoy")} className={inputClass("enjoy", "py-2")} />
+          {error("enjoy")}
+        </div>
+        <div className="sm:col-span-2">
+          <label htmlFor="storage" className={labelStyle}>
+            Bảo quản (không bắt buộc)
+          </label>
+          <textarea rows={2} maxLength={MAX_STORY_LENGTH} {...field("storage")} className={inputClass("storage", "py-2")} />
+          {error("storage")}
+        </div>
+        <div className="sm:col-span-2">
+          <label htmlFor="season" className={labelStyle}>
+            Mùa ngon nhất (không bắt buộc)
+          </label>
+          <textarea rows={2} maxLength={MAX_STORY_LENGTH} {...field("season")} className={inputClass("season", "py-2")} />
+          <p className={hintStyle}>Chỉ ghi khi món này có mùa rõ ràng, ví dụ cốm mùa thu.</p>
+          {error("season")}
         </div>
 
         <div>

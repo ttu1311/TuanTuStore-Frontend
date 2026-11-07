@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import AddToCartButton from "@/components/product/AddToCartButton";
+import ProductRatingLine from "@/components/reviews/ProductRatingLine";
 import { formatVND } from "@/lib/format";
 import { discountPercent } from "@/lib/products";
 import { regions } from "@/lib/regions";
@@ -61,6 +62,10 @@ export default function ProductCard({
             {product.name}
           </Link>
         </h3>
+        {/* Sao đánh giá và số đã bán (chỉ hiện khi đã có) */}
+        <div className="mt-1">
+          <ProductRatingLine productId={product.id} />
+        </div>
 
         <div className="mb-4 mt-2 flex flex-wrap items-baseline gap-x-2">
           <span className="whitespace-nowrap text-lg font-bold text-ink">{formatVND(product.price)}</span>

@@ -36,13 +36,15 @@ export default function AdminOrderRow({ order, accountText }: { order: Order; ac
     ["Email", order.email],
     ["Địa chỉ giao hàng", [order.address, order.ward, order.district, order.province].join(", ")],
     ["Ghi chú", order.note || "—"],
+    // Có gói quà thì Admin cần biết để gói và in thiệp
+    ["Gói quà & thiệp", order.gift ? (order.gift.message ? `“${order.gift.message}”` : "Có (thiệp trống)") : "Không"],
     ["Thanh toán", paymentMethodLabels[order.paymentMethod]],
     ["Tài khoản", accountText],
   ];
 
   const totalRows = [
     ["Tạm tính", formatVND(order.subtotal)],
-    ["Phí vận chuyển", formatVND(order.shippingFee)],
+    ["Phí vận chuyển", order.shippingFee === 0 ? "Miễn phí" : formatVND(order.shippingFee)],
     ["Giảm giá", `−${formatVND(order.discount)}`],
   ];
 

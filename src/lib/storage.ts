@@ -2,7 +2,7 @@
 // Các hàm này phải chạy ở trình duyệt (trong useEffect hoặc trình xử lý sự kiện), không bao giờ chạy khi render trên server.
 import { caMauProducts, initialProducts, initialUsers } from "@/data/initialData";
 import { renamedImages, seedUpdates } from "@/data/seedUpdates";
-import type { CartItem, Order, Product, User } from "@/types";
+import type { CartItem, Order, Product, Review, User } from "@/types";
 
 export const STORAGE_KEYS = {
   products: "tuantustore-products",
@@ -13,6 +13,7 @@ export const STORAGE_KEYS = {
   orderSeq: "tuantustore-order-seq", // số thứ tự đơn hàng đã dùng gần nhất (1 -> "TT-000001")
   seedBatches: "tuantustore-seed-batches", // các seedBatches bên dưới mà trình duyệt này đã nhận
   recentlyViewed: "tuantustore-recently-viewed", // id các sản phẩm vừa xem, mới nhất đứng đầu
+  reviews: "tuantustore-reviews", // đánh giá sản phẩm của khách đã nhận hàng
 } as const;
 
 // Các nhóm sản phẩm được thêm vào dữ liệu mẫu SAU phiên bản đầu tiên của website.
@@ -52,6 +53,7 @@ export function initializeStorage() {
   if (!Array.isArray(readJSON(STORAGE_KEYS.cart))) writeJSON(STORAGE_KEYS.cart, []);
   if (!Array.isArray(readJSON(STORAGE_KEYS.orders))) writeJSON(STORAGE_KEYS.orders, []);
   if (typeof readJSON(STORAGE_KEYS.orderSeq) !== "number") writeJSON(STORAGE_KEYS.orderSeq, 0);
+  if (!Array.isArray(readJSON(STORAGE_KEYS.reviews))) writeJSON(STORAGE_KEYS.reviews, []); // không có đánh giá mẫu: chỉ đánh giá thật
   addNewSeedBatches();
   applySeedUpdates();
   repairDemoAdmin();
@@ -100,6 +102,17 @@ function applySeedUpdates() {
     const seed = seedById.get(product.id);
     if (!seed) return next;
 
+    // Các trường thêm về sau (dịp tặng, câu chuyện sản phẩm): sản phẩm mẫu lưu từ trước chưa có thì nhận từ initialData.
+    // Admin lưu sản phẩm luôn ghi cả hai trường (có thể rỗng), nên thứ Admin đã xóa không bị điền lại.
+    if (next.occasions === undefined && seed.occasions) {
+      next = { ...next, occasions: seed.occasions };
+      changed = true;
+    }
+    if (next.story === undefined && seed.story) {
+      next = { ...next, story: seed.story };
+      changed = true;
+    }
+
     for (const update of seedUpdates) {
       if (update.id !== product.id) continue;
       const current = next[update.field];
@@ -147,6 +160,7 @@ export type StoredData = {
   users: User[];
   orders: Order[];
   cart: CartItem[];
+  reviews: Review[];
   currentUserId: string | null;
 };
 
@@ -157,6 +171,7 @@ export function loadStoredData(): StoredData {
     users: readJSON<User[]>(STORAGE_KEYS.users) ?? [],
     orders: readJSON<Order[]>(STORAGE_KEYS.orders) ?? [],
     cart: readJSON<CartItem[]>(STORAGE_KEYS.cart) ?? [],
+    reviews: readJSON<Review[]>(STORAGE_KEYS.reviews) ?? [],
     currentUserId: readCurrentUserId(),
   };
 }

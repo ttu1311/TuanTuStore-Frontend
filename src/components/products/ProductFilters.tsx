@@ -23,6 +23,9 @@ type ProductFiltersProps = {
   regions: Region[]; // các vùng đã tích
   brands: string[]; // các thương hiệu đã tích
   provinceOptions: { name: string; count: number }[]; // mọi tỉnh có sản phẩm, kèm số sản phẩm
+  occasionOptions: { id: string; label: string; count: number }[]; // mọi dịp tặng, kèm số sản phẩm
+  occasions: string[]; // id các dịp tặng đã tích
+  onToggleOccasion: (id: string) => void;
   provinces: string[]; // các tỉnh đã tích
   price: string; // giá trị mức giá đang chọn
   onToggleRegion: (region: Region) => void;
@@ -40,6 +43,9 @@ export default function ProductFilters({
   brands,
   provinceOptions,
   provinces,
+  occasionOptions,
+  occasions,
+  onToggleOccasion,
   price,
   onToggleRegion,
   onToggleBrand,
@@ -50,7 +56,7 @@ export default function ProductFilters({
   // Trên điện thoại, các bộ lọc được gập lại sau nút "Bộ lọc", để sản phẩm không bị đẩy xuống quá xa.
   // Từ cỡ lg trở lên các bộ lọc luôn mở (xem các class lg: bên dưới).
   const [isOpen, setIsOpen] = useState(false);
-  const activeCount = regions.length + brands.length + provinces.length + (price === "all" ? 0 : 1);
+  const activeCount = regions.length + brands.length + provinces.length + occasions.length + (price === "all" ? 0 : 1);
 
   return (
     <div>
@@ -87,6 +93,24 @@ export default function ProductFilters({
                 className={optionInput}
               />
               {region.label}
+            </label>
+          ))}
+        </FilterGroup>
+
+        <FilterGroup title="Dịp tặng">
+          {occasionOptions.map((occasion) => (
+            <label key={occasion.id} className={optionLabel}>
+              <input
+                type="checkbox"
+                name="occasion"
+                value={occasion.id}
+                checked={occasions.includes(occasion.id)}
+                onChange={() => onToggleOccasion(occasion.id)}
+                className={optionInput}
+              />
+              <span>
+                {occasion.label} <span className="text-ink-muted">({occasion.count})</span>
+              </span>
             </label>
           ))}
         </FilterGroup>

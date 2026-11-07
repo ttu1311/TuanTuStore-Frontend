@@ -10,7 +10,7 @@ export default function HeroSection() {
         <div className="lg:sticky lg:top-44 lg:self-start">
           <h1
             id="hero-title"
-            className="font-display text-[3.75rem] font-bold leading-[0.92] tracking-[-0.01em] text-ink sm:text-[5rem] xl:text-hero"
+            className="font-display text-[3.75rem] font-bold leading-[1.08] tracking-[-0.01em] text-ink sm:text-[5rem] xl:text-hero"
           >
             Quà quê,
             <br />

@@ -6,6 +6,7 @@ import ContentSidebar from "@/components/layout/PageLayout";
 import { btnBase, btnPrimary, btnSecondary } from "@/components/ui/buttons";
 import LoadingState from "@/components/ui/LoadingState";
 import { useStore } from "@/context/StoreContext";
+import FreeShippingProgress from "@/components/cart/FreeShippingProgress";
 import { calculateTotals, getCartLines, type CartLine } from "@/lib/cart";
 import { formatVND } from "@/lib/format";
 import {
@@ -39,6 +40,9 @@ function CheckoutForm({ lines, initialValues, onPlaced }: CheckoutFormProps) {
   const [values, setValues] = useState<CheckoutFields>(initialValues);
   const [errors, setErrors] = useState<CheckoutErrors>({});
   const [payment, setPayment] = useState<PaymentMethod>("COD");
+  // Gói quà: miễn phí, kèm lời nhắn in trên thiệp (không bắt buộc)
+  const [giftWrap, setGiftWrap] = useState(false);
+  const [giftMessage, setGiftMessage] = useState("");
   const [saveError, setSaveError] = useState(""); // lỗi không thuộc về một ô nào
 
   // Giá lấy từ danh sách sản phẩm hiện tại trong localStorage
@@ -67,7 +71,7 @@ function CheckoutForm({ lines, initialValues, onPlaced }: CheckoutFormProps) {
     if (Object.keys(newErrors).length > 0) return; // lỗi "quá dài" ở ô ghi chú
 
     // Lưu đơn hàng vào localStorage. Giỏ hàng chỉ được làm trống nếu đơn đã lưu thành công.
-    const result = placeOrder(values, payment);
+    const result = placeOrder(values, payment, giftWrap ? { message: giftMessage } : undefined);
     if (result.ok) onPlaced(result.order);
     else setSaveError(result.message);
   }
@@ -102,8 +106,9 @@ function CheckoutForm({ lines, initialValues, onPlaced }: CheckoutFormProps) {
 
   const summaryRows = [
     { label: "Tạm tính", value: formatVND(subtotal) },
-    { label: "Phí vận chuyển", value: formatVND(shippingFee) },
+    { label: "Phí vận chuyển", value: shippingFee === 0 ? "Miễn phí" : formatVND(shippingFee) },
     { label: "Giảm giá", value: `−${formatVND(discount)}` },
+    ...(giftWrap ? [{ label: "Gói quà & thiệp", value: "Miễn phí" }] : []),
   ];
 
   return (
@@ -129,7 +134,11 @@ function CheckoutForm({ lines, initialValues, onPlaced }: CheckoutFormProps) {
               ))}
             </ul>
 
-            <dl className="mt-2 space-y-3 border-t border-line pt-4">
+            <div className="mt-2 border-t border-line pt-4">
+              <FreeShippingProgress subtotal={subtotal} />
+            </div>
+
+            <dl className="mt-4 space-y-3 border-t border-line pt-4">
               {summaryRows.map((row) => (
                 <div key={row.label} className="flex justify-between gap-4">
                   <dt className="text-ink-muted">{row.label}</dt>
@@ -214,6 +223,40 @@ function CheckoutForm({ lines, initialValues, onPlaced }: CheckoutFormProps) {
               ))}
             </div>
           </fieldset>
+
+          <section aria-labelledby="gift-title" className="rounded-xl border border-line bg-white p-6">
+            <h2 id="gift-title" className="font-display text-2xl font-semibold text-ink">
+              Gói quà tặng
+            </h2>
+            <label className="mt-4 flex min-h-11 cursor-pointer items-center gap-3 text-ink">
+              <input
+                type="checkbox"
+                checked={giftWrap}
+                onChange={(event) => setGiftWrap(event.target.checked)}
+                className="h-5 w-5 shrink-0 cursor-pointer accent-primary"
+              />
+              <span>
+                Gói quà và kèm thiệp <span className="font-semibold text-che">(miễn phí)</span>
+              </span>
+            </label>
+            {giftWrap && (
+              <div className="mt-3">
+                <label htmlFor="giftMessage" className="mb-2 block font-medium text-ink">
+                  Lời nhắn trên thiệp <span className="font-normal text-ink-muted">(không bắt buộc)</span>
+                </label>
+                <textarea
+                  id="giftMessage"
+                  rows={3}
+                  value={giftMessage}
+                  maxLength={200}
+                  onChange={(event) => setGiftMessage(event.target.value)}
+                  placeholder="Ví dụ: Chúc mẹ năm mới mạnh khỏe!"
+                  className="w-full rounded-lg border border-line bg-white px-4 py-3 text-ink transition-colors duration-200 placeholder:text-[#7A7F7B] focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-soft"
+                />
+                <p className="mt-1 text-right text-sm text-ink-muted">{giftMessage.length}/200</p>
+              </div>
+            )}
+          </section>
         </div>
       </ContentSidebar>
     </form>
@@ -243,9 +286,14 @@ export default function CheckoutView() {
           <Link href="/san-pham" className={`${btnBase} ${btnPrimary}`}>
             Tiếp tục mua sắm
           </Link>
-          {placedOrder.userId && (
+          {placedOrder.userId ? (
             <Link href="/tai-khoan?tab=orders" className={`${btnBase} ${btnSecondary}`}>
               Xem đơn hàng của tôi
+            </Link>
+          ) : (
+            // Khách chưa đăng nhập: theo dõi đơn bằng mã đơn + số điện thoại
+            <Link href={`/tra-cuu-don-hang?ma=${placedOrder.code}`} className={`${btnBase} ${btnSecondary}`}>
+              Tra cứu đơn hàng
             </Link>
           )}
         </div>

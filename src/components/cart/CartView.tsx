@@ -8,6 +8,7 @@ import ContentSidebar from "@/components/layout/PageLayout";
 import { btnBase, btnPrimary } from "@/components/ui/buttons";
 import LoadingState from "@/components/ui/LoadingState";
 import { useStore } from "@/context/StoreContext";
+import FreeShippingProgress from "@/components/cart/FreeShippingProgress";
 import { MAX_QUANTITY, calculateTotals, getCartLines } from "@/lib/cart";
 import { formatVND } from "@/lib/format";
 import type { Product } from "@/types";
@@ -102,7 +103,9 @@ function CartRow({ product, quantity }: { product: Product; quantity: number }) 
 
 // Giỏ hàng chỉ lưu id sản phẩm và số lượng; tên, giá và ảnh lấy từ danh sách sản phẩm.
 export default function CartView() {
-  const { isReady, cart, products } = useStore();
+  const { isReady, cart, products, clearCart } = useStore();
+  // Bấm "Xóa tất cả" lần đầu chỉ hỏi lại; phải xác nhận mới xóa, tránh bấm nhầm mất cả giỏ
+  const [confirmingClear, setConfirmingClear] = useState(false);
 
   // Chờ localStorage, nếu không thông báo giỏ trống sẽ nháy lên mỗi lần tải trang
   if (!isReady) return <LoadingState text="Đang tải giỏ hàng…" />;
@@ -126,7 +129,7 @@ export default function CartView() {
 
   const summaryRows = [
     { label: "Tạm tính", value: formatVND(subtotal) },
-    { label: "Phí vận chuyển", value: formatVND(shippingFee) },
+    { label: "Phí vận chuyển", value: shippingFee === 0 ? "Miễn phí" : formatVND(shippingFee) },
     { label: "Giảm giá", value: `−${formatVND(discount)}` },
   ];
 
@@ -138,6 +141,9 @@ export default function CartView() {
       sidebar={
         <div className="rounded-xl border border-line bg-white p-6">
             <h2 className="font-display text-2xl font-semibold text-ink">Tổng đơn hàng</h2>
+            <div className="mt-4">
+              <FreeShippingProgress subtotal={subtotal} />
+            </div>
             <dl className="mt-4 space-y-3">
               {summaryRows.map((row) => (
                 <div key={row.label} className="flex justify-between gap-4">
@@ -162,6 +168,43 @@ export default function CartView() {
         </div>
       }
     >
+      <div className="mb-4 flex min-h-11 flex-wrap items-center justify-between gap-3">
+        <p className="text-ink-muted">
+          {lines.length} sản phẩm trong giỏ
+        </p>
+        {confirmingClear ? (
+          <div role="alertdialog" aria-labelledby="clear-cart-question" className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span id="clear-cart-question" className="text-sm font-medium text-ink">
+              Xóa tất cả {lines.length} sản phẩm khỏi giỏ?
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                clearCart();
+                setConfirmingClear(false);
+              }}
+              className="inline-flex min-h-11 items-center rounded-lg bg-sale px-4 text-sm font-semibold text-white transition-opacity duration-200 hover:opacity-90"
+            >
+              Xóa tất cả
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmingClear(false)}
+              className="inline-flex min-h-11 items-center text-sm font-medium text-ink-muted underline underline-offset-4 hover:text-ink"
+            >
+              Hủy
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirmingClear(true)}
+            className="inline-flex min-h-11 items-center text-sm font-medium text-ink-muted underline underline-offset-4 transition-colors duration-200 hover:text-sale"
+          >
+            Xóa tất cả
+          </button>
+        )}
+      </div>
       <ul className="divide-y divide-line rounded-xl border border-line bg-white px-6">
         {lines.map((line) => (
           <CartRow key={line.product.id} product={line.product} quantity={line.quantity} />

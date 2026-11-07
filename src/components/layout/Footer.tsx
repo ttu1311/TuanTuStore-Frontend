@@ -13,6 +13,7 @@ const linkColumns: { title: string; links: FooterItem[] }[] = [
       { label: "Trang chủ", href: "/" },
       { label: "Sản phẩm", href: "/san-pham" },
       { label: "Đặc sản 3 miền", href: "/#ba-mien" },
+      { label: "Hộp quà Ba Miền", href: "/hop-qua" },
       { label: "Bán chạy", href: "/#ban-chay" },
       { label: "Giới thiệu", href: "/#gioi-thieu" },
     ],
@@ -20,19 +21,19 @@ const linkColumns: { title: string; links: FooterItem[] }[] = [
   {
     title: "Hỗ trợ khách hàng",
     links: [
-      { label: "Hướng dẫn mua hàng" },
-      { label: "Phương thức thanh toán" },
-      { label: "Theo dõi đơn hàng", href: "/tai-khoan?tab=orders" }, // danh sách đơn hàng trong tài khoản của khách
-      { label: "Câu hỏi thường gặp" },
+      { label: "Hướng dẫn mua hàng", href: "/thong-tin/huong-dan-mua-hang" },
+      { label: "Phương thức thanh toán", href: "/thong-tin/phuong-thuc-thanh-toan" },
+      { label: "Theo dõi đơn hàng", href: "/tra-cuu-don-hang" }, // tra cứu bằng mã đơn + số điện thoại, không cần đăng nhập
+      { label: "Câu hỏi thường gặp", href: "/thong-tin/cau-hoi-thuong-gap" },
     ],
   },
   {
     title: "Chính sách",
     links: [
-      { label: "Chính sách giao hàng" },
-      { label: "Đổi trả & hoàn tiền" },
-      { label: "Bảo mật thông tin" },
-      { label: "Điều khoản sử dụng" },
+      { label: "Chính sách giao hàng", href: "/thong-tin/chinh-sach-giao-hang" },
+      { label: "Đổi trả & hoàn tiền", href: "/thong-tin/doi-tra-hoan-tien" },
+      { label: "Bảo mật thông tin", href: "/thong-tin/bao-mat-thong-tin" },
+      { label: "Điều khoản sử dụng", href: "/thong-tin/dieu-khoan-su-dung" },
     ],
   },
 ];

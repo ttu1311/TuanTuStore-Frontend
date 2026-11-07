@@ -17,7 +17,16 @@ export interface Product {
   pack: string; // ví dụ "Gói 200g"
   isFeatured: boolean; // hiển thị trong "Sản phẩm nổi bật" ở trang chủ
   rank?: number; // vị trí bán chạy: 1 = "Top 1". Để trống với sản phẩm khác.
+  occasions?: string[]; // id các "dịp tặng" (src/data/occasions.ts), ví dụ ["qua-tet", "an-vat"]
+  story?: ProductStory; // "Câu chuyện sản phẩm" ở trang chi tiết
   createdAt: string; // ngày ISO, dùng cho cách sắp xếp "Mới nhất"
+}
+
+// Hướng dẫn dùng sản phẩm, hiện ở trang chi tiết. Mục nào trống thì không hiện.
+export interface ProductStory {
+  enjoy: string; // Cách thưởng thức
+  storage: string; // Bảo quản
+  season?: string; // Mùa ngon nhất (chỉ ghi khi món đó có mùa rõ ràng)
 }
 
 // Loại thương hiệu, để khách biết "thương hiệu" này thực chất là gì
@@ -82,5 +91,19 @@ export interface Order {
   shippingFee: number;
   discount: number;
   total: number;
+  // Có = khách chọn gói quà (miễn phí) khi thanh toán; `message` là lời nhắn in trên thiệp ("" = thiệp trống).
+  // Không có ở đơn cũ và đơn không gói quà.
+  gift?: { message: string };
+  createdAt: string; // ngày ISO
+}
+
+// Đánh giá của một khách đã NHẬN hàng (có đơn "Hoàn thành" chứa sản phẩm đó). Mỗi khách một đánh giá cho mỗi sản phẩm.
+export interface Review {
+  id: string;
+  productId: string;
+  userId: string;
+  userName: string; // tên lúc viết đánh giá
+  rating: number; // 1–5 sao
+  comment: string;
   createdAt: string; // ngày ISO
 }

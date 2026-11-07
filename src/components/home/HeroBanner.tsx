@@ -103,7 +103,7 @@ export default function HeroBanner() {
                     {region.label}
                   </p>
                   <h2
-                    className="mt-3 animate-fade-up font-display text-5xl font-bold leading-[0.95] [animation-delay:120ms] sm:text-6xl lg:text-7xl"
+                    className="mt-3 animate-fade-up font-display text-5xl/[1.08] font-bold [animation-delay:120ms] sm:text-6xl/[1.08] lg:text-7xl/[1.08]"
                   >
                     {slide.title}
                   </h2>
