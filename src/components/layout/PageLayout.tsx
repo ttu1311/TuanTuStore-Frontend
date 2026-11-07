@@ -23,7 +23,8 @@ export default function ContentSidebar({ children, sidebar, sidebarLabel, sideba
   if (!sidebar) return <div className="min-w-0">{children}</div>;
 
   return (
-    <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(15rem,28%)] lg:gap-10">
+    // Một cột minmax(0,1fr) trên màn nhỏ: nếu không, cột ngầm định ("auto") phình theo nội dung rộng như băng trượt ngang
+    <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(15rem,28%)] lg:gap-10">
       <div className="min-w-0">{children}</div>
       <aside
         aria-label={sidebarLabel}

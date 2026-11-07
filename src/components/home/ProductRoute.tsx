@@ -53,7 +53,8 @@ export default function ProductRoute() {
         const discount = discountPercent(product);
 
         return (
-          <li key={product.id}>
+          // Các điểm dừng hiện lần lượt từ Bắc vào Nam khi trang mở
+          <li key={product.id} className="animate-fade-up" style={{ animationDelay: `${index * 70}ms` }}>
             {/* Nơi một vùng mới bắt đầu, đường tuyến đổi màu và tên vùng được ghi ra */}
             {startsRegion && (
               <div className={`relative pb-2 pl-12 ${index === 0 ? "" : "pt-6"}`}>

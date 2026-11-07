@@ -32,6 +32,15 @@ const paths = {
     </>
   ),
   check: <path d="M20 6 9 17l-5-5" />,
+  "chevron-left": <path d="m15 18-6-6 6-6" />,
+  "chevron-right": <path d="m9 18 6-6-6-6" />,
+  pause: (
+    <>
+      <path d="M9 5v14" />
+      <path d="M15 5v14" />
+    </>
+  ),
+  play: <path d="M7 4v16l13-8Z" />,
   plus: (
     <>
       <path d="M5 12h14" />

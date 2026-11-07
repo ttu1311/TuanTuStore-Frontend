@@ -34,7 +34,7 @@ export default function ProductCard({
             alt={product.name}
             loading={eager ? "eager" : undefined}
             sizes="(min-width: 1280px) 290px, (min-width: 1024px) 23vw, (min-width: 480px) 45vw, 100vw"
-            className="block aspect-square h-auto w-full object-cover transition-opacity duration-200 group-hover:opacity-90"
+            className="block aspect-square h-auto w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           />
         </Link>
         {showRank && product.rank && (

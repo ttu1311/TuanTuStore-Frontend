@@ -1,3 +1,4 @@
+import StoreStats from "@/components/home/StoreStats";
 import Icon, { type IconName } from "@/components/ui/Icon";
 
 const benefits: { icon: IconName; title: string; text: string }[] = [
@@ -23,13 +24,15 @@ const benefits: { icon: IconName; title: string; text: string }[] = [
   },
 ];
 
-// "Mua đặc sản an tâm": thông tin hữu ích ở Sidebar trang chủ (mục menu "Giới thiệu" mở tới đây)
+// "Mua đặc sản an tâm": số liệu cửa hàng và thông tin hữu ích ở Sidebar trang chủ (mục menu "Giới thiệu" mở tới đây)
 export default function TrustSection() {
   return (
     <section id="gioi-thieu" aria-labelledby="trust-title" className="rounded-lg bg-surface p-5">
       <h2 id="trust-title" className="font-display text-2xl font-bold leading-none text-ink">
         Mua đặc sản an tâm
       </h2>
+      {/* Số liệu thật của cửa hàng, chạy lên khi cuộn tới */}
+      <StoreStats />
       <ul className="mt-5 space-y-5">
         {benefits.map((item) => (
           <li key={item.title} className="flex gap-3">

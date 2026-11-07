@@ -43,6 +43,36 @@ const config: Config = {
       scrollPadding: {
         header: "140px",
       },
+      // Chuyển động của trang chủ. Người bật "giảm chuyển động" thì chúng bị tắt (xem globals.css).
+      keyframes: {
+        "fade-up": {
+          from: { opacity: "0", transform: "translateY(16px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        marquee: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(-50%)" }, // dải có 2 bản giống nhau, chạy hết một bản thì lặp lại liền mạch
+        },
+        progress: {
+          from: { transform: "scaleX(0)" },
+          to: { transform: "scaleX(1)" },
+        },
+        "cart-pop": {
+          "0%, 100%": { transform: "scale(1)" },
+          "40%": { transform: "scale(1.35)" },
+        },
+        "map-ping": {
+          "0%": { transform: "scale(1)", opacity: "1" },
+          "80%, 100%": { transform: "scale(3.2)", opacity: "0" },
+        },
+      },
+      animation: {
+        "fade-up": "fade-up 0.6s ease-out both",
+        marquee: "marquee 40s linear infinite",
+        progress: "progress 6s linear both", // một ảnh của banner trang chủ (SLIDE_SECONDS trong HeroBanner)
+        "cart-pop": "cart-pop 0.4s ease-out",
+        "map-ping": "map-ping 2.4s ease-out infinite",
+      },
     },
   },
   plugins: [],

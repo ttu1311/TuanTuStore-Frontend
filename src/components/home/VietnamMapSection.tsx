@@ -50,14 +50,15 @@ export default function VietnamMapSection() {
       <p className="mt-2 text-sm text-ink-muted">Bấm vào một miền hoặc một chấm để xem đặc sản nơi đó.</p>
 
       {!isReady ? (
-        <div aria-hidden="true" className="mt-4 h-[410px] animate-pulse rounded-md bg-white" />
+        <div aria-hidden="true" className="mt-4 h-[530px] animate-pulse rounded-md bg-white lg:h-[410px]" />
       ) : (
         <div className="mt-4 flex flex-col items-center gap-3">
           <svg
             viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
             role="group"
             aria-label="Bản đồ Việt Nam chia thành ba miền"
-            className="h-[260px] w-auto shrink-0"
+            // Dưới cỡ lg cột này rộng hết màn hình, nên bản đồ to hơn để dễ chạm vào từng chấm tỉnh
+            className="h-[380px] w-auto max-w-full shrink-0 lg:h-[260px]"
           >
             <defs>
               <clipPath id="vn-map-clip">
@@ -135,8 +136,26 @@ export default function VietnamMapSection() {
               </Link>
             ))}
 
-            {dots.map((dot) => (
-              <Link key={dot.name} href={`/san-pham?province=${encodeURIComponent(dot.name)}`}>
+            {dots.map((dot, index) => (
+              <Link
+                key={dot.name}
+                href={`/san-pham?province=${encodeURIComponent(dot.name)}`}
+                // <title> bên dưới chỉ là chú thích khi rê chuột; tên của liên kết cho trình đọc màn hình đặt ở đây
+                aria-label={`${dot.name}, ${dot.count} sản phẩm`}
+              >
+                {/* Vòng sóng loang ra từ chấm tỉnh, như tín hiệu; mỗi chấm lệch nhịp một chút để không nháy cùng lúc */}
+                <circle
+                  aria-hidden="true"
+                  cx={dot.position.x}
+                  cy={dot.position.y}
+                  r={3}
+                  // Viền đậm + lõi trắng mờ: thấy rõ trên cả ba màu miền lẫn nền sáng ngoài bản đồ
+                  className="pointer-events-none animate-map-ping fill-white/40 stroke-ink [transform-box:fill-box] [transform-origin:center]"
+                  strokeWidth={1.2}
+                  style={{ animationDelay: `${(index * 0.37) % 2.4}s` }}
+                />
+                {/* Vùng chạm vô hình quanh chấm, để bấm bằng ngón tay dễ hơn (chấm thật chỉ vài px) */}
+                <circle aria-hidden="true" cx={dot.position.x} cy={dot.position.y} r={7} className="fill-transparent" />
                 <circle cx={dot.position.x} cy={dot.position.y} r={3 + Math.min(dot.count, 5) * 0.5} className="fill-white stroke-ink" strokeWidth={1}>
                   <title>{`${dot.name} (${dot.count} sản phẩm)`}</title>
                 </circle>

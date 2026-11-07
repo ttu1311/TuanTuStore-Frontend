@@ -35,9 +35,11 @@ export default function HeaderActions() {
       >
         <Icon name="bag" size={24} />
         {showBadge && (
+          // key: số đổi thì huy hiệu nảy lên một lần, để khách thấy hàng vừa vào giỏ
           <span
+            key={cartCount}
             aria-hidden="true"
-            className="absolute right-0 top-0.5 h-5 min-w-5 rounded-full bg-primary px-1 text-center text-xs font-semibold leading-5 text-white"
+            className="absolute right-0 top-0.5 h-5 min-w-5 animate-cart-pop rounded-full bg-primary px-1 text-center text-xs font-semibold leading-5 text-white"
           >
             {cartCount}
           </span>
