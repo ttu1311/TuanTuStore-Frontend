@@ -2,7 +2,7 @@
 // Các hàm này phải chạy ở trình duyệt (trong useEffect hoặc trình xử lý sự kiện), không bao giờ chạy khi render trên server.
 import { caMauProducts, initialProducts, initialUsers } from "@/data/initialData";
 import { renamedImages, seedUpdates } from "@/data/seedUpdates";
-import type { CartItem, Order, Product, Review, User } from "@/types";
+import type { CartItem, ContactRequest, Order, Product, Review, User } from "@/types";
 
 export const STORAGE_KEYS = {
   products: "tuantustore-products",
@@ -14,6 +14,7 @@ export const STORAGE_KEYS = {
   seedBatches: "tuantustore-seed-batches", // các seedBatches bên dưới mà trình duyệt này đã nhận
   recentlyViewed: "tuantustore-recently-viewed", // id các sản phẩm vừa xem, mới nhất đứng đầu
   reviews: "tuantustore-reviews", // đánh giá sản phẩm của khách đã nhận hàng
+  contactRequests: "tuantustore-contact-requests", // yêu cầu liên hệ lại gửi từ trang /lien-he
 } as const;
 
 // Các nhóm sản phẩm được thêm vào dữ liệu mẫu SAU phiên bản đầu tiên của website.
@@ -54,6 +55,7 @@ export function initializeStorage() {
   if (!Array.isArray(readJSON(STORAGE_KEYS.orders))) writeJSON(STORAGE_KEYS.orders, []);
   if (typeof readJSON(STORAGE_KEYS.orderSeq) !== "number") writeJSON(STORAGE_KEYS.orderSeq, 0);
   if (!Array.isArray(readJSON(STORAGE_KEYS.reviews))) writeJSON(STORAGE_KEYS.reviews, []); // không có đánh giá mẫu: chỉ đánh giá thật
+  if (!Array.isArray(readJSON(STORAGE_KEYS.contactRequests))) writeJSON(STORAGE_KEYS.contactRequests, []);
   addNewSeedBatches();
   applySeedUpdates();
   repairDemoAdmin();
@@ -161,6 +163,7 @@ export type StoredData = {
   orders: Order[];
   cart: CartItem[];
   reviews: Review[];
+  contactRequests: ContactRequest[];
   currentUserId: string | null;
 };
 
@@ -172,6 +175,7 @@ export function loadStoredData(): StoredData {
     orders: readJSON<Order[]>(STORAGE_KEYS.orders) ?? [],
     cart: readJSON<CartItem[]>(STORAGE_KEYS.cart) ?? [],
     reviews: readJSON<Review[]>(STORAGE_KEYS.reviews) ?? [],
+    contactRequests: readJSON<ContactRequest[]>(STORAGE_KEYS.contactRequests) ?? [],
     currentUserId: readCurrentUserId(),
   };
 }

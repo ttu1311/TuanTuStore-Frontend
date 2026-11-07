@@ -116,6 +116,9 @@ function InfoNav({ current }: { current: string }) {
         <Link href="/tra-cuu-don-hang" className="flex min-h-11 items-center rounded-md px-3 font-semibold text-primary hover:bg-primary-soft">
           Tra cứu đơn hàng →
         </Link>
+        <Link href="/lien-he" className="flex min-h-11 items-center rounded-md px-3 font-semibold text-primary hover:bg-primary-soft">
+          Liên hệ cửa hàng →
+        </Link>
       </div>
     </nav>
   );

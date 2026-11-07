@@ -29,7 +29,8 @@ import {
 } from "@/lib/storage";
 import { normalizeEmail, normalizePhone, type RegisterValues } from "@/lib/validation";
 import { MAX_COMMENT_LENGTH, reviewEligibility } from "@/lib/reviews";
-import type { CartItem, Order, OrderItem, OrderStatus, PaymentMethod, Product, Review, Role, User } from "@/types";
+import { validateContact, type ContactValues } from "@/lib/contact";
+import type { CartItem, ContactRequest, Order, OrderItem, OrderStatus, PaymentMethod, Product, Review, Role, User } from "@/types";
 
 // Kết quả mà mọi thao tác trả về. `field` cho biết thông báo thuộc về ô nhập nào (nếu có).
 export type ActionResult = { ok: true } | { ok: false; message: string; field?: string };
@@ -56,6 +57,7 @@ type StoreValue = {
   orders: Order[];
   cart: CartItem[];
   reviews: Review[];
+  contactRequests: ContactRequest[];
   currentUser: User | null;
 
   // Sản phẩm (Admin)
@@ -89,6 +91,11 @@ type StoreValue = {
   submitReview: (productId: string, rating: number, comment: string) => ActionResult;
   deleteReview: (reviewId: string) => ActionResult; // người viết hoặc ADMIN
 
+  // Yêu cầu liên hệ lại: ai cũng gửi được; chỉ ADMIN đánh dấu và xóa
+  submitContactRequest: (values: ContactValues) => ActionResult;
+  setContactRequestDone: (id: string, done: boolean) => ActionResult;
+  deleteContactRequest: (id: string) => ActionResult;
+
   // Người dùng (Admin)
   changeUserRole: (userId: string, role: Role) => ActionResult;
   deleteUser: (userId: string) => ActionResult;
@@ -103,6 +110,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [contactRequests, setContactRequests] = useState<ContactRequest[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ id: number; message: string } | null>(null);
   const closeToast = useCallback(() => setToast(null), []);
@@ -116,6 +124,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setOrders(data.orders);
       setCart(data.cart);
       setReviews(data.reviews);
+      setContactRequests(data.contactRequests);
       setCurrentUserId(data.currentUserId);
     }
 
@@ -158,6 +167,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   function saveReviews(next: Review[]) {
     if (!writeJSON(STORAGE_KEYS.reviews, next)) return false;
     setReviews(next);
+    return true;
+  }
+
+  function saveContactRequests(next: ContactRequest[]) {
+    if (!writeJSON(STORAGE_KEYS.contactRequests, next)) return false;
+    setContactRequests(next);
     return true;
   }
 
@@ -410,6 +425,41 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     return saveReviews(reviews.filter((r) => r.id !== reviewId)) ? OK : fail(SAVE_ERROR);
   }
 
+  // ---------- Yêu cầu liên hệ lại ----------
+
+  function submitContactRequest(values: ContactValues): ActionResult {
+    // Kiểm tra lại ở đây (không chỉ ở giao diện)
+    const errors = validateContact(values);
+    const firstField = Object.keys(errors)[0] as keyof ContactValues | undefined;
+    if (firstField) return fail(errors[firstField] ?? "Thông tin chưa hợp lệ", firstField);
+
+    const request: ContactRequest = {
+      id: createId("c"),
+      name: values.name.trim(),
+      phone: normalizePhone(values.phone),
+      email: values.email.trim() === "" ? "" : normalizeEmail(values.email),
+      topic: values.topic,
+      callTime: values.callTime,
+      message: values.message.trim(),
+      userId: currentUser?.id ?? null,
+      done: false,
+      createdAt: new Date().toISOString(),
+    };
+    return saveContactRequests([...contactRequests, request]) ? OK : fail(SAVE_ERROR);
+  }
+
+  function setContactRequestDone(id: string, done: boolean): ActionResult {
+    if (!isAdmin) return fail(NO_PERMISSION);
+    if (!contactRequests.some((request) => request.id === id)) return fail("Yêu cầu này không còn tồn tại.");
+    const next = contactRequests.map((request) => (request.id === id ? { ...request, done } : request));
+    return saveContactRequests(next) ? OK : fail(SAVE_ERROR);
+  }
+
+  function deleteContactRequest(id: string): ActionResult {
+    if (!isAdmin) return fail(NO_PERMISSION);
+    return saveContactRequests(contactRequests.filter((request) => request.id !== id)) ? OK : fail(SAVE_ERROR);
+  }
+
   // ---------- Người dùng (Admin) ----------
 
   function adminCount() {
@@ -462,6 +512,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         orders,
         cart,
         reviews,
+        contactRequests,
         currentUser,
         addProduct,
         updateProduct,
@@ -481,6 +532,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         deleteOrder,
         submitReview,
         deleteReview,
+        submitContactRequest,
+        setContactRequestDone,
+        deleteContactRequest,
         changeUserRole,
         deleteUser,
       }}

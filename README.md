@@ -90,6 +90,7 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 | `/hop-qua` | "Hộp quà Ba Miền": pick one product from each region and add the whole box to the cart |
 | `/tra-cuu-don-hang` | Order lookup without login: order code + phone number. Reads `?ma=` (the "Đặt hàng thành công" screen links here) |
 | `/thong-tin/[slug]` | Help and policy pages (content in `src/data/infoPages.ts`): buying guide, payment, FAQ, shipping, returns, privacy, terms |
+| `/lien-he` | Contact: call, Zalo and email links, and a "call me back" form (name, phone, topic, preferred time, message). Reads `?chu-de=` to pre-select the topic. Contact details live in `src/data/contact.ts` |
 | `/nguon-anh` | Photo credits: author and licence of each photo |
 | `/admin` | Admin dashboard: numbers and recent orders |
 | `/admin/san-pham` | Admin: product list, delete |
@@ -97,6 +98,7 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 | `/admin/san-pham/[id]/sua` | Admin: edit a product |
 | `/admin/don-hang` | Admin: orders — details, change status, delete |
 | `/admin/nguoi-dung` | Admin: users — change role (USER / ADMIN), delete |
+| `/admin/lien-he` | Admin: "call me back" requests — filter waiting / called, mark as called, delete |
 
 Unknown pages and unknown products show a Vietnamese "Lỗi 404" message.
 
@@ -112,6 +114,7 @@ Unknown pages and unknown products show a Vietnamese "Lỗi 404" message.
 | `tuantustore-order-seq` | last order number used | `0` |
 | `tuantustore-seed-batches` | groups of products added after the first version that this browser already received | `["ca-mau"]` |
 | `tuantustore-reviews` | product reviews (stars + comment) | `[]` (no sample reviews) |
+| `tuantustore-contact-requests` | "call me back" requests sent from `/lien-he` | `[]` |
 | `tuantustore-recently-viewed` | ids of the products this browser opened last (shown in "Đã xem gần đây") | — (not created until a product is opened) |
 
 - **First visit:** a key that does not exist yet is filled with its default value. A key that already has data is

@@ -19,7 +19,7 @@ const navItems: { label: string; href: string; region?: Region }[] = [
   { label: "Miền Nam", href: "/#mien-nam", region: "nam" },
   { label: "Hộp quà", href: "/hop-qua" },
   { label: "Giới thiệu", href: "/#gioi-thieu" },
-  { label: "Liên hệ", href: "/#lien-he" },
+  { label: "Liên hệ", href: "/lien-he" },
 ];
 
 // Menu chính. Nó tự đọc địa chỉ của trang hiện tại (usePathname),

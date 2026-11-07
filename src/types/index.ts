@@ -97,6 +97,20 @@ export interface Order {
   createdAt: string; // ngày ISO
 }
 
+// Yêu cầu "cửa hàng gọi lại cho tôi" gửi từ trang /lien-he. Admin xem và đánh dấu ở /admin/lien-he.
+export interface ContactRequest {
+  id: string;
+  name: string;
+  phone: string; // đã chuẩn hóa, ví dụ "0901234567"
+  email: string; // "" khi khách không ghi
+  topic: string; // id trong contactTopics (src/lib/contact.ts)
+  callTime: string; // id trong callTimes (src/lib/contact.ts)
+  message: string; // "" khi khách không viết gì
+  userId: string | null; // null = khách chưa đăng nhập
+  done: boolean; // Admin đã liên hệ lại
+  createdAt: string; // ngày ISO
+}
+
 // Đánh giá của một khách đã NHẬN hàng (có đơn "Hoàn thành" chứa sản phẩm đó). Mỗi khách một đánh giá cho mỗi sản phẩm.
 export interface Review {
   id: string;

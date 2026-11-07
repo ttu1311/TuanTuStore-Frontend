@@ -1,5 +1,6 @@
 import SameRouteLink from "@/components/layout/SameRouteLink";
-import Icon, { type IconName } from "@/components/ui/Icon";
+import Icon from "@/components/ui/Icon";
+import { contactChannels, storeContact } from "@/data/contact";
 
 // Các liên kết nhanh bắt đầu bằng "/" nên dùng được từ mọi trang.
 // "/#id" nghĩa là: về trang chủ, rồi cuộn tới phần có id đó.
@@ -38,11 +39,6 @@ const linkColumns: { title: string; links: FooterItem[] }[] = [
   },
 ];
 
-// Chỉ thông tin liên hệ thật mới thuộc về đây. Số điện thoại và email hỗ trợ giữ chỗ đã được gỡ bỏ;
-// khi có thông tin thật thì thêm lại vào danh sách này.
-const contacts: { icon: IconName; text: string }[] = [
-  { icon: "clock", text: "8:00 – 21:00, Thứ 2 – Chủ nhật" },
-];
 
 export default function Footer() {
   return (
@@ -88,23 +84,39 @@ export default function Footer() {
 
           <div>
             <h3 className="mb-4 text-base font-semibold text-ink">Liên hệ</h3>
+            {/* Thông tin liên hệ nằm ở src/data/contact.ts */}
             <ul className="space-y-2">
-              {contacts.map((contact) => (
-                <li key={contact.icon} className="flex gap-3 text-ink-muted">
-                  <Icon name={contact.icon} size={16} className="mt-1 text-primary" />
-                  <span>{contact.text}</span>
+              {contactChannels.map((channel) => (
+                <li key={channel.label}>
+                  <a
+                    href={channel.href}
+                    {...(channel.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                    className="flex gap-3 break-all text-ink-muted transition-colors duration-200 hover:text-primary"
+                  >
+                    <Icon name={channel.icon} size={16} className="mt-1 text-primary" />
+                    <span>
+                      <span className="sr-only">{channel.label}: </span>
+                      {channel.footerText}
+                    </span>
+                  </a>
                 </li>
               ))}
+              <li className="flex gap-3 text-ink-muted">
+                <Icon name="clock" size={16} className="mt-1 text-primary" />
+                <span>{storeContact.hours}</span>
+              </li>
             </ul>
+            <SameRouteLink
+              href="/lien-he"
+              className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary transition-colors duration-200 hover:underline"
+            >
+              Gửi yêu cầu gọi lại →
+            </SameRouteLink>
           </div>
         </div>
 
-        <div className="flex flex-col justify-between gap-4 border-t border-line py-6 text-sm text-ink-muted md:flex-row">
+        <div className="border-t border-line py-6 text-sm text-ink-muted">
           <span>© 2026 TuanTuStore. Bảo lưu mọi quyền.</span>
-          {/* Tác giả và giấy phép của từng ảnh (CC BY-SA yêu cầu ghi rõ) */}
-          <SameRouteLink href="/nguon-anh" className="transition-colors duration-200 hover:text-primary">
-            Ảnh: Wikimedia Commons — tác giả và giấy phép
-          </SameRouteLink>
         </div>
       </div>
     </footer>

@@ -1,6 +1,7 @@
 import { DISCOUNT, FREE_SHIPPING_MIN, SHIPPING_FEE } from "@/lib/cart";
 import { formatVND } from "@/lib/format";
 import { orderStatuses, orderStatusLabels } from "@/lib/orders";
+import { storeContact } from "@/data/contact";
 
 // Nội dung các trang hướng dẫn và chính sách (/thong-tin/<slug>), liên kết từ Footer.
 // Các con số (phí vận chuyển, mức miễn phí, giảm giá) lấy từ src/lib/cart.ts, nên luôn khớp với giỏ hàng.
@@ -115,6 +116,10 @@ export const infoPages: InfoPage[] = [
         question: "Tôi muốn đổi hoặc trả hàng thì làm thế nào?",
         answer: "Xem trang Đổi trả & hoàn tiền: sản phẩm lỗi, hư hỏng khi vận chuyển hoặc giao sai được đổi trả trong 7 ngày kể từ khi nhận hàng.",
       },
+      {
+        question: "Tôi muốn hỏi thêm thì liên hệ cửa hàng bằng cách nào?",
+        answer: `Gọi hoặc nhắn Zalo số ${storeContact.phoneDisplay}, gửi email tới ${storeContact.email}, hoặc để lại số điện thoại ở trang Liên hệ để cửa hàng gọi lại. Giờ làm việc: ${storeContact.hours}.`,
+      },
     ],
   },
   {
@@ -164,7 +169,7 @@ export const infoPages: InfoPage[] = [
       {
         heading: "Điều kiện",
         list: [
-          "Yêu cầu trong vòng 7 ngày kể từ khi nhận hàng, kèm mã đơn hàng và ảnh chụp sản phẩm.",
+          `Yêu cầu trong vòng 7 ngày kể từ khi nhận hàng, kèm mã đơn hàng và ảnh chụp sản phẩm: nhắn Zalo ${storeContact.phoneDisplay} hoặc gửi email tới ${storeContact.email}.`,
           "Thực phẩm đã mở bao bì chỉ được đổi trả khi có lỗi từ phía cửa hàng.",
           "Không đổi trả vì lý do khẩu vị, vì đặc sản mỗi vùng có hương vị riêng.",
         ],
