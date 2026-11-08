@@ -3,7 +3,7 @@ import { PageContainer } from "@/components/layout/PageLayout";
 import OrderLookup from "@/components/orders/OrderLookup";
 
 export const metadata: Metadata = {
-  title: "Tra cứu đơn hàng — TuanTuStore",
+  title: "Tra cứu đơn hàng — Đặc sản 3 Miền",
   description: "Xem trạng thái đơn hàng bằng mã đơn và số điện thoại, không cần đăng nhập.",
 };
 

@@ -4,7 +4,7 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminProductTable from "@/components/admin/AdminProductTable";
 import { btnBase, btnPrimary, btnSmall } from "@/components/ui/buttons";
 
-export const metadata: Metadata = { title: "Sản phẩm — Quản trị TuanTuStore" };
+export const metadata: Metadata = { title: "Sản phẩm — Quản trị Đặc sản 3 Miền" };
 
 export default function AdminProductsPage() {
   return (

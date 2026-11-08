@@ -7,11 +7,15 @@ out/
 next-env.d.ts
 *.tsbuildinfo
 
-# local environment files (this project does not need any)
+# local environment files (real keys and bank details go in .env.local); .env.example is the template
 .env*
+!.env.example
 
 # OS / editor
 .DS_Store
 
 # Claude Code local config
 .claude/
+
+# Vercel CLI link (project id)
+.vercel

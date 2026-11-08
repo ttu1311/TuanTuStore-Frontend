@@ -8,8 +8,10 @@ export type ReviewEligibility = "login" | "not-bought" | "not-received" | "can-r
 
 export function reviewEligibility(user: User | null, orders: Order[], productId: string): ReviewEligibility {
   if (!user) return "login";
+  // Đơn đã hủy không tính là đã mua
   const myOrders = orders.filter(
-    (order) => order.userId === user.id && order.items.some((item) => item.productId === productId)
+    (order) =>
+      order.userId === user.id && order.status !== "CANCELLED" && order.items.some((item) => item.productId === productId)
   );
   if (myOrders.length === 0) return "not-bought";
   // Chỉ đánh giá khi đã nhận hàng: đơn có sản phẩm này đã "Hoàn thành"
@@ -31,9 +33,11 @@ export function formatRating(average: number) {
 }
 
 // Số đã bán của mỗi sản phẩm: cộng số lượng trong mọi đơn hàng đã đặt
+// Đơn đã hủy không tính (hàng đã trả về kho)
 export function soldCounts(orders: Order[]) {
   const counts = new Map<string, number>();
   for (const order of orders) {
+    if (order.status === "CANCELLED") continue;
     for (const item of order.items) counts.set(item.productId, (counts.get(item.productId) ?? 0) + item.quantity);
   }
   return counts;

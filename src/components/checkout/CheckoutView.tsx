@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import AddressFields from "@/components/address/AddressFields";
+import BankTransferQR from "@/components/payment/BankTransferQR";
 import ContentSidebar from "@/components/layout/PageLayout";
 import { btnBase, btnPrimary, btnSecondary } from "@/components/ui/buttons";
 import LoadingState from "@/components/ui/LoadingState";
@@ -9,75 +11,147 @@ import { useStore } from "@/context/StoreContext";
 import FreeShippingProgress from "@/components/cart/FreeShippingProgress";
 import { calculateTotals, getCartLines, type CartLine } from "@/lib/cart";
 import { formatVND } from "@/lib/format";
+import { emptyAddress, formatAddress, validateAddress } from "@/lib/address";
 import {
   MAX_LENGTH,
-  requiredMessages,
+  checkoutFieldOrder,
   validateCheckout,
   type CheckoutErrors,
   type CheckoutFields,
 } from "@/lib/orders";
-import type { Order, PaymentMethod } from "@/types";
+import { isValidPhone } from "@/lib/validation";
+import type { Order, PaymentMethod, SavedAddress, User } from "@/types";
 
 const fieldStyle =
-  "h-12 w-full rounded-lg border bg-white px-4 text-ink transition-colors duration-200 placeholder:text-[#7A7F7B] focus:outline-none focus:ring-[3px]";
+  "h-12 w-full rounded-lg border bg-white px-4 text-ink transition-colors duration-200 placeholder:text-[#686D69] focus:outline-none focus:ring-[3px]";
 const fieldOk = "border-line focus:border-primary focus:ring-primary-soft";
 const fieldBad = "border-sale focus:border-sale focus:ring-sale/20";
 
+const recipientOptions: { value: "self" | "other"; label: string; hint: string }[] = [
+  { value: "self", label: "Mua cho bản thân", hint: "Giao tới địa chỉ mặc định trong tài khoản" },
+  { value: "other", label: "Mua tặng người thân", hint: "Nhập tên, số điện thoại và địa chỉ người nhận" },
+];
+
 const paymentOptions: { value: PaymentMethod; label: string }[] = [
   { value: "COD", label: "Thanh toán khi nhận hàng (COD)" },
-  { value: "BANK_TRANSFER", label: "Chuyển khoản ngân hàng" },
+  { value: "BANK_TRANSFER", label: "Chuyển khoản ngân hàng (quét mã QR)" },
 ];
+
+type Recipient = "self" | "other";
 
 type CheckoutFormProps = {
   lines: CartLine[];
-  initialValues: CheckoutFields;
+  user: User | null; // null = khách chưa đăng nhập
   onPlaced: (order: Order) => void;
 };
 
+// Hồ sơ đã đủ để giao hàng cho chính khách: có số điện thoại và địa chỉ mặc định hợp lệ
+function hasDeliveryProfile(user: User | null): user is User & { address: SavedAddress } {
+  return Boolean(user && isValidPhone(user.phone) && user.address && Object.keys(validateAddress(user.address)).length === 0);
+}
+
 // Form giao hàng + tóm tắt đơn hàng. Chỉ hiển thị khi giỏ hàng có sản phẩm.
-function CheckoutForm({ lines, initialValues, onPlaced }: CheckoutFormProps) {
-  const { placeOrder } = useStore();
-  const [values, setValues] = useState<CheckoutFields>(initialValues);
+// Khách đã đăng nhập chọn "Mua cho bản thân" (dùng địa chỉ mặc định trong tài khoản, không nhập lại)
+// hoặc "Mua tặng người thân" (nhập người nhận). Khách chưa đăng nhập luôn điền form.
+function CheckoutForm({ lines, user, onPlaced }: CheckoutFormProps) {
+  const { placeOrder, updateProfile } = useStore();
+  const [recipient, setRecipient] = useState<Recipient>("self");
+  // Mỗi lựa chọn giữ form riêng, nên chuyển qua lại không làm mất chữ đã gõ
+  const [forms, setForms] = useState<Record<Recipient, CheckoutFields>>({
+    self: {
+      fullName: user?.name ?? "",
+      phone: user?.phone ?? "",
+      email: user?.email ?? "",
+      address: user?.address ?? emptyAddress,
+      note: "",
+    },
+    other: { fullName: "", phone: "", email: user?.email ?? "", address: emptyAddress, note: "" },
+  });
+  const [note, setNote] = useState("");
   const [errors, setErrors] = useState<CheckoutErrors>({});
   const [payment, setPayment] = useState<PaymentMethod>("COD");
   // Gói quà: miễn phí, kèm lời nhắn in trên thiệp (không bắt buộc)
   const [giftWrap, setGiftWrap] = useState(false);
   const [giftMessage, setGiftMessage] = useState("");
+  // Lần đầu "Mua cho bản thân" khi hồ sơ chưa có địa chỉ: lưu luôn làm địa chỉ mặc định
+  const [saveAsDefault, setSaveAsDefault] = useState(true);
   const [saveError, setSaveError] = useState(""); // lỗi không thuộc về một ô nào
+
+  // Mua cho bản thân với hồ sơ đầy đủ: không có ô nào để nhập, chỉ hiện địa chỉ đã lưu
+  const useSavedAddress = recipient === "self" && hasDeliveryProfile(user);
+  const isAdminUser = user?.role === "ADMIN";
+  const values = forms[recipient];
 
   // Giá lấy từ danh sách sản phẩm hiện tại trong localStorage
   const { subtotal, shippingFee, discount, total } = calculateTotals(
     lines.reduce((sum, line) => sum + line.product.price * line.quantity, 0)
   );
 
-  function handleChange(field: keyof CheckoutFields, value: string) {
-    setValues({ ...values, [field]: value });
+  function clearError(field: keyof CheckoutErrors) {
     setSaveError("");
     // Xóa lỗi của ô này ngay khi người dùng sửa nó
     if (errors[field]) setErrors({ ...errors, [field]: undefined });
+  }
+
+  function handleChange(field: "fullName" | "phone" | "email", value: string) {
+    setForms({ ...forms, [recipient]: { ...values, [field]: value } });
+    clearError(field);
+  }
+
+  function handleAddressChange(field: keyof SavedAddress, value: string) {
+    setForms((current) => ({
+      ...current,
+      [recipient]: { ...current[recipient], address: { ...current[recipient].address, [field]: value } },
+    }));
+    clearError(field);
+  }
+
+  function chooseRecipient(next: Recipient) {
+    setRecipient(next);
+    setErrors({});
+    setSaveError("");
   }
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setSaveError("");
 
-    const newErrors = validateCheckout(values);
+    // Khách đã đăng nhập: email luôn là email tài khoản (không có ô email)
+    const customer: CheckoutFields =
+      useSavedAddress && user?.address
+        ? { fullName: user.name, phone: user.phone, email: user.email, address: user.address, note }
+        : { ...values, email: user ? user.email : values.email, note };
+
+    const newErrors = validateCheckout(customer);
     setErrors(newErrors);
-    const firstInvalid = requiredMessages.find(([field]) => newErrors[field]);
+    const firstInvalid = checkoutFieldOrder.find((field) => newErrors[field]);
     if (firstInvalid) {
-      document.getElementById(firstInvalid[0])?.focus();
+      document.getElementById(firstInvalid)?.focus();
       return;
     }
-    if (Object.keys(newErrors).length > 0) return; // lỗi "quá dài" ở ô ghi chú
 
     // Lưu đơn hàng vào localStorage. Giỏ hàng chỉ được làm trống nếu đơn đã lưu thành công.
-    const result = placeOrder(values, payment, giftWrap ? { message: giftMessage } : undefined);
-    if (result.ok) onPlaced(result.order);
-    else setSaveError(result.message);
+    const result = placeOrder(customer, payment, {
+      gift: giftWrap ? { message: giftMessage } : undefined,
+      forOther: Boolean(user) && recipient === "other",
+    });
+    if (!result.ok) {
+      setSaveError(result.message);
+      return;
+    }
+    // Lần đầu mua cho bản thân: lưu họ tên, số điện thoại và địa chỉ vào hồ sơ cho những lần sau
+    if (user && !isAdminUser && recipient === "self" && !useSavedAddress && saveAsDefault) {
+      updateProfile(customer.fullName, customer.phone, customer.address);
+    }
+    onPlaced(result.order);
   }
 
   // Một ô nhập chữ có nhãn kèm thông báo lỗi
-  function renderField(field: keyof CheckoutFields, label: string, options: { type?: string; autoComplete?: string } = {}) {
+  function renderField(
+    field: "fullName" | "phone" | "email",
+    label: string,
+    options: { type?: string; autoComplete?: string } = {}
+  ) {
     const error = errors[field];
     return (
       <div>
@@ -179,27 +253,95 @@ function CheckoutForm({ lines, initialValues, onPlaced }: CheckoutFormProps) {
             <h2 id="shipping-title" className="font-display text-2xl font-semibold text-ink">
               Thông tin giao hàng
             </h2>
-            <div className="mt-6 grid gap-5 sm:grid-cols-2">
-              {renderField("fullName", "Họ và tên", { autoComplete: "name" })}
-              {renderField("phone", "Số điện thoại", { type: "tel", autoComplete: "tel" })}
-              <div className="sm:col-span-2">{renderField("email", "Email", { type: "email", autoComplete: "email" })}</div>
-              {renderField("province", "Tỉnh / Thành phố")}
-              {renderField("district", "Quận / Huyện")}
-              {renderField("ward", "Phường / Xã")}
-              {renderField("address", "Địa chỉ cụ thể", { autoComplete: "street-address" })}
-              <div className="sm:col-span-2">
-                <label htmlFor="note" className="mb-2 block font-medium text-ink">
-                  Ghi chú đơn hàng <span className="font-normal text-ink-muted">(không bắt buộc)</span>
-                </label>
-                <textarea
-                  id="note"
-                  rows={3}
-                  value={values.note}
-                  maxLength={MAX_LENGTH.note}
-                  onChange={(event) => handleChange("note", event.target.value)}
-                  className="w-full rounded-lg border border-line bg-white px-4 py-3 text-ink transition-colors duration-200 focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-soft"
-                />
+
+            {user && (
+              <fieldset className="mt-5">
+                <legend className="sr-only">Bạn mua cho ai?</legend>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {recipientOptions.map((option) => (
+                    <label
+                      key={option.value}
+                      className="flex cursor-pointer gap-3 rounded-lg border border-line p-4 transition-colors duration-200 hover:border-primary has-[:checked]:border-primary has-[:checked]:bg-primary-soft has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-primary-soft"
+                    >
+                      <input
+                        type="radio"
+                        name="recipient"
+                        value={option.value}
+                        checked={recipient === option.value}
+                        onChange={() => chooseRecipient(option.value)}
+                        className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-primary"
+                      />
+                      <span>
+                        <span className="block font-semibold text-ink">{option.label}</span>
+                        <span className="block text-sm text-ink-muted">{option.hint}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            )}
+
+            {useSavedAddress && user?.address ? (
+              // Mua cho bản thân: dùng địa chỉ mặc định trong tài khoản, không bắt nhập lại
+              <div className="mt-5 rounded-lg bg-surface p-4">
+                <p className="text-sm font-medium text-ink-muted">Giao tới địa chỉ mặc định</p>
+                <p className="mt-1 font-semibold text-ink">
+                  {user.name} · {user.phone}
+                </p>
+                <p className="mt-1 text-ink">{formatAddress(user.address)}</p>
+                <Link href="/tai-khoan" className="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-primary underline underline-offset-4">
+                  Đổi địa chỉ mặc định
+                </Link>
               </div>
+            ) : (
+              <>
+                {/* Tài khoản ADMIN không có địa chỉ mặc định, nên không nhắc lưu */}
+                {user && !isAdminUser && recipient === "self" && (
+                  <p className="mt-5 rounded-lg bg-gold-soft px-4 py-3 text-sm text-gold-ink">
+                    Tài khoản của bạn chưa có địa chỉ giao hàng mặc định. Nhập một lần, lần sau không phải nhập lại.
+                  </p>
+                )}
+                {user && recipient === "other" && (
+                  <p className="mt-5 text-sm text-ink-muted">
+                    Nhập thông tin của người nhận. Thông báo đơn hàng vẫn gửi tới email của bạn ({user.email}).
+                  </p>
+                )}
+                <div className="mt-5 grid gap-5 sm:grid-cols-2">
+                  {renderField("fullName", recipient === "other" ? "Họ và tên người nhận" : "Họ và tên", { autoComplete: recipient === "other" ? "off" : "name" })}
+                  {renderField("phone", recipient === "other" ? "Số điện thoại người nhận" : "Số điện thoại", { type: "tel", autoComplete: recipient === "other" ? "off" : "tel" })}
+                  {!user && <div className="sm:col-span-2">{renderField("email", "Email", { type: "email", autoComplete: "email" })}</div>}
+                  <AddressFields idPrefix="" value={values.address} errors={errors} onChange={handleAddressChange} />
+                </div>
+                {user && !isAdminUser && recipient === "self" && (
+                  <label className="mt-4 flex min-h-11 cursor-pointer items-center gap-3 text-ink">
+                    <input
+                      type="checkbox"
+                      checked={saveAsDefault}
+                      onChange={(event) => setSaveAsDefault(event.target.checked)}
+                      className="h-5 w-5 shrink-0 cursor-pointer accent-primary"
+                    />
+                    Lưu làm địa chỉ mặc định của tài khoản
+                  </label>
+                )}
+              </>
+            )}
+
+            <div className="mt-5">
+              <label htmlFor="note" className="mb-2 block font-medium text-ink">
+                Ghi chú đơn hàng <span className="font-normal text-ink-muted">(không bắt buộc)</span>
+              </label>
+              <textarea
+                id="note"
+                rows={3}
+                value={note}
+                maxLength={MAX_LENGTH.note}
+                onChange={(event) => {
+                  setNote(event.target.value);
+                  clearError("note");
+                }}
+                className="w-full rounded-lg border border-line bg-white px-4 py-3 text-ink transition-colors duration-200 focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-soft"
+              />
+              {errors.note && <p className="mt-1.5 text-sm text-sale">{errors.note}</p>}
             </div>
           </section>
 
@@ -221,6 +363,11 @@ function CheckoutForm({ lines, initialValues, onPlaced }: CheckoutFormProps) {
                   {option.label}
                 </label>
               ))}
+              {payment === "BANK_TRANSFER" && (
+                <p className="pl-8 text-sm text-ink-muted">
+                  Đặt hàng xong, bạn sẽ thấy mã QR có sẵn số tiền và nội dung chuyển khoản (mã đơn).
+                </p>
+              )}
             </div>
           </fieldset>
 
@@ -251,7 +398,7 @@ function CheckoutForm({ lines, initialValues, onPlaced }: CheckoutFormProps) {
                   maxLength={200}
                   onChange={(event) => setGiftMessage(event.target.value)}
                   placeholder="Ví dụ: Chúc mẹ năm mới mạnh khỏe!"
-                  className="w-full rounded-lg border border-line bg-white px-4 py-3 text-ink transition-colors duration-200 placeholder:text-[#7A7F7B] focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-soft"
+                  className="w-full rounded-lg border border-line bg-white px-4 py-3 text-ink transition-colors duration-200 placeholder:text-[#686D69] focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-soft"
                 />
                 <p className="mt-1 text-right text-sm text-ink-muted">{giftMessage.length}/200</p>
               </div>
@@ -275,13 +422,18 @@ export default function CheckoutView() {
     return (
       <div role="status" className="rounded-xl border border-line bg-surface px-6 py-16 text-center">
         <p className="font-display text-2xl font-semibold text-ink">Đặt hàng thành công!</p>
-        <p className="mt-3 text-ink-muted">Cảm ơn bạn đã mua sắm tại TuanTuStore.</p>
+        <p className="mt-3 text-ink-muted">Cảm ơn bạn đã mua sắm tại Đặc sản 3 Miền.</p>
         <p className="mt-5 text-ink-muted">
           Mã đơn hàng: <span className="font-semibold text-ink">{placedOrder.code}</span>
         </p>
         <p className="mt-1 text-ink-muted">
           Tổng cộng: <span className="text-lg font-bold text-primary">{formatVND(placedOrder.total)}</span>
         </p>
+        {placedOrder.paymentMethod === "BANK_TRANSFER" && (
+          <div className="mx-auto mt-6 max-w-[40rem]">
+            <BankTransferQR orderCode={placedOrder.code} amount={placedOrder.total} />
+          </div>
+        )}
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link href="/san-pham" className={`${btnBase} ${btnPrimary}`}>
             Tiếp tục mua sắm
@@ -314,23 +466,11 @@ export default function CheckoutView() {
     );
   }
 
-  // Khách đã đăng nhập không cần gõ lại họ tên, số điện thoại và email
-  const initialValues: CheckoutFields = {
-    fullName: currentUser?.name ?? "",
-    phone: currentUser?.phone ?? "",
-    email: currentUser?.email ?? "",
-    province: "",
-    district: "",
-    ward: "",
-    address: "",
-    note: "",
-  };
-
   // Thông báo thành công thay thế form (dài): cuộn lên để nhìn thấy nó, cả trên điện thoại
   function handlePlaced(order: Order) {
     setPlacedOrder(order);
     window.scrollTo({ top: 0 });
   }
 
-  return <CheckoutForm lines={lines} initialValues={initialValues} onPlaced={handlePlaced} />;
+  return <CheckoutForm lines={lines} user={currentUser} onPlaced={handlePlaced} />;
 }

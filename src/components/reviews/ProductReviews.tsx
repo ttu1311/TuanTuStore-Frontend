@@ -8,6 +8,7 @@ import { useStore } from "@/context/StoreContext";
 import { formatDate } from "@/lib/format";
 import { MAX_COMMENT_LENGTH, formatRating, ratingSummary, reviewEligibility } from "@/lib/reviews";
 import type { Review } from "@/types";
+import { loginUrl } from "@/lib/redirect";
 
 const ratingLabels = ["", "Rất tệ", "Chưa hài lòng", "Bình thường", "Hài lòng", "Rất hài lòng"];
 
@@ -66,7 +67,10 @@ export default function ProductReviews({ productId }: { productId: string }) {
           <p className="rounded-lg bg-surface px-4 py-3 text-sm text-ink-muted">
             {eligibility === "login" && (
               <>
-                <Link href="/dang-nhap" className="font-medium text-primary underline underline-offset-4">
+                <Link
+                  href={loginUrl(`/san-pham/${productId}#danh-gia`)}
+                  className="font-medium text-primary underline underline-offset-4"
+                >
                   Đăng nhập
                 </Link>{" "}
                 để viết đánh giá. Chỉ khách đã nhận hàng mới đánh giá được, để mọi đánh giá đều là của người đã dùng sản phẩm.
@@ -205,7 +209,7 @@ function ReviewForm({ productId, existing }: { productId: string; existing?: Rev
         }}
         placeholder="Hương vị, đóng gói, có hợp làm quà không…"
         aria-invalid={error?.field === "comment" ? true : undefined}
-        className={`w-full rounded-lg border bg-white px-4 py-3 text-ink transition-colors duration-200 placeholder:text-[#7A7F7B] focus:outline-none focus:ring-[3px] ${
+        className={`w-full rounded-lg border bg-white px-4 py-3 text-ink transition-colors duration-200 placeholder:text-[#686D69] focus:outline-none focus:ring-[3px] ${
           error?.field === "comment" ? "border-sale focus:ring-sale/20" : "border-line focus:border-primary focus:ring-primary-soft"
         }`}
       />

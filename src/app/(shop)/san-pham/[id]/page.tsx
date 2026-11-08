@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import ProductDetailView from "@/components/product/ProductDetailView";
 
 // Tên sản phẩm thật được ProductDetailView đặt lên tab trình duyệt, sau khi đã đọc xong localStorage
-export const metadata: Metadata = { title: "Chi tiết sản phẩm — TuanTuStore" };
+export const metadata: Metadata = { title: "Chi tiết sản phẩm — Đặc sản 3 Miền" };
 
 type ProductDetailPageProps = {
   params: Promise<{ id: string }>;

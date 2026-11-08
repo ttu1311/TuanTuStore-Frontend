@@ -16,8 +16,10 @@ export default function AddToCartButton({
   productName: string;
   className?: string;
 }) {
-  const { addToCart } = useStore();
+  const { addToCart, products } = useStore();
   const [added, setAdded] = useState(false);
+  // Hết hàng: nút bị khóa và ghi rõ "Hết hàng"
+  const soldOut = (products.find((product) => product.id === productId)?.stock ?? 0) <= 0;
 
   useEffect(() => {
     if (!added) return;
@@ -29,14 +31,15 @@ export default function AddToCartButton({
     <>
       <button
         type="button"
+        disabled={soldOut}
         onClick={() => {
           addToCart(productId, 1);
           setAdded(true);
         }}
-        className={`${btnBase} ${btnPrimary} ${btnSmall} ${className}`}
+        className={`${btnBase} ${btnPrimary} ${btnSmall} ${className} disabled:cursor-not-allowed disabled:opacity-50`}
       >
-        <Icon name={added ? "check" : "plus"} size={16} />
-        {added ? "Đã thêm vào giỏ" : "Thêm vào giỏ"}
+        {!soldOut && <Icon name={added ? "check" : "plus"} size={16} />}
+        {soldOut ? "Hết hàng" : added ? "Đã thêm vào giỏ" : "Thêm vào giỏ"}
         {/* Trình đọc màn hình đọc được nút này thuộc về sản phẩm nào */}
         <span className="sr-only">: {productName}</span>
       </button>

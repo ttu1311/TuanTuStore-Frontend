@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useStore } from "@/context/StoreContext";
-import { provinceOf } from "@/lib/products";
+import { productProvince } from "@/lib/products";
 import { regionKeys, regions } from "@/lib/regions";
+import { buildRoute, formatLatitude } from "@/lib/route";
 import {
   MAP_HEIGHT,
   MAP_WIDTH,
@@ -24,7 +25,8 @@ const fillClass: Record<Region, string> = { bac: "fill-che", trung: "fill-brown"
 const fillOpacity: Record<Region, number> = { bac: 0.75, trung: 0.72, nam: 0.85 };
 const strokeClass: Record<Region, string> = { bac: "stroke-che", trung: "stroke-brown", nam: "stroke-gold-ink" };
 
-// "Bản đồ ba miền" ở Sidebar trang chủ. Bấm một miền: mở danh sách miền đó; bấm một chấm: mở danh sách tỉnh đó.
+// Bản đồ ba miền của trang /ban-do. Bấm một miền: mở danh sách miền đó; bấm một chấm: mở danh sách tỉnh đó.
+// Bên cạnh là danh sách các tỉnh xếp từ Bắc vào Nam (cùng thứ tự và vĩ độ với tuyến ở trang chủ).
 // Số sản phẩm đếm từ dữ liệu trong localStorage, nên Admin thêm sản phẩm là bản đồ tự cập nhật.
 export default function VietnamMapSection() {
   const { isReady, products } = useStore();
@@ -34,7 +36,7 @@ export default function VietnamMapSection() {
   const provinceCounts = new Map<string, number>();
   for (const product of products) {
     regionCounts[product.region] += 1;
-    const province = provinceOf(product.origin);
+    const province = productProvince(product);
     provinceCounts.set(province, (provinceCounts.get(province) ?? 0) + 1);
   }
   // Tỉnh chưa biết vị trí thì không có chấm
@@ -42,23 +44,20 @@ export default function VietnamMapSection() {
     (province): province is { name: string; count: number; position: { x: number; y: number } } => province.position !== null
   );
 
-  return (
-    <section aria-labelledby="map-title" className="rounded-lg bg-surface p-5">
-      <h2 id="map-title" className="font-display text-2xl font-bold leading-none text-ink">
-        Bản đồ ba miền
-      </h2>
-      <p className="mt-2 text-sm text-ink-muted">Bấm vào một miền hoặc một chấm để xem đặc sản nơi đó.</p>
+  const stops = buildRoute(products);
 
+  return (
+    <section aria-label="Bản đồ đặc sản ba miền" className="rounded-lg bg-surface p-5 md:p-8">
       {!isReady ? (
-        <div aria-hidden="true" className="mt-4 h-[530px] animate-pulse rounded-md bg-white lg:h-[410px]" />
+        <div aria-hidden="true" className="h-[560px] animate-pulse rounded-md bg-white" />
       ) : (
-        <div className="mt-4 flex flex-col items-center gap-3">
+        <div className="grid items-start gap-8 md:grid-cols-[auto_minmax(0,1fr)] md:gap-12">
           <svg
             viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
             role="group"
             aria-label="Bản đồ Việt Nam chia thành ba miền"
-            // Dưới cỡ lg cột này rộng hết màn hình, nên bản đồ to hơn để dễ chạm vào từng chấm tỉnh
-            className="h-[380px] w-auto max-w-full shrink-0 lg:h-[260px]"
+            // Bản đồ cao để dễ chạm vào từng chấm tỉnh
+            className="mx-auto h-[440px] w-auto max-w-full shrink-0 md:h-[560px]"
           >
             <defs>
               <clipPath id="vn-map-clip">
@@ -163,24 +162,52 @@ export default function VietnamMapSection() {
             ))}
           </svg>
 
-          <ul className="w-full divide-y divide-line">
-            {regionKeys.map((key) => (
-              <li key={key}>
-                <Link
-                  href={`/san-pham?region=${key}`}
-                  onMouseEnter={() => setHovered(key)}
-                  onMouseLeave={() => setHovered(null)}
-                  onFocus={() => setHovered(key)}
-                  onBlur={() => setHovered(null)}
-                  className="flex min-h-11 items-center gap-3 px-1 transition-colors duration-200 hover:text-primary"
-                >
-                  <span className={`h-3 w-3 shrink-0 rounded-full ${regions[key].dotClass}`} aria-hidden="true" />
-                  <span className="font-semibold text-ink">{regions[key].label}</span>
-                  <span className="ml-auto whitespace-nowrap text-sm text-ink-muted">{regionCounts[key]} sản phẩm</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <div className="min-w-0">
+            <h2 className="font-display text-2xl font-bold text-ink">Ba miền</h2>
+            <ul className="mt-2 w-full divide-y divide-line">
+              {regionKeys.map((key) => (
+                <li key={key}>
+                  <Link
+                    href={`/san-pham?region=${key}`}
+                    onMouseEnter={() => setHovered(key)}
+                    onMouseLeave={() => setHovered(null)}
+                    onFocus={() => setHovered(key)}
+                    onBlur={() => setHovered(null)}
+                    className="flex min-h-11 items-center gap-3 px-1 transition-colors duration-200 hover:text-primary"
+                  >
+                    <span className={`h-3 w-3 shrink-0 rounded-full ${regions[key].dotClass}`} aria-hidden="true" />
+                    <span className="font-semibold text-ink">{regions[key].label}</span>
+                    <span className="ml-auto whitespace-nowrap text-sm text-ink-muted">{regionCounts[key]} sản phẩm</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            {/* Các tỉnh từ Bắc vào Nam, mỗi tỉnh một dòng: tên, các món, vĩ độ */}
+            <h2 className="mt-8 font-display text-2xl font-bold text-ink">Các tỉnh, từ Bắc vào Nam</h2>
+            <ul className="mt-2 w-full divide-y divide-line">
+              {stops.map((stop) => (
+                <li key={stop.province}>
+                  <Link
+                    href={`/san-pham?province=${encodeURIComponent(stop.province)}`}
+                    className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-x-3 py-3 transition-colors duration-200 hover:text-primary"
+                  >
+                    <span className={`h-2.5 w-2.5 self-center rounded-full ${regions[stop.region].dotClass}`} aria-hidden="true" />
+                    <span className="min-w-0">
+                      <span className="font-semibold text-ink">{stop.province}</span>
+                      <span className="block text-sm text-ink-muted">{stop.products.map((product) => product.name).join(" · ")}</span>
+                    </span>
+                    {stop.latitude !== undefined && (
+                      <span className="whitespace-nowrap text-sm tabular-nums text-ink-muted">
+                        <span className="sr-only">Vĩ độ </span>
+                        {formatLatitude(stop.latitude)}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
     </section>

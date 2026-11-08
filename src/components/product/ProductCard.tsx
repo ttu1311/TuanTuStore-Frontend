@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import AddToCartButton from "@/components/product/AddToCartButton";
+import WishlistButton from "@/components/product/WishlistButton";
 import ProductRatingLine from "@/components/reviews/ProductRatingLine";
 import { formatVND } from "@/lib/format";
 import { discountPercent } from "@/lib/products";
@@ -43,9 +44,18 @@ export default function ProductCard({
             Top {product.rank}
           </span>
         )}
+        {/* Trái tim "Yêu thích" ở góc trên bên phải; nhãn giảm giá nằm ngay dưới nó */}
+        <div className="absolute right-3 top-3">
+          <WishlistButton productId={product.id} productName={product.name} />
+        </div>
         {discount > 0 && (
-          <span className="absolute right-3 top-3 rounded bg-sale px-2 py-1 text-xs font-semibold text-white">
+          <span className="absolute right-3 top-[3.75rem] rounded bg-sale px-2 py-1 text-xs font-semibold text-white">
             -{discount}%
+          </span>
+        )}
+        {product.stock <= 0 && (
+          <span className="absolute inset-x-0 bottom-0 bg-ink/80 py-1.5 text-center text-sm font-semibold uppercase tracking-wide text-white">
+            Hết hàng
           </span>
         )}
       </div>
@@ -77,6 +87,7 @@ export default function ProductCard({
           )}
           <span className="text-sm text-ink-muted">{product.pack}</span>
         </div>
+        {product.stock > 0 && <p className="-mt-3 mb-3 text-sm text-ink-muted">Còn {product.stock} sản phẩm</p>}
 
         <AddToCartButton productId={product.id} productName={product.name} />
       </div>

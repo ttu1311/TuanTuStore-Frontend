@@ -2,10 +2,11 @@ import { DISCOUNT, FREE_SHIPPING_MIN, SHIPPING_FEE } from "@/lib/cart";
 import { formatVND } from "@/lib/format";
 import { orderStatuses, orderStatusLabels } from "@/lib/orders";
 import { storeContact } from "@/data/contact";
+import { bankAccount } from "@/data/payment";
 
 // Nội dung các trang hướng dẫn và chính sách (/thong-tin/<slug>), liên kết từ Footer.
 // Các con số (phí vận chuyển, mức miễn phí, giảm giá) lấy từ src/lib/cart.ts, nên luôn khớp với giỏ hàng.
-// TuanTuStore là đồ án học tập: đây là chính sách MẪU, mô tả cách cửa hàng vận hành, và mỗi trang đều nói rõ điều đó.
+// Đặc sản 3 Miền là đồ án học tập: đây là chính sách MẪU, mô tả cách cửa hàng vận hành, và mỗi trang đều nói rõ điều đó.
 
 export type InfoSection = {
   heading: string;
@@ -33,7 +34,7 @@ export const infoPages: InfoPage[] = [
     slug: "huong-dan-mua-hang",
     group: "Hỗ trợ khách hàng",
     title: "Hướng dẫn mua hàng",
-    description: "Các bước chọn đặc sản, đặt hàng và theo dõi đơn tại TuanTuStore.",
+    description: "Các bước chọn đặc sản, đặt hàng và theo dõi đơn tại Đặc sản 3 Miền.",
     sections: [
       {
         heading: "Đặt hàng trong 5 bước",
@@ -62,24 +63,32 @@ export const infoPages: InfoPage[] = [
     slug: "phuong-thuc-thanh-toan",
     group: "Hỗ trợ khách hàng",
     title: "Phương thức thanh toán",
-    description: "Các cách thanh toán khi đặt hàng tại TuanTuStore.",
+    description: "Các cách thanh toán khi đặt hàng tại Đặc sản 3 Miền.",
     sections: [
       {
         heading: "Thanh toán khi nhận hàng (COD)",
         paragraphs: ["Bạn trả tiền mặt cho nhân viên giao hàng khi nhận được đơn. Hãy kiểm tra gói hàng trước khi thanh toán."],
       },
       {
-        heading: "Chuyển khoản ngân hàng",
-        paragraphs: [
-          "Sau khi đơn được xác nhận, cửa hàng gửi thông tin chuyển khoản cho bạn. Nội dung chuyển khoản ghi mã đơn hàng (ví dụ TT-000001) để đối chiếu nhanh.",
+        heading: "Chuyển khoản ngân hàng (quét mã QR)",
+        steps: [
+          "Chọn “Chuyển khoản ngân hàng” khi thanh toán và bấm “Đặt hàng”.",
+          "Trang xác nhận hiện mã QR có sẵn số tiền và nội dung chuyển khoản là mã đơn (ví dụ TT-000001). Mở ứng dụng ngân hàng và quét mã.",
+          "Đơn ở trạng thái “Chờ thanh toán” cho tới khi cửa hàng xác nhận đã nhận tiền, rồi chuyển sang “Đã thanh toán”.",
+          "Chưa kịp chuyển? Mã QR xem lại được ở “Đơn hàng của tôi” (trang Tài khoản) hoặc trang Tra cứu đơn hàng. Hãy giữ nguyên nội dung chuyển khoản để cửa hàng đối chiếu đúng đơn.",
         ],
       },
-      {
-        heading: "Lưu ý về bản demo",
-        paragraphs: [
-          "Website này là đồ án học tập: không có cổng thanh toán thật và không thu tiền của bất kỳ ai. Vui lòng không chuyển khoản theo bất kỳ thông tin nào nhân danh TuanTuStore.",
-        ],
-      },
+      // Chỉ hiện khi chưa điền tài khoản ngân hàng thật (src/data/payment.ts)
+      ...(bankAccount.isSample
+        ? [
+            {
+              heading: "Lưu ý về bản demo",
+              paragraphs: [
+                "Website này là đồ án học tập và mã QR đang dùng tài khoản MẪU: không có cổng thanh toán thật và không thu tiền của bất kỳ ai. Vui lòng không chuyển khoản theo bất kỳ thông tin nào nhân danh Đặc sản 3 Miền.",
+              ],
+            },
+          ]
+        : []),
     ],
   },
   {
@@ -109,8 +118,8 @@ export const infoPages: InfoPage[] = [
         answer: "Mỗi sản phẩm ghi nơi làm ra (xuất xứ) và thương hiệu. Phần “Về thương hiệu” ở trang chi tiết giới thiệu thương hiệu đó là gì và còn làm những sản phẩm nào.",
       },
       {
-        question: "TuanTuStore có phải đại lý chính thức của các thương hiệu không?",
-        answer: "Không. TuanTuStore là đồ án học tập; tên thương hiệu được ghi theo thông tin công khai để bạn biết sản phẩm thuộc về ai. Giá và quy cách là giá trị mẫu.",
+        question: "Đặc sản 3 Miền có phải đại lý chính thức của các thương hiệu không?",
+        answer: "Không. Đặc sản 3 Miền là đồ án học tập; tên thương hiệu được ghi theo thông tin công khai để bạn biết sản phẩm thuộc về ai. Giá và quy cách là giá trị mẫu.",
       },
       {
         question: "Tôi muốn đổi hoặc trả hàng thì làm thế nào?",
@@ -126,7 +135,7 @@ export const infoPages: InfoPage[] = [
     slug: "chinh-sach-giao-hang",
     group: "Chính sách",
     title: "Chính sách giao hàng",
-    description: "Phí vận chuyển, khu vực và thời gian giao hàng của TuanTuStore.",
+    description: "Phí vận chuyển, khu vực và thời gian giao hàng của Đặc sản 3 Miền.",
     sections: [
       {
         heading: "Phí vận chuyển",
@@ -186,7 +195,7 @@ export const infoPages: InfoPage[] = [
     slug: "bao-mat-thong-tin",
     group: "Chính sách",
     title: "Bảo mật thông tin",
-    description: "TuanTuStore lưu những thông tin gì của bạn và lưu ở đâu.",
+    description: "Đặc sản 3 Miền lưu những thông tin gì của bạn và lưu ở đâu.",
     sections: [
       {
         heading: "Thông tin được lưu",
@@ -213,19 +222,19 @@ export const infoPages: InfoPage[] = [
     slug: "dieu-khoan-su-dung",
     group: "Chính sách",
     title: "Điều khoản sử dụng",
-    description: "Những điều cần biết khi sử dụng website TuanTuStore.",
+    description: "Những điều cần biết khi sử dụng website Đặc sản 3 Miền.",
     sections: [
       {
         heading: "Về website",
         paragraphs: [
-          "TuanTuStore là đồ án học tập mô phỏng một cửa hàng đặc sản ba miền. Website không bán hàng thật, không thu tiền và không giao hàng.",
+          "Đặc sản 3 Miền là đồ án học tập mô phỏng một cửa hàng đặc sản ba miền. Website không bán hàng thật, không thu tiền và không giao hàng.",
         ],
       },
       {
         heading: "Sản phẩm, giá và thương hiệu",
         list: [
           "Giá và quy cách sản phẩm là giá trị mẫu, không phải giá thị trường.",
-          "Tên thương hiệu được ghi theo thông tin công khai để giới thiệu nguồn gốc; TuanTuStore không phải đại lý hay nhà phân phối của các thương hiệu này.",
+          "Tên thương hiệu được ghi theo thông tin công khai để giới thiệu nguồn gốc; Đặc sản 3 Miền không phải đại lý hay nhà phân phối của các thương hiệu này.",
           "Ảnh sản phẩm lấy từ Wikimedia Commons; tác giả và giấy phép xem ở trang Nguồn ảnh.",
         ],
       },

@@ -1,6 +1,6 @@
 // "Hộ chiếu đặc sản": mỗi tỉnh khách đã nhận hàng được "đóng dấu".
 // Tính hoàn toàn từ dữ liệu thật: đơn hàng của khách và xuất xứ của sản phẩm.
-import { groupProducts, provinceOf } from "@/lib/products";
+import { groupProducts, productProvince } from "@/lib/products";
 import type { Order, Product, Region } from "@/types";
 
 // stamped = đã nhận hàng (đơn "Hoàn thành"); on-the-way = đã đặt nhưng chưa nhận; none = chưa đặt món nào của tỉnh này
@@ -20,11 +20,12 @@ export function buildPassport(products: Product[], orders: Order[], userId: stri
     .filter((order) => order.userId === userId)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 
-  return groupProducts(products, (product) => provinceOf(product.origin)).map(({ name, items }) => {
+  return groupProducts(products, productProvince).map(({ name, items }) => {
     const ids = new Set(items.map((item) => item.id));
     const stamp: ProvinceStamp = { province: name, region: items[0].region, state: "none", tasted: [] };
 
     for (const order of myOrders) {
+      if (order.status === "CANCELLED") continue; // đơn đã hủy: không có hàng tới
       const fromHere = order.items.filter((item) => ids.has(item.productId));
       if (fromHere.length === 0) continue;
       if (order.status === "COMPLETED") {

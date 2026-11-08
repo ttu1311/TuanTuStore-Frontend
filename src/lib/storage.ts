@@ -2,6 +2,7 @@
 // Các hàm này phải chạy ở trình duyệt (trong useEffect hoặc trình xử lý sự kiện), không bao giờ chạy khi render trên server.
 import { caMauProducts, initialProducts, initialUsers } from "@/data/initialData";
 import { renamedImages, seedUpdates } from "@/data/seedUpdates";
+import { INITIAL_STOCK } from "@/lib/cart";
 import type { CartItem, ContactRequest, Order, Product, Review, User } from "@/types";
 
 export const STORAGE_KEYS = {
@@ -15,6 +16,8 @@ export const STORAGE_KEYS = {
   recentlyViewed: "tuantustore-recently-viewed", // id các sản phẩm vừa xem, mới nhất đứng đầu
   reviews: "tuantustore-reviews", // đánh giá sản phẩm của khách đã nhận hàng
   contactRequests: "tuantustore-contact-requests", // yêu cầu liên hệ lại gửi từ trang /lien-he
+  productViews: "tuantustore-product-views", // id sản phẩm -> số lần trang chi tiết được mở (xếp hạng "Nổi bật")
+  wishlists: "tuantustore-wishlists", // id người dùng -> id các sản phẩm yêu thích (lưu theo tài khoản)
 } as const;
 
 // Các nhóm sản phẩm được thêm vào dữ liệu mẫu SAU phiên bản đầu tiên của website.
@@ -95,6 +98,11 @@ function applySeedUpdates() {
 
   const updated = products.map((product) => {
     let next = product;
+    // Tồn kho thêm về sau: sản phẩm lưu từ trước (cả sản phẩm Admin tự tạo) bắt đầu với INITIAL_STOCK
+    if (typeof next.stock !== "number") {
+      next = { ...next, stock: INITIAL_STOCK };
+      changed = true;
+    }
     const newImage = renamedImages[product.image];
     if (newImage) {
       next = { ...next, image: newImage };
@@ -164,6 +172,8 @@ export type StoredData = {
   cart: CartItem[];
   reviews: Review[];
   contactRequests: ContactRequest[];
+  productViews: Record<string, number>;
+  wishlists: Record<string, string[]>;
   currentUserId: string | null;
 };
 
@@ -176,8 +186,30 @@ export function loadStoredData(): StoredData {
     cart: readJSON<CartItem[]>(STORAGE_KEYS.cart) ?? [],
     reviews: readJSON<Review[]>(STORAGE_KEYS.reviews) ?? [],
     contactRequests: readJSON<ContactRequest[]>(STORAGE_KEYS.contactRequests) ?? [],
+    productViews: readViews(),
+    wishlists: readWishlists(),
     currentUserId: readCurrentUserId(),
   };
+}
+
+// Lượt xem: một đối tượng { id: số lần }. Dữ liệu hỏng hoặc không phải số thì bỏ qua.
+function readViews(): Record<string, number> {
+  const saved = readJSON<Record<string, unknown>>(STORAGE_KEYS.productViews);
+  if (!saved || typeof saved !== "object" || Array.isArray(saved)) return {};
+  return Object.fromEntries(
+    Object.entries(saved).filter((entry): entry is [string, number] => typeof entry[1] === "number" && entry[1] >= 0)
+  );
+}
+
+// Danh sách yêu thích: { idNgườiDùng: [idSảnPhẩm, …] }. Phần hỏng (không phải mảng chữ) thì bỏ qua.
+function readWishlists(): Record<string, string[]> {
+  const saved = readJSON<Record<string, unknown>>(STORAGE_KEYS.wishlists);
+  if (!saved || typeof saved !== "object" || Array.isArray(saved)) return {};
+  return Object.fromEntries(
+    Object.entries(saved).flatMap(([userId, ids]) =>
+      Array.isArray(ids) ? [[userId, ids.filter((id): id is string => typeof id === "string")]] : []
+    )
+  );
 }
 
 // ---------- Người đang đăng nhập ----------

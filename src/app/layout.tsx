@@ -19,8 +19,8 @@ const sansFont = Be_Vietnam_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "TuanTuStore — Tinh hoa đặc sản Việt",
-  description: "TuanTuStore — cửa hàng đặc sản ba miền Bắc, Trung, Nam được chọn lọc, rõ nguồn gốc.",
+  title: "Đặc sản 3 Miền — Quà quê từ Bắc vào Nam",
+  description: "Đặc sản 3 Miền — cửa hàng quà quê Bắc, Trung, Nam được chọn lọc, rõ nguồn gốc.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

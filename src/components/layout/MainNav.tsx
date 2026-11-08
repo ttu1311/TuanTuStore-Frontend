@@ -11,14 +11,16 @@ import type { Region } from "@/types";
 // Mọi liên kết bắt đầu bằng "/" nên dùng được từ mọi trang.
 // "/#id" nghĩa là: về trang chủ, rồi cuộn tới phần có id đó.
 // Các mục vùng miền mang màu chấm của vùng đó, giống như tuyến ở trang chủ.
+// "Giới thiệu" đứng ngay sau "Trang chủ"; "Bản đồ" mở trang bản đồ riêng (/ban-do).
 const navItems: { label: string; href: string; region?: Region }[] = [
   { label: "Trang chủ", href: "/" },
+  { label: "Giới thiệu", href: "/#gioi-thieu" },
   { label: "Sản phẩm", href: "/san-pham" },
   { label: "Miền Bắc", href: "/#mien-bac", region: "bac" },
   { label: "Miền Trung", href: "/#mien-trung", region: "trung" },
   { label: "Miền Nam", href: "/#mien-nam", region: "nam" },
   { label: "Hộp quà", href: "/hop-qua" },
-  { label: "Giới thiệu", href: "/#gioi-thieu" },
+  { label: "Bản đồ", href: "/ban-do" },
   { label: "Liên hệ", href: "/lien-he" },
 ];
 

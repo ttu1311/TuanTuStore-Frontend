@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import TurnstileWidget, { type TurnstileHandle } from "@/components/auth/TurnstileWidget";
 import { btnBase, btnPrimary } from "@/components/ui/buttons";
 import LoadingState from "@/components/ui/LoadingState";
 import { useStore } from "@/context/StoreContext";
@@ -11,7 +12,7 @@ import { validateRegister, type RegisterErrors, type RegisterValues } from "@/li
 const emptyForm: RegisterValues = { fullName: "", email: "", phone: "", password: "", confirmPassword: "" };
 
 const fieldStyle =
-  "h-12 w-full rounded-lg border bg-white px-4 text-ink transition-colors duration-200 placeholder:text-[#7A7F7B] focus:outline-none focus:ring-[3px]";
+  "h-12 w-full rounded-lg border bg-white px-4 text-ink transition-colors duration-200 placeholder:text-[#686D69] focus:outline-none focus:ring-[3px]";
 const fieldOk = "border-line focus:border-primary focus:ring-primary-soft";
 const fieldBad = "border-sale focus:border-sale focus:ring-sale/20";
 
@@ -19,17 +20,22 @@ const fieldBad = "border-sale focus:border-sale focus:ring-sale/20";
 const fieldOrder: (keyof RegisterValues)[] = ["fullName", "email", "phone", "password", "confirmPassword"];
 
 // Tạo tài khoản khách hàng (vai trò USER) trong localStorage, đăng nhập luôn và mở /tai-khoan.
-export default function RegisterForm() {
+// next: trang khách đang xem trước khi phải đăng nhập (đã kiểm tra bằng safeNextPath); tạo tài khoản xong thì quay lại đó
+export default function RegisterForm({ next }: { next?: string }) {
   const { isReady, currentUser, register } = useStore();
   const router = useRouter();
   const [values, setValues] = useState<RegisterValues>(emptyForm);
   const [errors, setErrors] = useState<RegisterErrors>({});
   const [formMessage, setFormMessage] = useState(""); // lỗi không thuộc về một ô nào
+  // CAPTCHA (Cloudflare Turnstile): token của lần "Tôi không phải robot" gần nhất; "" = chưa có / hết hạn
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const captchaRef = useRef<TurnstileHandle>(null);
 
   // Đã đăng nhập (hoặc vừa đăng ký xong): chuyển tới đúng trang
   useEffect(() => {
-    if (isReady && currentUser) router.replace(currentUser.role === "ADMIN" ? "/admin" : "/tai-khoan");
-  }, [isReady, currentUser, router]);
+    if (isReady && currentUser) router.replace(next ?? (currentUser.role === "ADMIN" ? "/admin" : "/tai-khoan"));
+  }, [isReady, currentUser, router, next]);
 
   if (!isReady || currentUser) return <LoadingState />;
 
@@ -40,8 +46,9 @@ export default function RegisterForm() {
     if (errors[field]) setErrors({ ...errors, [field]: undefined });
   }
 
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (verifying) return;
     setFormMessage("");
 
     const newErrors = validateRegister(values);
@@ -51,6 +58,30 @@ export default function RegisterForm() {
       document.getElementById(firstInvalid)?.focus();
       return;
     }
+    if (!captchaToken) {
+      setFormMessage("Vui lòng xác nhận bạn không phải robot.");
+      return;
+    }
+
+    // Token được xác minh ở SERVER (khóa bí mật không có ở trình duyệt). Token chỉ dùng một lần,
+    // nên sau mỗi lần gửi đều lấy token mới. Xem giới hạn của bản demo trong src/app/api/captcha/verify/route.ts.
+    setVerifying(true);
+    let verified = false;
+    try {
+      const response = await fetch("/api/captcha/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: captchaToken }),
+      });
+      const data = (await response.json()) as { success: boolean; message?: string };
+      verified = response.ok && data.success;
+      if (!verified) setFormMessage(data.message ?? "Xác minh CAPTCHA không thành công. Vui lòng thử lại.");
+    } catch {
+      setFormMessage("Không kết nối được máy chủ để xác minh CAPTCHA. Vui lòng thử lại.");
+    }
+    setVerifying(false);
+    captchaRef.current?.reset();
+    if (!verified) return;
 
     const result = register(values);
     if (!result.ok) {
@@ -99,8 +130,14 @@ export default function RegisterForm() {
       {renderField("password", "Mật khẩu", "password", "new-password")}
       {renderField("confirmPassword", "Xác nhận mật khẩu", "password", "new-password")}
 
-      <button type="submit" className={`${btnBase} ${btnPrimary} w-full`}>
-        Đăng ký
+      <TurnstileWidget ref={captchaRef} action="register" onToken={setCaptchaToken} />
+
+      <button
+        type="submit"
+        disabled={verifying}
+        className={`${btnBase} ${btnPrimary} w-full disabled:cursor-wait disabled:opacity-60`}
+      >
+        {verifying ? "Đang xác minh…" : "Đăng ký"}
       </button>
 
       {formMessage && (

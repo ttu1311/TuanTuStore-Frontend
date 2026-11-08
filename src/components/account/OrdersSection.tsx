@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import OrderStatusBadge from "@/components/admin/OrderStatusBadge";
+import BankTransferQR from "@/components/payment/BankTransferQR";
+import PaymentStatusBadge from "@/components/payment/PaymentStatusBadge";
 import { btnBase, btnPrimary } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
 import { formatDate, formatVND } from "@/lib/format";
+import { paymentStatusOf } from "@/lib/orders";
 
 // "Đơn hàng của tôi": chỉ gồm đơn của người đang đăng nhập, mới nhất lên đầu
 export default function OrdersSection({ userId }: { userId: string }) {
@@ -38,7 +41,10 @@ export default function OrdersSection({ userId }: { userId: string }) {
                     <p className="font-semibold text-ink">Mã đơn hàng: {order.code}</p>
                     <p className="text-sm text-ink-muted">Ngày đặt: {formatDate(order.createdAt)}</p>
                   </div>
-                  <OrderStatusBadge status={order.status} />
+                  <div className="flex flex-wrap gap-2">
+                    <PaymentStatusBadge order={order} />
+                    <OrderStatusBadge status={order.status} />
+                  </div>
                 </div>
 
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
@@ -55,6 +61,11 @@ export default function OrdersSection({ userId }: { userId: string }) {
                   </button>
                 </div>
 
+                {isOpen && paymentStatusOf(order) === "UNPAID" && order.status !== "CANCELLED" && (
+                  <div className="mt-3">
+                    <BankTransferQR orderCode={order.code} amount={order.total} />
+                  </div>
+                )}
                 {isOpen && (
                   <ul className="mt-3 divide-y divide-line border-t border-line">
                     {order.items.map((item) => (

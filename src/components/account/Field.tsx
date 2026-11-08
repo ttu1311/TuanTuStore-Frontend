@@ -11,7 +11,7 @@ type FieldProps = {
 };
 
 const fieldStyle =
-  "h-12 w-full rounded-lg border px-4 transition-colors duration-200 placeholder:text-[#7A7F7B] focus:outline-none focus:ring-[3px]";
+  "h-12 w-full rounded-lg border px-4 transition-colors duration-200 placeholder:text-[#686D69] focus:outline-none focus:ring-[3px]";
 const fieldEditable = "bg-white text-ink";
 const fieldReadOnly = "bg-surface text-ink-muted";
 const fieldOk = "border-line focus:border-primary focus:ring-primary-soft";

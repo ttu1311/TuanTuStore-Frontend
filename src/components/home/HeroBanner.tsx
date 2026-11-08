@@ -89,14 +89,15 @@ export default function HeroBanner() {
               />
               <div
                 aria-hidden="true"
-                className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/10 lg:bg-gradient-to-r lg:from-black/70 lg:via-black/30 lg:to-transparent"
+                // Lớp phủ chỉ tối ở phía có chữ (dưới trên điện thoại, trái trên màn hình lớn); phần còn lại để ảnh sáng tự nhiên
+                className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent lg:bg-gradient-to-r lg:from-black/60 lg:via-black/20 lg:to-transparent"
               />
 
               {/* key: chữ của ảnh mới chạy lại hiệu ứng hiện lên */}
               {isActive && (
                 <div
                   key={active}
-                  className="absolute inset-x-0 bottom-0 p-6 pb-20 text-white sm:p-10 sm:pb-24 lg:bottom-auto lg:top-1/2 lg:max-w-[40rem] lg:-translate-y-1/2 lg:p-14"
+                  className="absolute inset-x-0 bottom-0 p-6 pb-20 text-white [text-shadow:0_1px_14px_rgb(0_0_0/0.45)] sm:p-10 sm:pb-24 lg:bottom-auto lg:top-1/2 lg:max-w-[40rem] lg:-translate-y-1/2 lg:p-14"
                 >
                   <p className="flex animate-fade-up items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-white/85">
                     <span className={`h-2.5 w-2.5 rounded-full ${region.dotClass} ring-2 ring-white/70`} aria-hidden="true" />
@@ -138,8 +139,8 @@ export default function HeroBanner() {
                   className="group flex min-h-11 flex-1 flex-col justify-end gap-2 text-left"
                 >
                   <span
-                    className={`hidden text-xs font-semibold uppercase tracking-wider transition-colors duration-200 sm:block ${
-                      isActive ? "text-white" : "text-white/60 group-hover:text-white"
+                    className={`hidden text-xs font-semibold uppercase tracking-wider transition-colors duration-200 [text-shadow:0_1px_8px_rgb(0_0_0/0.55)] sm:block ${
+                      isActive ? "text-white" : "text-white/85 group-hover:text-white"
                     }`}
                   >
                     {regions[slide.region].label}

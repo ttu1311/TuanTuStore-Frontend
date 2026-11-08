@@ -1,4 +1,5 @@
 import type { Product, User } from "@/types";
+import { INITIAL_STOCK } from "@/lib/cart";
 
 // Dữ liệu chỉ được ghi vào localStorage ở lần truy cập ĐẦU TIÊN (xem initializeStorage trong src/lib/storage.ts).
 // Sau đó, website luôn dùng những gì đã lưu trong localStorage, nên thay đổi của Admin được giữ lại.
@@ -19,8 +20,9 @@ export const caMauProducts: Product[] = [
     image: "/images/p-cua-bien-nam-can.jpg",
     region: "nam",
     brand: "Cua Năm Căn",
-    origin: "Năm Căn, Cà Mau",
+    origin: "Cà Mau",
     pack: "1kg (3–4 con)",
+    stock: INITIAL_STOCK,
     isFeatured: false,
     occasions: ["bieu-nguoi-lon", "vao-bep"],
     story: {
@@ -40,8 +42,9 @@ export const caMauProducts: Product[] = [
     image: "/images/p-tom-kho-rach-goc.jpg",
     region: "nam",
     brand: "Tôm khô Rạch Gốc",
-    origin: "Rạch Gốc, Cà Mau",
+    origin: "Cà Mau",
     pack: "Túi 250g",
+    stock: INITIAL_STOCK,
     isFeatured: false,
     occasions: ["qua-tet", "vao-bep"],
     story: {
@@ -61,8 +64,9 @@ export const caMauProducts: Product[] = [
     image: "/images/p-ba-khia-muoi.jpg",
     region: "nam",
     brand: "Ba khía Rạch Gốc",
-    origin: "Rạch Gốc, Cà Mau",
+    origin: "Cà Mau",
     pack: "Hũ 500g",
+    stock: INITIAL_STOCK,
     isFeatured: false,
     occasions: ["vao-bep"],
     story: {
@@ -82,8 +86,9 @@ export const caMauProducts: Product[] = [
     image: "/images/p-mat-ong-u-minh-ha.jpg",
     region: "nam",
     brand: "Mật ong U Minh Hạ",
-    origin: "U Minh Hạ, Cà Mau",
+    origin: "Cà Mau",
     pack: "Chai 500ml",
+    stock: INITIAL_STOCK,
     isFeatured: false,
     occasions: ["qua-tet", "bieu-nguoi-lon"],
     story: {
@@ -94,7 +99,7 @@ export const caMauProducts: Product[] = [
   },
   {
     id: "kho-ca-boi-ca-mau",
-    name: "Khô cá bổi Cà Mau",
+    name: "Khô cá bổi U Minh",
     shortDescription:
       "Khô từ cá bổi (cá sặc rằn) vùng U Minh, Cà Mau; thịt thơm, dai, vị ngọt, chiên giòn hoặc nướng đều ngon.",
     description:
@@ -104,8 +109,9 @@ export const caMauProducts: Product[] = [
     image: "/images/p-kho-ca-boi.jpg",
     region: "nam",
     brand: "Khô cá bổi U Minh",
-    origin: "Trần Văn Thời, Cà Mau",
+    origin: "Cà Mau",
     pack: "Túi 500g",
+    stock: INITIAL_STOCK,
     isFeatured: false,
     occasions: ["vao-bep"],
     story: {
@@ -122,7 +128,7 @@ export const initialProducts: Product[] = [
   ...caMauProducts,
   {
     id: "tra-thai-nguyen",
-    name: "Chè Thái Nguyên",
+    name: "Chè Tân Cương Thái Nguyên",
     shortDescription: "Chè xanh sao khô từ vùng trà Tân Cương, nước xanh vàng, vị chát nhẹ và hậu ngọt.",
     description:
       "Thái Nguyên là một trong những vùng trồng chè nổi tiếng nhất miền Bắc, và Tân Cương thường được nhắc đến như cái nôi của chè xanh Việt Nam. Búp chè được hái, sao và vò thủ công hoặc bằng máy để giữ hương thơm tự nhiên.\n\n" +
@@ -132,8 +138,9 @@ export const initialProducts: Product[] = [
     image: "/images/p-tra-thai-nguyen.jpg",
     region: "bac",
     brand: "Chè Tân Cương",
-    origin: "Tân Cương, Thái Nguyên",
+    origin: "Thái Nguyên",
     pack: "Gói 200g",
+    stock: INITIAL_STOCK,
     isFeatured: true,
     occasions: ["qua-tet", "bieu-nguoi-lon"],
     story: {
@@ -154,8 +161,9 @@ export const initialProducts: Product[] = [
     image: "/images/p-o-mai.jpg",
     region: "bac",
     brand: "Hồng Lam",
-    origin: "Phố Hàng Đường, Hà Nội",
+    origin: "Hà Nội",
     pack: "Hộp 300g",
+    stock: INITIAL_STOCK,
     isFeatured: true,
     occasions: ["qua-tet", "bieu-nguoi-lon", "an-vat"],
     story: {
@@ -166,7 +174,7 @@ export const initialProducts: Product[] = [
   },
   {
     id: "banh-kho-me",
-    name: "Bánh khô mè",
+    name: "Bánh khô mè Cẩm Lệ",
     shortDescription: "Bánh mỏng giòn phủ nhiều mè, vị ngọt vừa phải, món quà quen thuộc của miền Trung.",
     description:
       "Bánh khô mè là đặc sản quen thuộc của Đà Nẵng và Quảng Nam. Bánh được làm từ bột gạo, đường và mè rồi nướng cho khô giòn.\n\n" +
@@ -176,8 +184,9 @@ export const initialProducts: Product[] = [
     image: "/images/p-banh-kho-me.jpg",
     region: "trung",
     brand: "Bà Liễu Mẹ",
-    origin: "Cẩm Lệ, Đà Nẵng",
+    origin: "Đà Nẵng",
     pack: "Túi 250g",
+    stock: INITIAL_STOCK,
     isFeatured: true,
     occasions: ["qua-tet", "an-vat"],
     story: {
@@ -188,7 +197,7 @@ export const initialProducts: Product[] = [
   },
   {
     id: "banh-pia",
-    name: "Bánh pía",
+    name: "Bánh pía Sóc Trăng",
     shortDescription: "Bánh nhiều lớp vỏ mỏng, nhân đậu xanh bùi béo, đặc sản nổi tiếng của Sóc Trăng.",
     description:
       "Bánh pía là đặc sản của Sóc Trăng, có nguồn gốc từ ẩm thực của người Hoa. Vỏ bánh gồm nhiều lớp bột mỏng xếp chồng, khi nướng lên có độ xốp nhẹ.\n\n" +
@@ -197,8 +206,9 @@ export const initialProducts: Product[] = [
     image: "/images/p-banh-pia.jpg",
     region: "nam",
     brand: "Tân Huê Viên",
-    origin: "Sóc Trăng",
+    origin: "Cần Thơ",
     pack: "Hộp 4 bánh",
+    stock: INITIAL_STOCK,
     isFeatured: true,
     occasions: ["qua-tet", "an-vat"],
     story: {
@@ -220,6 +230,7 @@ export const initialProducts: Product[] = [
     brand: "Hồng Lam",
     origin: "Hà Nội",
     pack: "Hộp 10 bánh",
+    stock: INITIAL_STOCK,
     isFeatured: false,
     rank: 1,
     occasions: ["bieu-nguoi-lon", "an-vat"],
@@ -232,7 +243,7 @@ export const initialProducts: Product[] = [
   },
   {
     id: "ca-phe",
-    name: "Cà phê hạt",
+    name: "Cà phê hạt Buôn Ma Thuột",
     shortDescription: "Cà phê hạt từ vùng đất đỏ bazan Tây Nguyên, vị đậm, hậu đắng và thơm.",
     description:
       "Buôn Ma Thuột là thủ phủ cà phê của Việt Nam, nằm trên vùng đất đỏ bazan ở Tây Nguyên. Khí hậu và thổ nhưỡng nơi đây rất phù hợp để trồng cà phê.\n\n" +
@@ -242,8 +253,9 @@ export const initialProducts: Product[] = [
     image: "/images/p-ca-phe.jpg",
     region: "trung",
     brand: "Trung Nguyên",
-    origin: "Buôn Ma Thuột, Đắk Lắk",
+    origin: "Đắk Lắk",
     pack: "Gói 500g",
+    stock: INITIAL_STOCK,
     isFeatured: false,
     rank: 2,
     occasions: ["qua-tet"],
@@ -256,7 +268,7 @@ export const initialProducts: Product[] = [
   },
   {
     id: "nuoc-mam",
-    name: "Nước mắm cá cơm",
+    name: "Nước mắm cá cơm Phú Quốc",
     shortDescription: "Nước mắm truyền thống từ cá cơm, ủ lâu ngày, vị đậm đà và thơm.",
     description:
       "Phú Quốc nổi tiếng với nghề làm nước mắm truyền thống. Cá cơm tươi được ướp muối và ủ trong thời gian dài để cho ra nước mắm có màu cánh gián và mùi thơm đặc trưng.\n\n" +
@@ -265,8 +277,9 @@ export const initialProducts: Product[] = [
     image: "/images/p-nuoc-mam.jpg",
     region: "nam",
     brand: "Khải Hoàn",
-    origin: "Phú Quốc, Kiên Giang",
+    origin: "An Giang",
     pack: "Chai 500ml",
+    stock: INITIAL_STOCK,
     isFeatured: false,
     rank: 3,
     occasions: ["bieu-nguoi-lon", "vao-bep"],
@@ -278,7 +291,7 @@ export const initialProducts: Product[] = [
   },
   {
     id: "keo-dua",
-    name: "Kẹo dừa",
+    name: "Kẹo dừa Bến Tre",
     shortDescription: "Kẹo dừa vị ca cao: kẹo dẻo từ nước cốt dừa, đường và ca cao, thơm béo, đặc sản của xứ dừa Bến Tre.",
     description:
       "Bến Tre được gọi là xứ dừa, và kẹo dừa là món quà đặc trưng của vùng đất này. Kẹo được nấu từ nước cốt dừa và đường, loại này có thêm ca cao nên có màu nâu, sau đó cắt thành từng viên nhỏ.\n\n" +
@@ -288,8 +301,9 @@ export const initialProducts: Product[] = [
     image: "/images/p-keo-dua-ben-tre.jpg",
     region: "nam",
     brand: "Cô Hai Tỏ",
-    origin: "Bến Tre",
+    origin: "Vĩnh Long",
     pack: "Hộp 400g",
+    stock: INITIAL_STOCK,
     isFeatured: false,
     rank: 4,
     occasions: ["qua-tet", "an-vat"],

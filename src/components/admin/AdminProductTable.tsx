@@ -8,6 +8,7 @@ import RegionBadge from "@/components/product/RegionBadge";
 import { useStore } from "@/context/StoreContext";
 import { formatVND } from "@/lib/format";
 import { sortNewestFirst } from "@/lib/products";
+import { LOW_STOCK } from "@/lib/cart";
 
 // Danh sách sản phẩm của Admin, mới nhất lên đầu, mỗi dòng có "Sửa" và "Xóa"
 export default function AdminProductTable() {
@@ -23,13 +24,14 @@ export default function AdminProductTable() {
             <th className={th}>Vùng miền</th>
             <th className={th}>Thương hiệu</th>
             <th className={th}>Giá</th>
+            <th className={th}>Tồn kho</th>
             <th className={th}>Thao tác</th>
           </tr>
         </thead>
         <tbody>
           {products.length === 0 ? (
             <tr>
-              <td colSpan={6} className={`${td} py-10 text-center text-ink-muted`}>
+              <td colSpan={7} className={`${td} py-10 text-center text-ink-muted`}>
                 Chưa có sản phẩm nào.
               </td>
             </tr>
@@ -49,7 +51,7 @@ export default function AdminProductTable() {
                   {product.name}
                   <span className="block text-xs font-normal text-ink-muted">
                     {product.pack}
-                    {product.isFeatured && " · Nổi bật"}
+                    {product.isFeatured && " · Ưu tiên nổi bật"}
                     {product.rank && ` · Top ${product.rank}`}
                   </span>
                 </td>
@@ -58,6 +60,13 @@ export default function AdminProductTable() {
                 </td>
                 <td className={td}>{product.brand}</td>
                 <td className={`${td} whitespace-nowrap`}>{formatVND(product.price)}</td>
+                <td className={`${td} whitespace-nowrap`}>
+                  {product.stock <= 0 ? (
+                    <span className="font-semibold text-sale">Hết hàng</span>
+                  ) : (
+                    <span className={product.stock <= LOW_STOCK ? "font-semibold text-gold-ink" : ""}>{product.stock}</span>
+                  )}
+                </td>
                 <td className={td}>
                   <div className="flex items-start gap-2">
                     <Link href={`/admin/san-pham/${product.id}/sua`} aria-label={`Sửa ${product.name}`} className={actionEdit}>

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import LoadingState from "@/components/ui/LoadingState";
 import { useStore } from "@/context/StoreContext";
+import { loginUrl } from "@/lib/redirect";
 
 // Chỉ hiển thị nội dung cho người đã đăng nhập. Khách chưa đăng nhập bị chuyển tới /dang-nhap.
 // Trong lúc localStorage đang được đọc, chỉ hiện thông báo đang tải, nên nội dung được bảo vệ không bị nháy lên.
@@ -13,7 +14,8 @@ export default function RequireLogin({ children }: { children: React.ReactNode }
   const router = useRouter();
 
   useEffect(() => {
-    if (isReady && !currentUser) router.replace("/dang-nhap");
+    // Đăng nhập xong thì quay lại đúng trang này (ví dụ /tai-khoan?tab=wishlist)
+    if (isReady && !currentUser) router.replace(loginUrl(window.location.pathname + window.location.search));
   }, [isReady, currentUser, router]);
 
   if (!isReady || !currentUser) return <LoadingState />;

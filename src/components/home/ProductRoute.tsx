@@ -4,24 +4,26 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import AddToCartButton from "@/components/product/AddToCartButton";
-import { btnBase, btnSecondary, btnSmall } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
 import { formatVND } from "@/lib/format";
 import { discountPercent } from "@/lib/products";
 import { regions } from "@/lib/regions";
 import { buildRoute, formatLatitude } from "@/lib/route";
+import { slugify } from "@/lib/text";
+import type { Product } from "@/types";
 
 // Đường tuyến nằm trong 48px đầu của mỗi hàng; tâm của nó ở 16px, và tâm của mọi chấm điểm dừng cũng vậy.
 const lineClass = "absolute left-[14px] w-1";
 
-// Tuyến "Bắc vào Nam" ở trang chủ: mỗi sản phẩm là một điểm dừng, xếp từ bắc xuống nam.
-// Chọn một điểm dừng sẽ mở sản phẩm ngay tại đó: ảnh, giá và "Thêm vào giỏ".
+// Tuyến "Bắc vào Nam" ở trang chủ: mỗi điểm dừng là MỘT tỉnh/thành, xếp từ Bắc xuống Nam theo vĩ độ.
+// Tên tỉnh là tiêu đề lớn; mọi sản phẩm của tỉnh nằm chung trong điểm dừng đó.
+// Chọn một tỉnh sẽ mở các sản phẩm ngay tại đó: ảnh, giá và "Thêm vào giỏ".
 export default function ProductRoute() {
   const { isReady, products } = useStore();
   const stops = buildRoute(products);
-  // undefined = chưa chọn gì, nên điểm dừng đầu tiên đang mở; null = khách đã đóng mọi điểm dừng
-  const [chosenId, setChosenId] = useState<string | null>();
-  const openId = chosenId === undefined ? stops[0]?.product.id : chosenId;
+  // undefined = chưa chọn gì, nên tỉnh đầu tiên đang mở; null = khách đã đóng mọi điểm dừng
+  const [chosen, setChosen] = useState<string | null>();
+  const openProvince = chosen === undefined ? stops[0]?.province : chosen;
 
   if (!isReady) {
     return (
@@ -42,19 +44,17 @@ export default function ProductRoute() {
   }
 
   return (
-    <ol aria-label="Đặc sản từ Bắc vào Nam">
+    <ol aria-label="Đặc sản từ Bắc vào Nam, theo tỉnh">
       {stops.map((stop, index) => {
-        const { product } = stop;
-        const region = regions[product.region];
-        const isOpen = product.id === openId;
+        const region = regions[stop.region];
+        const isOpen = stop.province === openProvince;
         const isLast = index === stops.length - 1;
-        const startsRegion = index === 0 || stops[index - 1].product.region !== product.region;
-        const panelId = `chang-${product.id}`;
-        const discount = discountPercent(product);
+        const startsRegion = index === 0 || stops[index - 1].region !== stop.region;
+        const panelId = `tinh-${slugify(stop.province)}`;
 
         return (
           // Các điểm dừng hiện lần lượt từ Bắc vào Nam khi trang mở
-          <li key={product.id} className="animate-fade-up" style={{ animationDelay: `${index * 70}ms` }}>
+          <li key={stop.province} className="animate-fade-up" style={{ animationDelay: `${index * 70}ms` }}>
             {/* Nơi một vùng mới bắt đầu, đường tuyến đổi màu và tên vùng được ghi ra */}
             {startsRegion && (
               <div className={`relative pb-2 pl-12 ${index === 0 ? "" : "pt-6"}`}>
@@ -82,20 +82,20 @@ export default function ProductRoute() {
                   type="button"
                   aria-expanded={isOpen}
                   aria-controls={panelId}
-                  onClick={() => setChosenId(isOpen ? null : product.id)}
+                  onClick={() => setChosen(isOpen ? null : stop.province)}
                   className="group grid w-full grid-cols-[1fr_auto] items-baseline gap-x-4 rounded-md py-3 text-left"
                 >
                   <span className="min-w-0">
-                    <span className="font-display text-[1.75rem] font-semibold leading-tight text-ink sm:text-3xl">
-                      {stop.place}
+                    <span className="font-display text-[1.75rem] font-semibold uppercase leading-tight text-ink sm:text-3xl">
+                      {stop.province}
                     </span>
-                    {stop.area && <span className="ml-2 text-sm text-ink-muted">{stop.area}</span>}
+                    {/* Tên các sản phẩm của tỉnh; tên địa phương nhỏ (U Minh Hạ, Năm Căn…) nằm trong tên sản phẩm */}
                     <span
                       className={`mt-0.5 block font-medium transition-colors duration-200 ${
                         isOpen ? "text-ink" : "text-ink-muted group-hover:text-ink"
                       }`}
                     >
-                      {product.name}
+                      {stop.products.map((product) => product.name).join(" · ")}
                     </span>
                   </span>
                   {stop.latitude !== undefined && (
@@ -115,38 +115,12 @@ export default function ProductRoute() {
                 }`}
               >
                 <div className="overflow-hidden">
-                  <div className="grid gap-5 pb-8 pt-2 min-[480px]:grid-cols-[10rem_1fr] sm:grid-cols-[12rem_1fr]">
-                    <Link href={`/san-pham/${product.id}`} tabIndex={-1} aria-hidden="true" className="block">
-                      <Image
-                        src={product.image}
-                        width={960}
-                        height={720}
-                        alt=""
-                        sizes="(min-width: 640px) 192px, (min-width: 480px) 160px, 100vw"
-                        className="block aspect-[4/3] h-auto w-full rounded-lg bg-surface object-cover min-[480px]:aspect-square"
-                      />
-                    </Link>
-                    <div className="flex flex-col">
-                      <p className="max-w-[46ch] text-ink-muted">{product.shortDescription}</p>
-                      <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                        <span className="text-xl font-bold text-ink">{formatVND(product.price)}</span>
-                        {product.oldPrice && (
-                          <span className="text-sm text-ink-muted line-through">
-                            <span className="sr-only">Giá cũ </span>
-                            {formatVND(product.oldPrice)}
-                          </span>
-                        )}
-                        {discount > 0 && <span className="text-sm font-semibold text-sale">Giảm {discount}%</span>}
-                        <span className="text-sm text-ink-muted">{product.pack}</span>
-                      </div>
-                      <div className="mt-4 flex flex-wrap gap-3">
-                        <AddToCartButton productId={product.id} productName={product.name} className="" />
-                        <Link href={`/san-pham/${product.id}`} className={`${btnBase} ${btnSecondary} ${btnSmall}`}>
-                          Xem chi tiết <span className="sr-only">{product.name}</span>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
+                  {/* Một cột: tuyến nằm trong nửa trang, hai cột thì thẻ quá chật */}
+                  <ul className="grid gap-3 pb-8 pt-2">
+                    {stop.products.map((product) => (
+                      <RouteProduct key={product.id} product={product} />
+                    ))}
+                  </ul>
                 </div>
               </div>
             </div>
@@ -154,5 +128,46 @@ export default function ProductRoute() {
         );
       })}
     </ol>
+  );
+}
+
+// Một sản phẩm trong điểm dừng đang mở: ảnh nhỏ, tên, giá và "Thêm vào giỏ"
+function RouteProduct({ product }: { product: Product }) {
+  const discount = discountPercent(product);
+  return (
+    <li className="flex gap-3 rounded-lg border border-line bg-white p-3">
+      <Link href={`/san-pham/${product.id}`} tabIndex={-1} aria-hidden="true" className="block shrink-0">
+        <Image
+          src={product.image}
+          width={160}
+          height={160}
+          alt=""
+          sizes="80px"
+          className="block h-20 w-20 rounded-md bg-surface object-cover"
+        />
+      </Link>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Link
+          href={`/san-pham/${product.id}`}
+          className="font-semibold leading-snug text-ink transition-colors duration-200 hover:text-primary"
+        >
+          {product.name}
+        </Link>
+        <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <span className="font-bold text-ink">{formatVND(product.price)}</span>
+          {product.oldPrice && (
+            <span className="text-xs text-ink-muted line-through">
+              <span className="sr-only">Giá cũ </span>
+              {formatVND(product.oldPrice)}
+            </span>
+          )}
+          {discount > 0 && <span className="text-xs font-semibold text-sale">-{discount}%</span>}
+          <span className="text-xs text-ink-muted">{product.pack}</span>
+        </div>
+        <div className="mt-auto pt-2">
+          <AddToCartButton productId={product.id} productName={product.name} className="w-full" />
+        </div>
+      </div>
+    </li>
   );
 }

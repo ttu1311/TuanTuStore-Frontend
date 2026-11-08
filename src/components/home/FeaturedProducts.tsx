@@ -10,18 +10,19 @@ import { btnBase, btnGhost } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { getFeaturedProducts } from "@/lib/products";
+import { soldCounts } from "@/lib/reviews";
 
 const AUTO_SCROLL_MS = 5000;
-// Cùng chiều rộng với lưới cũ: 1 thẻ (điện thoại, ló một phần thẻ sau), 2 thẻ, rồi 3 thẻ từ cỡ xl. Khoảng cách 24px.
+// 1 thẻ (điện thoại, ló một phần thẻ sau), 2 thẻ, 3 thẻ từ cỡ lg, rồi 4 thẻ từ cỡ xl (băng rộng hết trang). Khoảng cách 24px.
 const slideClass =
-  "flex w-[85%] shrink-0 snap-start min-[480px]:w-[calc((100%-24px)/2)] xl:w-[calc((100%-48px)/3)]";
+  "flex w-[85%] shrink-0 snap-start min-[480px]:w-[calc((100%-24px)/2)] lg:w-[calc((100%-48px)/3)] xl:w-[calc((100%-72px)/4)]";
 
-// "Sản phẩm nổi bật": các sản phẩm Admin đã đánh dấu nổi bật, trên một băng trượt ngang. Thuộc cột Nội dung của trang chủ.
+// "Sản phẩm nổi bật": 8 món có điểm cao nhất (lượt mua × 5 + lượt xem, xem getFeaturedProducts), trên một băng trượt ngang.
 // Băng tự trượt sang thẻ kế tiếp mỗi 5 giây (hết thì quay về đầu), có nút ‹ › và kéo/vuốt được bằng tay.
 // Tự trượt dừng khi rê chuột, chạm hoặc đưa bàn phím vào băng, và tắt hẳn với người bật "giảm chuyển động".
 export default function FeaturedProducts() {
-  const { isReady, products } = useStore();
-  const featured = getFeaturedProducts(products);
+  const { isReady, products, orders, productViews } = useStore();
+  const featured = getFeaturedProducts(products, soldCounts(orders), productViews);
   const reducedMotion = useReducedMotion();
   const trackRef = useRef<HTMLUListElement>(null);
   const [paused, setPaused] = useState(false);

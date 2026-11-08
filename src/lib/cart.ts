@@ -1,6 +1,8 @@
 import type { CartItem, Product } from "@/types";
 
 export const MAX_QUANTITY = 99; // tối đa cho mỗi sản phẩm trong giỏ
+export const INITIAL_STOCK = 50; // tồn kho ban đầu của mỗi sản phẩm (dữ liệu mẫu, và sản phẩm lưu từ trước khi có tồn kho)
+export const LOW_STOCK = 5; // còn từ số này trở xuống: "Sắp hết hàng" (trang Admin)
 export const SHIPPING_FEE = 30000; // phí vận chuyển (VND) cho đơn dưới FREE_SHIPPING_MIN
 export const FREE_SHIPPING_MIN = 300000; // tạm tính từ mức này trở lên thì miễn phí vận chuyển (VND)
 export const DISCOUNT = 20000; // giảm giá cố định cho mọi đơn hàng (VND)
@@ -11,6 +13,11 @@ export function cleanQuantity(value: number) {
 }
 
 export type CartLine = { product: Product; quantity: number };
+
+// Số lượng tối đa khách đặt được cho một sản phẩm: không quá tồn kho, không quá 99
+export function maxOrderable(product: Pick<Product, "stock">) {
+  return Math.max(0, Math.min(MAX_QUANTITY, product.stock));
+}
 
 // Ghép mỗi mục trong giỏ với sản phẩm của nó. Bỏ qua các mục có sản phẩm không còn tồn tại.
 export function getCartLines(cart: CartItem[], products: Product[]): CartLine[] {

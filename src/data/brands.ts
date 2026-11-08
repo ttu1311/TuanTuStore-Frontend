@@ -4,7 +4,7 @@ import type { Brand } from "@/types";
 // còn file này chỉ cho biết thương hiệu đó là gì.
 //
 // Đây là các thương hiệu / nhãn hiệu THẬT, ghi theo thông tin công khai trên báo chí và các trang của cơ quan nhà nước
-// (nguồn ghi trong README.md, mục Credits). TuanTuStore là đồ án học tập, không phải đại lý hay nhà phân phối chính thức
+// (nguồn ghi trong README.md, mục Credits). Đặc sản 3 Miền là đồ án học tập, không phải đại lý hay nhà phân phối chính thức
 // của các thương hiệu này; giá và quy cách của sản phẩm chỉ là giá trị mẫu.
 // Với các đặc sản Cà Mau, "thương hiệu" là nhãn hiệu tập thể của địa phương (không phải một công ty cụ thể).
 export const brands: Brand[] = [
@@ -36,19 +36,19 @@ export const brands: Brand[] = [
   {
     name: "Tân Huê Viên",
     kind: "Thương hiệu",
-    place: "Sóc Trăng",
+    place: "Sóc Trăng (nay thuộc TP. Cần Thơ)",
     about: "Thương hiệu bánh pía lâu đời của Sóc Trăng. Ngoài bánh pía, Tân Huê Viên còn làm bánh in, lạp xưởng và bánh Trung thu.",
   },
   {
     name: "Khải Hoàn",
     kind: "Thương hiệu",
-    place: "Phú Quốc, Kiên Giang",
+    place: "Đặc khu Phú Quốc, An Giang",
     about: "Nhà thùng nước mắm ở Phú Quốc, làm nước mắm từ cá cơm đánh bắt trên biển, ủ chượp trong những thùng gỗ lớn.",
   },
   {
     name: "Cô Hai Tỏ",
     kind: "Thương hiệu",
-    place: "Bến Tre",
+    place: "Bến Tre (nay thuộc Vĩnh Long)",
     about: "Thương hiệu kẹo dừa của Bến Tre, bắt đầu sản xuất từ năm 1978 theo thông tin trên báo chí.",
   },
   {

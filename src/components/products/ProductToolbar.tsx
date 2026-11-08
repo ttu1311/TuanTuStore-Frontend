@@ -36,7 +36,7 @@ export default function ProductToolbar({ total, search, onSearchChange, sort, on
           autoComplete="off"
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
-          className={`${fieldStyle} w-full pl-12 pr-4 placeholder:text-[#7A7F7B]`}
+          className={`${fieldStyle} w-full pl-12 pr-4 placeholder:text-[#686D69]`}
         />
       </div>
 

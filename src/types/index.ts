@@ -1,4 +1,4 @@
-// Các kiểu dữ liệu của TuanTuStore.
+// Các kiểu dữ liệu của Đặc sản 3 Miền.
 // Mọi danh sách bên dưới đều được lưu trong localStorage của trình duyệt (xem src/lib/storage.ts).
 
 export type Region = "bac" | "trung" | "nam";
@@ -15,6 +15,7 @@ export interface Product {
   brand: string;
   origin: string; // nơi sản xuất
   pack: string; // ví dụ "Gói 200g"
+  stock: number; // số lượng còn trong kho. Đặt hàng thì giảm; 0 = "Hết hàng" (không thêm vào giỏ được)
   isFeatured: boolean; // hiển thị trong "Sản phẩm nổi bật" ở trang chủ
   rank?: number; // vị trí bán chạy: 1 = "Top 1". Để trống với sản phẩm khác.
   occasions?: string[]; // id các "dịp tặng" (src/data/occasions.ts), ví dụ ["qua-tet", "an-vat"]
@@ -51,7 +52,15 @@ export interface User {
   // Xem src/lib/password.ts và "Demo accounts" trong README.md. Đừng bao giờ dùng mật khẩu thật ở đây.
   password: string;
   role: Role;
+  address?: SavedAddress; // địa chỉ giao hàng mặc định ("Mua cho bản thân" ở trang thanh toán). Không có = chưa lưu.
   createdAt: string; // ngày ISO
+}
+
+// Địa chỉ 2 cấp sau sáp nhập: Tỉnh/Thành phố → Xã/Phường/Đặc khu, cộng số nhà, đường
+export interface SavedAddress {
+  province: string; // một trong src/data/provinces.ts
+  ward: string; // Xã / Phường / Đặc khu
+  street: string; // số nhà, tên đường, thôn/ấp
 }
 
 // Giỏ hàng chỉ lưu sản phẩm nào và bao nhiêu. Tên, giá và ảnh lấy từ danh sách sản phẩm.
@@ -60,9 +69,14 @@ export interface CartItem {
   quantity: number;
 }
 
-export type OrderStatus = "PENDING" | "CONFIRMED" | "SHIPPING" | "COMPLETED";
+// CANCELLED = "Đã hủy": chỉ hủy được đơn CHƯA GIAO (Chờ xác nhận / Đã xác nhận); hàng được trả lại kho
+export type OrderStatus = "PENDING" | "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED";
 
 export type PaymentMethod = "COD" | "BANK_TRANSFER";
+
+// Chỉ đơn chuyển khoản mới có: UNPAID = "Chờ thanh toán", PAID = "Đã thanh toán".
+// TẠM THỜI Admin xác nhận thủ công; khi có backend, webhook của cổng thanh toán sẽ chuyển sang PAID.
+export type PaymentStatus = "UNPAID" | "PAID";
 
 // Bản sao của sản phẩm tại thời điểm mua,
 // để thay đổi sản phẩm về sau (tên, giá) không bao giờ làm đổi một đơn hàng cũ.
@@ -80,11 +94,14 @@ export interface Order {
   phone: string;
   email: string;
   province: string;
-  district: string;
-  ward: string;
-  address: string;
+  district?: string; // CHỈ có ở đơn cũ (trước khi bỏ cấp Quận/Huyện); đơn mới không có
+  ward: string; // Xã / Phường / Đặc khu
+  address: string; // số nhà, tên đường
   note: string; // "" khi khách không viết gì
+  forOther?: boolean; // true = khách đã đăng nhập mua tặng người thân: họ tên, số điện thoại, địa chỉ là của người nhận
   paymentMethod: PaymentMethod;
+  paymentStatus?: PaymentStatus; // chỉ có ở đơn chuyển khoản (đơn chuyển khoản cũ không có = chưa thanh toán)
+  paidAt?: string; // ngày ISO Admin xác nhận đã nhận tiền
   status: OrderStatus;
   items: OrderItem[];
   subtotal: number;

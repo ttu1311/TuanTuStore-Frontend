@@ -3,6 +3,7 @@ import HeaderActions from "@/components/layout/HeaderActions";
 import SameRouteLink from "@/components/layout/SameRouteLink";
 import Icon from "@/components/ui/Icon";
 import MainNav from "@/components/layout/MainNav";
+import Logo from "@/components/brand/Logo";
 
 // Phần đầu của mọi trang cửa hàng: logo, tìm kiếm, biểu tượng tài khoản + giỏ hàng, và menu chính.
 // Mục menu nào sáng lên do MainNav quyết định, dựa vào địa chỉ của trang.
@@ -12,10 +13,10 @@ export default function Header() {
       <div className="mx-auto flex w-full max-w-container flex-wrap items-center gap-3 px-4 py-3 md:px-6 lg:h-[76px] lg:flex-nowrap lg:gap-8 lg:px-8 lg:py-0">
         <SameRouteLink
           href="/"
-          aria-label="TuanTuStore — Trang chủ"
-          className="whitespace-nowrap font-display text-[32px] font-bold leading-none text-ink"
+          aria-label="Đặc sản 3 Miền — Trang chủ"
+          className="inline-flex shrink-0 rounded-md"
         >
-          TuanTuStore
+          <Logo tagline />
         </SameRouteLink>
 
         {/* next/form: nhấn Enter mở /san-pham?q=<từ khóa> mà không tải lại trang.
@@ -36,7 +37,7 @@ export default function Header() {
             maxLength={100}
             placeholder="Tìm đặc sản, ví dụ: chè, ô mai, nước mắm…"
             autoComplete="off"
-            className="h-12 w-full rounded-md border border-line bg-white pl-12 pr-4 text-ink transition-colors duration-200 placeholder:text-[#7A7F7B] focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-soft"
+            className="h-12 w-full rounded-md border border-line bg-white pl-12 pr-4 text-ink transition-colors duration-200 placeholder:text-[#686D69] focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-soft"
           />
         </Form>
 
