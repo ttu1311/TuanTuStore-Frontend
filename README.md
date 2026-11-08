@@ -239,7 +239,7 @@ admin e-mail keep the old internal name, so saved data and logins keep working).
 
 Logo: a cream round seal in which Vietnam's S-shaped land is drawn as the **number 3**, in three strokes = three regions
 (north rice-green, centre red-orange, south sunny gold), with two small dot clusters for the Hoàng Sa and Trường Sa
-archipelagos and a young leaf sprouting out of the seal. Wordmark: "ĐẶC SẢN" + a three-colour bar, then "3 MIỀN".
+archipelagos and a young leaf sprouting out of the seal. Wordmark: "ĐẶC SẢN" above "3 MIỀN".
 The site uses the `Logo` / `LogoMark` components (`src/components/brand/Logo.tsx`; the wordmark is real text in the site font);
 the favicon is `src/app/icon.svg`. Standalone files for use outside the site: `public/brand/logo-horizontal.svg`,
 `logo-on-dark.svg` and `logo-mark.svg` (their text falls back to Arial Narrow / Arial where the Phudu font is not installed).

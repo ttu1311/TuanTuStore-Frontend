@@ -16,7 +16,7 @@ export default function Header() {
           aria-label="Đặc sản 3 Miền — Trang chủ"
           className="inline-flex shrink-0 rounded-md"
         >
-          <Logo tagline />
+          <Logo />
         </SameRouteLink>
 
         {/* next/form: nhấn Enter mở /san-pham?q=<từ khóa> mà không tải lại trang.

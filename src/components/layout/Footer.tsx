@@ -48,7 +48,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-10 pb-12 min-[480px]:grid-cols-2 xl:grid-cols-[1.6fr_1fr_1fr_1fr_1.3fr]">
           <div className="min-[480px]:col-span-2 xl:col-span-1">
             <SameRouteLink href="/" aria-label="Đặc sản 3 Miền — Trang chủ" className="inline-flex rounded-md">
-              <Logo tagline />
+              <Logo />
             </SameRouteLink>
             <p className="mt-4 max-w-[320px] text-ink-muted">
               Cửa hàng đặc sản ba miền Việt Nam — chọn lọc kỹ, rõ nguồn gốc, mang hương vị quê nhà đến mọi gia đình.

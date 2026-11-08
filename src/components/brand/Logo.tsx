@@ -2,7 +2,7 @@
 // Biểu tượng: một con dấu tròn màu kem; bên trong, dải đất chữ S của Việt Nam được vẽ thành SỐ 3,
 // chia đúng 3 đoạn = 3 miền: Bắc xanh lúa, Trung đỏ cam, Nam vàng nắng. Cạnh đó là hai cụm chấm nhỏ:
 // quần đảo Hoàng Sa và Trường Sa. Một chiếc lá non nhú ra khỏi con dấu ở đầu miền Bắc: đồ ăn tươi, quà quê.
-// Chữ: "ĐẶC SẢN" (xanh lúa) + vạch 3 màu, dưới là "3 MIỀN" (đỏ cam, màu đặc trưng của site).
+// Chữ: "ĐẶC SẢN" (xanh lúa), dưới là "3 MIỀN" (đỏ cam, màu đặc trưng của site).
 // Các bản: <Logo /> ngang cho header/footer, <Logo tone="dark" /> cho nền tối, <LogoMark /> chỉ biểu tượng.
 // Favicon: src/app/icon.svg (cùng hình). Bản tệp rời: public/brand/*.svg.
 
@@ -49,31 +49,23 @@ export function LogoMark({ size = 44, className = "" }: { size?: number; classNa
 type LogoProps = {
   tone?: "light" | "dark"; // "dark": chữ sáng, dùng trên nền tối
   size?: "md" | "sm"; // sm: thanh bên trang Admin
-  tagline?: boolean; // dòng nhỏ "Quà quê từ Bắc vào Nam" (ẩn trên điện thoại cho gọn)
   label?: string;
 };
 
 // Bản ngang: biểu tượng + chữ hai tầng. Chữ là chữ thật (font Phudu của site), nét sắc ở mọi cỡ, đọc rõ trên điện thoại.
-export default function Logo({ tone = "light", size = "md", tagline = false, label = "Đặc sản 3 Miền — Quà quê từ Bắc vào Nam" }: LogoProps) {
+export default function Logo({ tone = "light", size = "md", label = "Đặc sản 3 Miền — Quà quê từ Bắc vào Nam" }: LogoProps) {
   const dark = tone === "dark";
   const small = size === "sm";
   return (
     <span role="img" aria-label={label} className="inline-flex items-center gap-2.5">
       <LogoMark size={small ? 38 : 46} />
       <span aria-hidden="true" className="flex flex-col">
-        {/* Tầng trên: ĐẶC SẢN + vạch 3 màu (Bắc, Trung, Nam) */}
-        <span className="flex items-center gap-2">
-          <span
-            className={`whitespace-nowrap font-display font-bold uppercase leading-none tracking-[0.2em] ${small ? "text-[12px]" : "text-[14px] sm:text-[15px]"}`}
-            style={{ color: dark ? brandColors.darkGreen : brandColors.textGreen }}
-          >
-            Đặc sản
-          </span>
-          <span className="flex h-[3px] min-w-6 flex-1 gap-[2px]" aria-hidden="true">
-            <span className="flex-1 rounded-full" style={{ backgroundColor: brandColors.north }} />
-            <span className="flex-1 rounded-full" style={{ backgroundColor: brandColors.central }} />
-            <span className="flex-1 rounded-full" style={{ backgroundColor: brandColors.south }} />
-          </span>
+        {/* Tầng trên: ĐẶC SẢN */}
+        <span
+          className={`whitespace-nowrap font-display font-bold uppercase leading-none tracking-[0.2em] ${small ? "text-[12px]" : "text-[14px] sm:text-[15px]"}`}
+          style={{ color: dark ? brandColors.darkGreen : brandColors.textGreen }}
+        >
+          Đặc sản
         </span>
         {/* Tầng dưới: 3 MIỀN */}
         <span
@@ -82,15 +74,6 @@ export default function Logo({ tone = "light", size = "md", tagline = false, lab
         >
           3 Miền
         </span>
-        {tagline && (
-          <span
-            className={`mt-1 hidden whitespace-nowrap text-[11px] font-semibold tracking-[0.06em] sm:block ${
-              dark ? "text-footer-text" : "text-ink-muted"
-            }`}
-          >
-            Quà quê từ Bắc vào Nam
-          </span>
-        )}
       </span>
     </span>
   );
