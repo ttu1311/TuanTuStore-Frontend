@@ -13,8 +13,7 @@ const privateNetworkAddresses = [
 
 const nextConfig: NextConfig = {
   // Đưa <title> của trang vào HTML đầu tiên (thay vì gửi bổ sung sau).
-  // Trang sản phẩm sẽ đặt tên sản phẩm thật lên tab sau khi đọc localStorage,
-  // và về sau không có gì ghi đè lên nó.
+  // Riêng trang sản phẩm tự hiển thị <title> mang tên sản phẩm: xem src/app/(shop)/san-pham/[id]/page.tsx.
   htmlLimitedBots: /.*/,
   allowedDevOrigins: privateNetworkAddresses,
 };
