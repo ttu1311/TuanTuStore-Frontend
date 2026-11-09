@@ -9,7 +9,7 @@ import ProductToolbar from "@/components/products/ProductToolbar";
 import { useStore } from "@/context/StoreContext";
 import { occasions } from "@/data/occasions";
 import { brandSummaries } from "@/lib/brands";
-import { groupProducts, provinceOf, sortNewestFirst } from "@/lib/products";
+import { groupProducts, productProvince, sortNewestFirst } from "@/lib/products";
 import { simplifyText } from "@/lib/text";
 import type { Product, Region } from "@/types";
 
@@ -96,7 +96,7 @@ export default function ProductListing({
   const brandOptions = brandSummaries(products);
 
   // Các ô chọn tỉnh kèm số sản phẩm của tỉnh đó, xếp A đến Z
-  const provinceOptions = groupProducts(products, (product) => provinceOf(product.origin)).map(({ name, items }) => ({
+  const provinceOptions = groupProducts(products, productProvince).map(({ name, items }) => ({
     name,
     count: items.length,
   }));
@@ -121,7 +121,7 @@ export default function ProductListing({
       (regions.length === 0 || regions.includes(product.region)) &&
       (activeBrands.length === 0 || activeBrands.includes(product.brand)) &&
       (occasionIds.length === 0 || occasionIds.some((id) => product.occasions?.includes(id))) &&
-      (activeProvinces.length === 0 || activeProvinces.includes(provinceOf(product.origin))) &&
+      (activeProvinces.length === 0 || activeProvinces.includes(productProvince(product))) &&
       matchesPrice(product.price, price)
   );
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import AdminNav from "@/components/admin/AdminNav";
 import { useStore } from "@/context/StoreContext";
+import Logo from "@/components/brand/Logo";
 
 // Khung của mọi trang /admin: menu bên + thanh trên + nội dung.
 // Chỉ ADMIN mới thấy: khách chưa đăng nhập bị chuyển tới /dang-nhap, khách hàng (USER) bị chuyển về trang chủ.
@@ -36,10 +37,10 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       <aside className="border-b border-line bg-white lg:sticky lg:top-0 lg:h-screen lg:w-60 lg:shrink-0 lg:border-b-0 lg:border-r">
         <Link
           href="/admin"
-          aria-label="TuanTuStore — Quản trị"
-          className="flex h-16 items-center whitespace-nowrap px-6 font-display text-2xl font-bold tracking-tight text-ink"
+          aria-label="Đặc sản 3 Miền — Quản trị"
+          className="flex h-16 items-center whitespace-nowrap px-5"
         >
-          TuanTu<span className="text-primary">Store</span>
+          <Logo size="sm" label="Đặc sản 3 Miền — Quản trị" />
         </Link>
         <AdminNav />
       </aside>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminUserTable from "@/components/admin/AdminUserTable";
 
-export const metadata: Metadata = { title: "Người dùng — Quản trị TuanTuStore" };
+export const metadata: Metadata = { title: "Người dùng — Quản trị Đặc sản 3 Miền" };
 
 export default function AdminUsersPage() {
   return (

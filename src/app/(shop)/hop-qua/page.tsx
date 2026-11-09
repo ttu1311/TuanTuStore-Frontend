@@ -3,7 +3,7 @@ import GiftBoxBuilder from "@/components/gift/GiftBoxBuilder";
 import { PageContainer } from "@/components/layout/PageLayout";
 
 export const metadata: Metadata = {
-  title: "Hộp quà Ba Miền — TuanTuStore",
+  title: "Hộp quà Ba Miền — Đặc sản 3 Miền",
   description: "Tự ghép hộp quà gồm một đặc sản miền Bắc, một miền Trung và một miền Nam, gói chung kèm thiệp.",
 };
 

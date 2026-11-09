@@ -1,3 +1,4 @@
+import Logo from "@/components/brand/Logo";
 import SameRouteLink from "@/components/layout/SameRouteLink";
 import Icon from "@/components/ui/Icon";
 import { contactChannels, storeContact } from "@/data/contact";
@@ -12,11 +13,11 @@ const linkColumns: { title: string; links: FooterItem[] }[] = [
     title: "Liên kết nhanh",
     links: [
       { label: "Trang chủ", href: "/" },
+      { label: "Giới thiệu", href: "/#gioi-thieu" },
       { label: "Sản phẩm", href: "/san-pham" },
       { label: "Đặc sản 3 miền", href: "/#ba-mien" },
       { label: "Hộp quà Ba Miền", href: "/hop-qua" },
-      { label: "Bán chạy", href: "/#ban-chay" },
-      { label: "Giới thiệu", href: "/#gioi-thieu" },
+      { label: "Bản đồ đặc sản", href: "/ban-do" },
     ],
   },
   {
@@ -46,8 +47,8 @@ export default function Footer() {
       <div className="mx-auto w-full max-w-container px-4 md:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 pb-12 min-[480px]:grid-cols-2 xl:grid-cols-[1.6fr_1fr_1fr_1fr_1.3fr]">
           <div className="min-[480px]:col-span-2 xl:col-span-1">
-            <SameRouteLink href="/" className="whitespace-nowrap font-display text-[32px] font-bold leading-none text-ink">
-              TuanTuStore
+            <SameRouteLink href="/" aria-label="Đặc sản 3 Miền — Trang chủ" className="inline-flex rounded-md">
+              <Logo />
             </SameRouteLink>
             <p className="mt-4 max-w-[320px] text-ink-muted">
               Cửa hàng đặc sản ba miền Việt Nam — chọn lọc kỹ, rõ nguồn gốc, mang hương vị quê nhà đến mọi gia đình.
@@ -116,7 +117,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-line py-6 text-sm text-ink-muted">
-          <span>© 2026 TuanTuStore. Bảo lưu mọi quyền.</span>
+          <span>© 2026 Đặc sản 3 Miền. Bảo lưu mọi quyền.</span>
         </div>
       </div>
     </footer>

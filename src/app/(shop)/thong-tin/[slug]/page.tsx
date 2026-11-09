@@ -16,7 +16,7 @@ type InfoPageProps = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: InfoPageProps): Promise<Metadata> {
   const page = findInfoPage((await params).slug);
-  return page ? { title: `${page.title} — TuanTuStore`, description: page.description } : {};
+  return page ? { title: `${page.title} — Đặc sản 3 Miền`, description: page.description } : {};
 }
 
 export default async function InfoPageView({ params }: InfoPageProps) {
@@ -30,7 +30,7 @@ export default async function InfoPageView({ params }: InfoPageProps) {
           <h1 className="font-display text-3xl/[1.1] font-semibold text-ink md:text-title/[1.1]">{page.title}</h1>
           <p className="mt-3 max-w-[40rem] text-lg text-ink-muted">{page.description}</p>
           <p className="mt-6 rounded-lg bg-gold-soft px-4 py-3 text-sm text-gold-ink">
-            TuanTuStore là đồ án học tập: nội dung dưới đây là chính sách mẫu, mô tả cách cửa hàng vận hành.
+            Đặc sản 3 Miền là đồ án học tập: nội dung dưới đây là chính sách mẫu, mô tả cách cửa hàng vận hành.
           </p>
 
           {page.sections?.map((section) => (

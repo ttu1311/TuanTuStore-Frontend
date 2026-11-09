@@ -12,16 +12,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        paper: "#FCFCFA", // nền trang
-        ink: { DEFAULT: "#1C2333", muted: "#586074" },
-        line: "#DEE0E3",
-        surface: "#F0F1EE", // xám giấy gạo lạnh, dùng cho các phần xen kẽ
-        primary: { DEFAULT: "#24315A", dark: "#18213F", soft: "#E5E8F1" }, // xanh chàm
-        che: { DEFAULT: "#3F6A3B", soft: "#E4EDE1" }, // Miền Bắc — xanh lá trà
-        brown: { DEFAULT: "#5B3B2A", soft: "#F0E7E1" }, // Miền Trung — cà phê rang đậm
-        gold: { DEFAULT: "#C7891F", ink: "#7A4F05", soft: "#F8EDD5", light: "#E2B65C" }, // Miền Nam — hổ phách của nước mắm
-        sale: "#B3261E",
-        footer: { DEFAULT: "#18213F", text: "#DDE1EC", muted: "#A6AEC4" },
+        // Mã màu thật nằm ở src/app/globals.css (biến --c-*): đổi màu ở đó, dev server cập nhật ngay, không cần xóa cache
+        paper: "rgb(var(--c-paper) / <alpha-value>)",
+        ink: { DEFAULT: "rgb(var(--c-ink) / <alpha-value>)", muted: "rgb(var(--c-ink-muted) / <alpha-value>)" },
+        line: "rgb(var(--c-line) / <alpha-value>)",
+        surface: "rgb(var(--c-surface) / <alpha-value>)",
+        primary: { DEFAULT: "rgb(var(--c-primary) / <alpha-value>)", dark: "rgb(var(--c-primary-dark) / <alpha-value>)", soft: "rgb(var(--c-primary-soft) / <alpha-value>)" },
+        che: { DEFAULT: "rgb(var(--c-che) / <alpha-value>)", soft: "rgb(var(--c-che-soft) / <alpha-value>)" },
+        brown: { DEFAULT: "rgb(var(--c-brown) / <alpha-value>)", soft: "rgb(var(--c-brown-soft) / <alpha-value>)" },
+        gold: { DEFAULT: "rgb(var(--c-gold) / <alpha-value>)", ink: "rgb(var(--c-gold-ink) / <alpha-value>)", soft: "rgb(var(--c-gold-soft) / <alpha-value>)", light: "rgb(var(--c-gold-light) / <alpha-value>)" },
+        sale: "rgb(var(--c-sale) / <alpha-value>)",
+        footer: { DEFAULT: "rgb(var(--c-footer) / <alpha-value>)", text: "rgb(var(--c-footer-text) / <alpha-value>)", muted: "rgb(var(--c-footer-muted) / <alpha-value>)" },
       },
       fontFamily: {
         // --font-display / --font-sans được đặt trong src/app/layout.tsx

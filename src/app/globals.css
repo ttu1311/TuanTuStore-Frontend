@@ -3,6 +3,31 @@
 @tailwind utilities;
 
 @layer base {
+  /* BẢNG MÀU của site: sửa ở đây là cả web đổi theo (tailwind.config.ts chỉ trỏ tới các biến này).
+     Giá trị là 3 số R G B, để Tailwind thêm được độ trong suốt (ví dụ bg-sale/10). */
+  :root {
+    --c-paper: 255 255 255; /* #FFFFFF — nền trang: trắng */
+    --c-ink: 28 25 23; /* #1C1917 — chữ chính: xám than (17,5:1 trên nền) */
+    --c-ink-muted: 87 83 78; /* #57534E — chữ phụ (7,6:1 trên nền, 7,1:1 trên surface) */
+    --c-line: 236 231 225; /* #ECE7E1 — đường kẻ, viền */
+    --c-surface: 250 247 243; /* #FAF7F3 — vùng xen kẽ: trắng ấm rất nhạt */
+    --c-primary: 207 58 16; /* #CF3A10 — MÀU ĐẶC TRƯNG: đỏ cam tươi (chữ trắng trên nút 4,9:1) */
+    --c-primary-dark: 168 46 11; /* #A82E0B — nút khi rê chuột */
+    --c-primary-soft: 255 243 238; /* #FFF3EE — nền nhạt của mục đang chọn (chữ đỏ cam trên nền này ≥ 4,5:1) */
+    --c-che: 63 106 59; /* #3F6A3B — Miền Bắc: xanh lá trà */
+    --c-che-soft: 228 237 225; /* #E4EDE1 */
+    --c-brown: 91 59 42; /* #5B3B2A — Miền Trung: cà phê rang */
+    --c-brown-soft: 240 231 225; /* #F0E7E1 */
+    --c-gold: 199 137 31; /* #C7891F — Miền Nam: hổ phách nước mắm */
+    --c-gold-ink: 122 79 5; /* #7A4F05 */
+    --c-gold-soft: 255 244 220; /* #FFF4DC */
+    --c-gold-light: 226 182 92; /* #E2B65C */
+    --c-sale: 190 18 60; /* #BE123C — giảm giá, lỗi: đỏ hồng, lệch hẳn sắc với nút (6,3:1) */
+    --c-footer: 42 28 22; /* #2A1C16 — nền tối (logo bản nền tối) */
+    --c-footer-text: 243 231 220; /* #F3E7DC */
+    --c-footer-muted: 201 184 170; /* #C9B8AA */
+  }
+
   html {
     scroll-behavior: smooth;
     @apply scroll-pt-header;
@@ -13,7 +38,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid theme("colors.primary.DEFAULT");
+    outline: 2px solid rgb(var(--c-primary));
     outline-offset: 3px;
     border-radius: 4px;
   }

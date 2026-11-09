@@ -8,6 +8,7 @@ const items = [
   { label: "Tổng quan", href: "/admin" },
   { label: "Sản phẩm", href: "/admin/san-pham" },
   { label: "Đơn hàng", href: "/admin/don-hang" },
+  { label: "Thống kê", href: "/admin/thong-ke" },
   { label: "Người dùng", href: "/admin/nguoi-dung" },
   { label: "Yêu cầu liên hệ", href: "/admin/lien-he" },
 ];

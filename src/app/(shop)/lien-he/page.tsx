@@ -3,8 +3,8 @@ import ContactView from "@/components/contact/ContactView";
 import { PageContainer } from "@/components/layout/PageLayout";
 
 export const metadata: Metadata = {
-  title: "Liên hệ — TuanTuStore",
-  description: "Gọi điện, nhắn Zalo, gửi email hoặc để lại số điện thoại để TuanTuStore gọi lại cho bạn.",
+  title: "Liên hệ — Đặc sản 3 Miền",
+  description: "Gọi điện, nhắn Zalo, gửi email hoặc để lại số điện thoại để Đặc sản 3 Miền gọi lại cho bạn.",
 };
 
 type ContactPageProps = { searchParams: Promise<{ "chu-de"?: string | string[] }> };

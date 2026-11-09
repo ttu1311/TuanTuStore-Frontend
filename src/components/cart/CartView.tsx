@@ -9,7 +9,7 @@ import { btnBase, btnPrimary } from "@/components/ui/buttons";
 import LoadingState from "@/components/ui/LoadingState";
 import { useStore } from "@/context/StoreContext";
 import FreeShippingProgress from "@/components/cart/FreeShippingProgress";
-import { MAX_QUANTITY, calculateTotals, getCartLines } from "@/lib/cart";
+import { calculateTotals, getCartLines, maxOrderable } from "@/lib/cart";
 import { formatVND } from "@/lib/format";
 import type { Product } from "@/types";
 
@@ -18,6 +18,14 @@ const stepButton =
 
 function CartRow({ product, quantity }: { product: Product; quantity: number }) {
   const { setCartQuantity, removeFromCart } = useStore();
+  const limit = maxOrderable(product); // không quá tồn kho
+  // Kho đã giảm sau khi khách bỏ vào giỏ (đặt ở tab khác, hoặc Admin sửa kho)
+  const problem =
+    product.stock <= 0
+      ? "Sản phẩm đã hết hàng. Vui lòng xóa khỏi giỏ để đặt hàng."
+      : quantity > product.stock
+        ? `Chỉ còn ${product.stock} sản phẩm. Vui lòng giảm số lượng.`
+        : "";
   // Văn bản khi đang gõ, nên ô có thể trống trong giây lát. Giỏ hàng không bao giờ nhận số lượng dưới 1.
   const [draft, setDraft] = useState(String(quantity));
   // Giữ ô nhập đồng bộ khi nút − / + đổi số lượng (chỉnh state ngay lúc render, như React khuyến nghị)
@@ -52,6 +60,13 @@ function CartRow({ product, quantity }: { product: Product; quantity: number }) 
           {product.brand} · {product.pack}
         </p>
         <p className="mt-1 text-ink-muted">{formatVND(product.price)}</p>
+        {problem ? (
+          <p role="alert" className="mt-1 text-sm font-medium text-sale">
+            {problem}
+          </p>
+        ) : (
+          <p className="mt-1 text-sm text-ink-muted">Còn {product.stock} sản phẩm</p>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
@@ -68,7 +83,7 @@ function CartRow({ product, quantity }: { product: Product; quantity: number }) 
           <input
             type="number"
             min={1}
-            max={MAX_QUANTITY}
+            max={Math.max(1, limit)}
             aria-label={`Số lượng ${product.name}`}
             value={draft}
             onChange={(event) => handleType(event.target.value)}
@@ -78,7 +93,7 @@ function CartRow({ product, quantity }: { product: Product; quantity: number }) 
           <button
             type="button"
             aria-label={`Tăng số lượng ${product.name}`}
-            disabled={quantity >= MAX_QUANTITY}
+            disabled={quantity >= limit}
             onClick={() => setCartQuantity(product.id, quantity + 1)}
             className={stepButton}
           >
@@ -126,6 +141,8 @@ export default function CartView() {
   const { subtotal, shippingFee, discount, total } = calculateTotals(
     lines.reduce((sum, line) => sum + line.product.price * line.quantity, 0)
   );
+  // Có món hết hàng hoặc vượt số còn lại: chưa cho thanh toán
+  const stockProblem = lines.some((line) => line.quantity > line.product.stock);
 
   const summaryRows = [
     { label: "Tạm tính", value: formatVND(subtotal) },
@@ -156,9 +173,18 @@ export default function CartView() {
                 <dd className="text-2xl font-bold text-primary">{formatVND(total)}</dd>
               </div>
             </dl>
-            <Link href="/thanh-toan" className={`${btnBase} ${btnPrimary} mt-6 w-full`}>
-              Tiến hành thanh toán
-            </Link>
+            {stockProblem ? (
+              <>
+                <button type="button" disabled className={`${btnBase} ${btnPrimary} mt-6 w-full cursor-not-allowed opacity-50`}>
+                  Tiến hành thanh toán
+                </button>
+                <p className="mt-2 text-sm text-sale">Một số sản phẩm không đủ hàng. Hãy sửa giỏ hàng để tiếp tục.</p>
+              </>
+            ) : (
+              <Link href="/thanh-toan" className={`${btnBase} ${btnPrimary} mt-6 w-full`}>
+                Tiến hành thanh toán
+              </Link>
+            )}
             <Link
               href="/san-pham"
               className="mt-1 block py-3 text-center text-sm font-medium text-primary underline underline-offset-4"

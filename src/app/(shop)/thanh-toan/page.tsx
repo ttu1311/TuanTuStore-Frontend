@@ -3,8 +3,8 @@ import CheckoutView from "@/components/checkout/CheckoutView";
 import { PageContainer } from "@/components/layout/PageLayout";
 
 export const metadata: Metadata = {
-  title: "Thanh toán — TuanTuStore",
-  description: "Thanh toán đơn hàng tại TuanTuStore.",
+  title: "Thanh toán — Đặc sản 3 Miền",
+  description: "Thanh toán đơn hàng tại Đặc sản 3 Miền.",
 };
 
 // Khách chưa đăng nhập cũng thanh toán được. Đơn của khách đã đăng nhập được gắn với tài khoản của họ.

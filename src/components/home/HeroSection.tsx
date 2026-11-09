@@ -19,8 +19,8 @@ export default function HeroSection() {
             vào Nam
           </h1>
           <p className="mt-8 max-w-[34rem] text-lg text-ink-muted">
-            Mỗi món ở TuanTuStore ghi rõ nơi làm ra, từ đồi chè Tân Cương đến nhà thùng nước mắm Phú Quốc. Chọn một điểm
-            trên đường để xem đặc sản của vùng đó.
+            Mỗi món ở Đặc sản 3 Miền ghi rõ nơi làm ra, từ đồi chè Tân Cương đến nhà thùng nước mắm Phú Quốc. Các tỉnh xếp từ
+            Bắc vào Nam: chọn một tỉnh để xem đặc sản của tỉnh đó.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/san-pham" className={`${btnBase} ${btnPrimary}`}>

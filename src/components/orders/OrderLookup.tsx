@@ -3,10 +3,21 @@
 import Link from "next/link";
 import { useState } from "react";
 import OrderStatusBadge from "@/components/admin/OrderStatusBadge";
+import BankTransferQR from "@/components/payment/BankTransferQR";
+import PaymentStatusBadge from "@/components/payment/PaymentStatusBadge";
 import { btnBase, btnPrimary } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
+import { formatAddress } from "@/lib/address";
 import { formatDate, formatVND } from "@/lib/format";
-import { formatOrderCode, orderNumberFromCode, orderStatuses, orderStatusLabels, paymentMethodLabels } from "@/lib/orders";
+import {
+  formatOrderCode,
+  orderNumberFromCode,
+  orderStatuses,
+  orderStatusLabels,
+  paymentMethodLabels,
+  paymentStatusLabels,
+  paymentStatusOf,
+} from "@/lib/orders";
 import { isValidPhone, normalizePhone } from "@/lib/validation";
 import type { Order } from "@/types";
 
@@ -138,6 +149,7 @@ export default function OrderLookup({ initialCode = "" }: { initialCode?: string
 // Kết quả: trạng thái theo từng bước, các sản phẩm, tiền và địa chỉ giao hàng
 function OrderDetails({ order }: { order: Order }) {
   const currentStep = orderStatuses.indexOf(order.status);
+  const paymentStatus = paymentStatusOf(order); // null với đơn COD
   const money: [string, string][] = [
     ["Tạm tính", formatVND(order.subtotal)],
     ["Phí vận chuyển", order.shippingFee === 0 ? "Miễn phí" : formatVND(order.shippingFee)],
@@ -153,23 +165,39 @@ function OrderDetails({ order }: { order: Order }) {
           </h2>
           <p className="text-sm text-ink-muted">Ngày đặt: {formatDate(order.createdAt)}</p>
         </div>
-        <OrderStatusBadge status={order.status} />
+        <div className="flex flex-wrap gap-2">
+          <PaymentStatusBadge order={order} />
+          <OrderStatusBadge status={order.status} />
+        </div>
       </div>
 
-      {/* Các bước của đơn: bước đã qua và bước hiện tại được tô màu */}
-      <ol aria-label="Tiến trình đơn hàng" className="mt-6 grid grid-cols-4 gap-2">
-        {orderStatuses.map((status, index) => {
-          const done = index <= currentStep;
-          return (
-            <li key={status} aria-current={index === currentStep ? "step" : undefined} className="text-center">
-              <span className={`block h-1.5 rounded-full ${done ? "bg-primary" : "bg-line"}`} />
-              <span className={`mt-2 block text-xs sm:text-sm ${done ? "font-semibold text-ink" : "text-ink-muted"}`}>
-                {orderStatusLabels[status]}
-              </span>
-            </li>
-          );
-        })}
-      </ol>
+      {/* Đơn chuyển khoản chưa thanh toán: hiện lại mã QR để khách chuyển */}
+      {paymentStatus === "UNPAID" && order.status !== "CANCELLED" && (
+        <div className="mt-6">
+          <BankTransferQR orderCode={order.code} amount={order.total} />
+        </div>
+      )}
+
+      {/* Các bước của đơn: bước đã qua và bước hiện tại được tô màu. Đơn đã hủy thì không còn bước nào. */}
+      {order.status === "CANCELLED" ? (
+        <p className="mt-6 rounded-lg bg-sale/10 px-4 py-3 text-sm font-medium text-sale">
+          Đơn hàng này đã bị hủy. Cần hỗ trợ, hãy liên hệ cửa hàng.
+        </p>
+      ) : (
+        <ol aria-label="Tiến trình đơn hàng" className="mt-6 grid grid-cols-4 gap-2">
+          {orderStatuses.map((status, index) => {
+            const done = index <= currentStep;
+            return (
+              <li key={status} aria-current={index === currentStep ? "step" : undefined} className="text-center">
+                <span className={`block h-1.5 rounded-full ${done ? "bg-primary" : "bg-line"}`} />
+                <span className={`mt-2 block text-xs sm:text-sm ${done ? "font-semibold text-ink" : "text-ink-muted"}`}>
+                  {orderStatusLabels[status]}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
 
       <ul className="mt-6 divide-y divide-line border-y border-line">
         {order.items.map((item) => (
@@ -204,7 +232,10 @@ function OrderDetails({ order }: { order: Order }) {
         </div>
         <div>
           <dt className="text-ink-muted">Thanh toán</dt>
-          <dd className="mt-0.5 font-medium text-ink">{paymentMethodLabels[order.paymentMethod]}</dd>
+          <dd className="mt-0.5 font-medium text-ink">
+            {paymentMethodLabels[order.paymentMethod]}
+            {paymentStatus && ` · ${paymentStatusLabels[paymentStatus]}`}
+          </dd>
         </div>
         {order.gift && (
           <div className="sm:col-span-2">
@@ -215,7 +246,7 @@ function OrderDetails({ order }: { order: Order }) {
         <div className="sm:col-span-2">
           <dt className="text-ink-muted">Địa chỉ giao hàng</dt>
           <dd className="mt-0.5 font-medium text-ink">
-            {[order.address, order.ward, order.district, order.province].filter(Boolean).join(", ")}
+            {formatAddress({ street: order.address, ward: order.ward, district: order.district, province: order.province })}
           </dd>
         </div>
       </dl>

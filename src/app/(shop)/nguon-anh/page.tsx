@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { PageContainer } from "@/components/layout/PageLayout";
 
 export const metadata: Metadata = {
-  title: "Nguồn ảnh — TuanTuStore",
-  description: "Tác giả và giấy phép của các ảnh sản phẩm trên TuanTuStore.",
+  title: "Nguồn ảnh — Đặc sản 3 Miền",
+  description: "Tác giả và giấy phép của các ảnh sản phẩm trên Đặc sản 3 Miền.",
 };
 
 // Ảnh dùng giấy phép CC BY-SA phải ghi tên tác giả, giấy phép và đường dẫn tới ảnh gốc.

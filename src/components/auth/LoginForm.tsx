@@ -11,13 +11,14 @@ import { isValidEmail } from "@/lib/validation";
 type Errors = { email?: string; password?: string };
 
 const fieldStyle =
-  "h-12 w-full rounded-lg border bg-white px-4 text-ink transition-colors duration-200 placeholder:text-[#7A7F7B] focus:outline-none focus:ring-[3px]";
+  "h-12 w-full rounded-lg border bg-white px-4 text-ink transition-colors duration-200 placeholder:text-[#686D69] focus:outline-none focus:ring-[3px]";
 const fieldOk = "border-line focus:border-primary focus:ring-primary-soft";
 const fieldBad = "border-sale focus:border-sale focus:ring-sale/20";
 
 // Một form đăng nhập cho khách hàng VÀ Admin.
-// Sau khi đăng nhập: ADMIN -> /admin, USER -> /tai-khoan (effect bên dưới thực hiện việc chuyển trang).
-export default function LoginForm() {
+// Sau khi đăng nhập: về trang `next` nếu có (trang khách đang xem trước đó), không thì ADMIN -> /admin, USER -> /tai-khoan
+// (effect bên dưới thực hiện việc chuyển trang). `next` đã được kiểm tra bằng safeNextPath.
+export default function LoginForm({ next }: { next?: string }) {
   const { isReady, currentUser, login } = useStore();
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -28,8 +29,8 @@ export default function LoginForm() {
 
   // Đã đăng nhập (hoặc vừa đăng nhập xong): chuyển tới đúng trang
   useEffect(() => {
-    if (isReady && currentUser) router.replace(currentUser.role === "ADMIN" ? "/admin" : "/tai-khoan");
-  }, [isReady, currentUser, router]);
+    if (isReady && currentUser) router.replace(next ?? (currentUser.role === "ADMIN" ? "/admin" : "/tai-khoan"));
+  }, [isReady, currentUser, router, next]);
 
   if (!isReady || currentUser) return <LoadingState />;
 
@@ -56,6 +57,11 @@ export default function LoginForm() {
 
   return (
     <form noValidate onSubmit={handleSubmit} className="space-y-5">
+      {next && (
+        <p className="rounded-lg bg-surface px-4 py-3 text-sm text-ink-muted">
+          Đăng nhập để tiếp tục. Xong, bạn sẽ được đưa về trang vừa xem.
+        </p>
+      )}
       <div>
         <label htmlFor="email" className="mb-2 block font-medium text-ink">
           Email
@@ -129,7 +135,10 @@ export default function LoginForm() {
 
       <p className="text-center text-ink-muted">
         Chưa có tài khoản?{" "}
-        <Link href="/dang-ky" className="font-medium text-primary underline underline-offset-4">
+        <Link
+          href={next ? `/dang-ky?next=${encodeURIComponent(next)}` : "/dang-ky"}
+          className="font-medium text-primary underline underline-offset-4"
+        >
           Đăng ký
         </Link>
       </p>

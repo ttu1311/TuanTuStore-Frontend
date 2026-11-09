@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import EditProductView from "@/components/admin/EditProductView";
 
-export const metadata: Metadata = { title: "Sửa sản phẩm — Quản trị TuanTuStore" };
+export const metadata: Metadata = { title: "Sửa sản phẩm — Quản trị Đặc sản 3 Miền" };
 
 type AdminEditProductPageProps = {
   params: Promise<{ id: string }>;

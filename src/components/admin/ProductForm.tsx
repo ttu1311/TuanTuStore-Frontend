@@ -16,6 +16,7 @@ import {
   type ProductInput,
 } from "@/lib/products";
 import { occasions } from "@/data/occasions";
+import { provinces } from "@/data/provinces";
 import { brandNames } from "@/lib/brands";
 import { regionKeys, regions } from "@/lib/regions";
 
@@ -42,6 +43,7 @@ const fieldOrder: (keyof ProductFormErrors)[] = [
   "brand",
   "origin",
   "pack",
+  "stock",
   "image",
   "shortDescription",
   "description",
@@ -197,9 +199,17 @@ export default function ProductForm({ initialValues = emptyProductForm, submitLa
 
         <div>
           <label htmlFor="origin" className={labelStyle}>
-            Xuất xứ
+            Xuất xứ (tỉnh / thành phố)
           </label>
-          <input type="text" maxLength={100} {...field("origin")} className={inputClass("origin")} />
+          <select {...field("origin")} className={inputClass("origin")}>
+            <option value="">Chọn tỉnh / thành phố</option>
+            {provinces.map((province) => (
+              <option key={province} value={province}>
+                {province}
+              </option>
+            ))}
+          </select>
+          <p className={hintStyle}>34 tỉnh, thành sau sáp nhập. Tên địa phương nhỏ (Năm Căn, U Minh…) ghi trong tên sản phẩm.</p>
           {error("origin")}
         </div>
         <div>
@@ -208,6 +218,14 @@ export default function ProductForm({ initialValues = emptyProductForm, submitLa
           </label>
           <input type="text" maxLength={50} placeholder="Ví dụ: Hộp 300g" {...field("pack")} className={inputClass("pack")} />
           {error("pack")}
+        </div>
+        <div>
+          <label htmlFor="stock" className={labelStyle}>
+            Tồn kho
+          </label>
+          <input type="number" min={0} step={1} {...field("stock")} className={inputClass("stock")} />
+          <p className={hintStyle}>Số lượng còn trong kho. Đặt hàng thì tự giảm; 0 = &quot;Hết hàng&quot;.</p>
+          {error("stock")}
         </div>
 
         <div className="sm:col-span-2">
@@ -342,9 +360,12 @@ export default function ProductForm({ initialValues = emptyProductForm, submitLa
               onChange={(event) => setField("isFeatured", event.target.checked)}
               className="h-5 w-5 shrink-0 cursor-pointer accent-primary"
             />
-            Sản phẩm nổi bật (hiện ở trang chủ)
+            Ưu tiên ở &quot;Sản phẩm nổi bật&quot;
           </label>
         </div>
+        <p className={`${hintStyle} -mt-3 sm:col-span-2`}>
+          &quot;Sản phẩm nổi bật&quot; ở trang chủ tự xếp theo lượt mua × 5 + lượt xem. Ô này chỉ đưa sản phẩm lên trước khi bằng điểm.
+        </p>
       </div>
 
       {rankConflict && (

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import ContentSidebar, { PageContainer } from "@/components/layout/PageLayout";
 import ProductMiniCard from "@/components/product/ProductMiniCard";
@@ -22,8 +23,18 @@ import { regionKeys, regions } from "@/lib/regions";
 
 // Phần thân của /san-pham/[id]. Sản phẩm được tra trong localStorage, nên phần này chạy ở trình duyệt.
 export default function ProductDetailView({ id }: { id: string }) {
-  const { isReady, products } = useStore();
+  const { isReady, products, recordView } = useStore();
   const product = products.find((item) => item.id === id);
+  const productFound = Boolean(product);
+
+  // Một lượt xem cho mỗi lần mở trang (xếp hạng "Sản phẩm nổi bật"). Ref chặn việc đếm hai lần
+  // khi React chạy effect hai lần ở chế độ phát triển, hoặc khi danh sách sản phẩm đổi (ví dụ kho giảm).
+  const countedId = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isReady || !productFound || countedId.current === id) return;
+    countedId.current = id;
+    recordView(id);
+  }, [isReady, productFound, id, recordView]);
 
   // Tiêu đề tab trình duyệt. React 19 tự đưa thẻ <title> này lên <head> (ở server lẫn trình duyệt).
   // Tên sản phẩm chỉ có sau khi đọc xong localStorage; trước đó (kể cả HTML từ server) là tiêu đề chung.
@@ -32,10 +43,10 @@ export default function ProductDetailView({ id }: { id: string }) {
   const tabTitle = (
     <title>
       {!isReady
-        ? "Chi tiết sản phẩm — TuanTuStore"
+        ? "Chi tiết sản phẩm — Đặc sản 3 Miền"
         : product
-          ? `${product.name} — TuanTuStore`
-          : "Không tìm thấy sản phẩm — TuanTuStore"}
+          ? `${product.name} — Đặc sản 3 Miền`
+          : "Không tìm thấy sản phẩm — Đặc sản 3 Miền"}
     </title>
   );
 
@@ -55,7 +66,7 @@ export default function ProductDetailView({ id }: { id: string }) {
         {tabTitle}
         <NotFoundMessage
           title="Không tìm thấy sản phẩm"
-          description="Sản phẩm bạn đang tìm không tồn tại hoặc đã bị xóa khỏi cửa hàng. Hãy xem các đặc sản khác của TuanTuStore."
+          description="Sản phẩm bạn đang tìm không tồn tại hoặc đã bị xóa khỏi cửa hàng. Hãy xem các đặc sản khác của Đặc sản 3 Miền."
         />
       </PageContainer>
     );

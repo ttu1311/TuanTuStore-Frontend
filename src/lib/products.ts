@@ -3,6 +3,9 @@ import type { Product } from "@/types";
 import { isRegion } from "@/lib/regions";
 import { slugify } from "@/lib/text";
 import { occasions as allOccasions } from "@/data/occasions";
+import { normalizeProvince } from "@/data/provinces";
+import { isKnownProvince } from "@/lib/address";
+import { INITIAL_STOCK } from "@/lib/cart";
 
 // 185000 với giá cũ 220000 -> 16 (%)
 export function discountPercent(product: Product) {
@@ -23,6 +26,12 @@ export function provinceOf(origin: string) {
   return parts[parts.length - 1] ?? origin.trim();
 }
 
+// Tỉnh/thành (tên sau sáp nhập) của một sản phẩm. Xuất xứ còn ghi tên tỉnh cũ ("Bến Tre") vẫn ra tỉnh mới ("Vĩnh Long").
+// Dùng chung cho tuyến "Bắc vào Nam", bộ lọc tỉnh, bản đồ và hộ chiếu, để mọi nơi gom sản phẩm giống nhau.
+export function productProvince(product: Pick<Product, "origin">) {
+  return normalizeProvince(provinceOf(product.origin));
+}
+
 // Nhóm sản phẩm theo một khóa (tỉnh, thương hiệu…): mỗi nhóm có tên và các sản phẩm của nó, tên xếp A đến Z
 export function groupProducts(products: Product[], keyOf: (product: Product) => string) {
   const groups = new Map<string, Product[]>();
@@ -38,9 +47,23 @@ export function sortNewestFirst(products: Product[]) {
   return [...products].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-// "Sản phẩm nổi bật" ở trang chủ
-export function getFeaturedProducts(products: Product[]) {
-  return sortNewestFirst(products.filter((product) => product.isFeatured));
+export const FEATURED_COUNT = 8;
+
+// "Sản phẩm nổi bật" ở trang chủ: điểm = lượt mua × 5 + lượt xem, lấy 8 món điểm cao nhất.
+// - lượt mua: tổng số lượng trong các đơn (trừ đơn đã hủy), xem soldCounts;
+// - lượt xem: số lần trang chi tiết được mở trên trình duyệt này (chưa có backend để đếm chung mọi khách).
+// Bằng điểm thì món Admin tích "Ưu tiên nổi bật" đứng trước, rồi món mới hơn. Món đã hết hàng không được đưa lên.
+export function getFeaturedProducts(products: Product[], sold: Map<string, number>, views: Record<string, number>) {
+  const score = (product: Product) => (sold.get(product.id) ?? 0) * 5 + (views[product.id] ?? 0);
+  return products
+    .filter((product) => product.stock > 0)
+    .sort(
+      (a, b) =>
+        score(b) - score(a) ||
+        Number(b.isFeatured) - Number(a.isFeatured) ||
+        b.createdAt.localeCompare(a.createdAt)
+    )
+    .slice(0, FEATURED_COUNT);
 }
 
 // "Đặc sản bán chạy" ở trang chủ: các sản phẩm có thứ hạng, Top 1 lên đầu
@@ -81,6 +104,7 @@ export type ProductFormValues = {
   brand: string;
   origin: string;
   pack: string;
+  stock: string; // số lượng trong kho
   rank: string;
   isFeatured: boolean;
   occasions: string[]; // id các dịp tặng đã tích
@@ -107,6 +131,7 @@ export const emptyProductForm: ProductFormValues = {
   brand: "",
   origin: "",
   pack: "",
+  stock: String(INITIAL_STOCK),
   rank: "",
   isFeatured: false,
   occasions: [],
@@ -125,8 +150,10 @@ export function productToFormValues(product: Product): ProductFormValues {
     image: product.image,
     region: product.region,
     brand: product.brand,
-    origin: product.origin,
+    // Xuất xứ là một tỉnh/thành sau sáp nhập; tên cũ ("Bến Tre") được đổi sẵn sang tên mới ("Vĩnh Long")
+    origin: productProvince(product),
     pack: product.pack,
+    stock: String(product.stock),
     rank: product.rank ? String(product.rank) : "",
     isFeatured: product.isFeatured,
     occasions: product.occasions ?? [],
@@ -137,6 +164,7 @@ export function productToFormValues(product: Product): ProductFormValues {
 }
 
 const MAX_PRICE = 100_000_000; // 100 triệu đồng
+const MAX_STOCK = 99_999;
 
 // Một ảnh trong thư mục public, ví dụ /images/p-o-mai.jpg
 export const IMAGE_PATH_PATTERN = /^\/[A-Za-z0-9_\-./]+\.(jpe?g|png|webp|avif|gif)$/i;
@@ -174,7 +202,8 @@ export function validateProductForm(values: ProductFormValues): { errors: Produc
   if (!isRegion(region)) errors.region = "Vui lòng chọn vùng miền";
 
   if (!text("brand")) errors.brand = "Vui lòng chọn thương hiệu";
-  if (!text("origin")) errors.origin = "Vui lòng nhập xuất xứ";
+  if (!text("origin")) errors.origin = "Vui lòng chọn tỉnh / thành phố";
+  else if (!isKnownProvince(text("origin"))) errors.origin = "Vui lòng chọn tỉnh / thành phố trong danh sách (sau sáp nhập)";
   if (!text("pack")) errors.pack = "Vui lòng nhập quy cách";
   if (!text("shortDescription")) errors.shortDescription = "Vui lòng nhập mô tả ngắn";
   if (!text("description")) errors.description = "Vui lòng nhập mô tả chi tiết";
@@ -182,6 +211,11 @@ export function validateProductForm(values: ProductFormValues): { errors: Produc
   for (const field of ["enjoy", "storage", "season"] as const) {
     if (text(field).length > MAX_STORY_LENGTH) errors[field] = `Tối đa ${MAX_STORY_LENGTH} ký tự`;
   }
+
+  // Tồn kho: số nguyên từ 0 (hết hàng) đến 99.999
+  const stock = Number(text("stock"));
+  const stockOk = text("stock") !== "" && Number.isInteger(stock) && stock >= 0 && stock <= MAX_STOCK;
+  if (!stockOk) errors.stock = `Tồn kho phải là số nguyên từ 0 đến ${MAX_STOCK.toLocaleString("vi-VN")}`;
 
   let rank: number | undefined;
   if (text("rank")) {
@@ -206,6 +240,7 @@ export function validateProductForm(values: ProductFormValues): { errors: Produc
       brand: text("brand"),
       origin: text("origin"),
       pack: text("pack"),
+      stock,
       rank,
       isFeatured: values.isFeatured,
       // Luôn ghi cả hai trường (có thể rỗng), để dữ liệu mẫu không điền lại thứ Admin đã xóa (xem applySeedUpdates)

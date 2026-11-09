@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { PageContainer } from "@/components/layout/PageLayout";
 import ProductListing from "@/components/products/ProductListing";
 import { isRegion } from "@/lib/regions";
+import { normalizeProvince } from "@/data/provinces";
 
 export const metadata: Metadata = {
-  title: "Sản phẩm — TuanTuStore",
-  description: "Tất cả đặc sản ba miền Bắc, Trung, Nam tại TuanTuStore.",
+  title: "Sản phẩm — Đặc sản 3 Miền",
+  description: "Tất cả sản phẩm của Đặc sản 3 Miền: quà quê Bắc, Trung, Nam.",
 };
 
 type ProductListingPageProps = {
@@ -24,7 +25,9 @@ export default async function ProductListingPage({ searchParams }: ProductListin
   const regionValue = firstValue(params.region);
   const initialRegion = isRegion(regionValue) ? regionValue : undefined;
   // Các mục "Tìm theo tỉnh" ở trang chủ mở /san-pham?province=Cà Mau
-  const initialProvince = firstValue(params.province).trim().slice(0, 100);
+  // Liên kết cũ còn ghi tên tỉnh trước sáp nhập (?province=Sóc Trăng) vẫn mở đúng tỉnh mới (Cần Thơ)
+  const provinceParam = firstValue(params.province).trim().slice(0, 100);
+  const initialProvince = provinceParam && normalizeProvince(provinceParam);
   // Trang chi tiết sản phẩm mở /san-pham?brand=Hồng Lam để xem mọi sản phẩm của thương hiệu đó
   const initialBrand = firstValue(params.brand).trim().slice(0, 100);
   // "Chọn quà theo dịp" ở trang chủ mở /san-pham?dip=qua-tet

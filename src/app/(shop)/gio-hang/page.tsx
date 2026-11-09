@@ -3,8 +3,8 @@ import CartView from "@/components/cart/CartView";
 import { PageContainer } from "@/components/layout/PageLayout";
 
 export const metadata: Metadata = {
-  title: "Giỏ hàng — TuanTuStore",
-  description: "Giỏ hàng của bạn tại TuanTuStore.",
+  title: "Giỏ hàng — Đặc sản 3 Miền",
+  description: "Giỏ hàng của bạn tại Đặc sản 3 Miền.",
 };
 
 export default function CartPage() {

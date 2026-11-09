@@ -12,9 +12,9 @@
 //
 // Đây là mô phỏng front-end: không có server, và các kiểm tra "bảo mật" chỉ dành cho bản demo.
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import CartToast from "@/components/ui/CartToast";
-import { calculateTotals, cleanQuantity, getCartLines } from "@/lib/cart";
-import { formatOrderCode, orderNumberFromCode, type CheckoutFields } from "@/lib/orders";
+import CartToast, { type Toast } from "@/components/ui/CartToast";
+import { MAX_QUANTITY, calculateTotals, cleanQuantity, getCartLines, maxOrderable } from "@/lib/cart";
+import { formatOrderCode, isNotShipped, orderNumberFromCode, type CheckoutFields } from "@/lib/orders";
 import { isSamePassword } from "@/lib/password";
 import { createProductId, type ProductInput } from "@/lib/products";
 import {
@@ -30,10 +30,13 @@ import {
 import { normalizeEmail, normalizePhone, type RegisterValues } from "@/lib/validation";
 import { MAX_COMMENT_LENGTH, reviewEligibility } from "@/lib/reviews";
 import { validateContact, type ContactValues } from "@/lib/contact";
-import type { CartItem, ContactRequest, Order, OrderItem, OrderStatus, PaymentMethod, Product, Review, Role, User } from "@/types";
+import { cleanAddress, validateAddress } from "@/lib/address";
+import type { CartItem, ContactRequest, SavedAddress, Order, OrderItem, OrderStatus, PaymentMethod, Product, Review, Role, User } from "@/types";
 
 // Kết quả mà mọi thao tác trả về. `field` cho biết thông báo thuộc về ô nhập nào (nếu có).
 export type ActionResult = { ok: true } | { ok: false; message: string; field?: string };
+
+export type PlaceOrderOptions = { gift?: { message: string }; forOther?: boolean };
 
 export type PlaceOrderResult = { ok: true; order: Order } | { ok: false; message: string };
 
@@ -58,7 +61,15 @@ type StoreValue = {
   cart: CartItem[];
   reviews: Review[];
   contactRequests: ContactRequest[];
+  productViews: Record<string, number>; // id sản phẩm -> số lần trang chi tiết được mở (trên trình duyệt này)
+  wishlist: string[]; // id các sản phẩm yêu thích của người đang đăng nhập (rỗng khi chưa đăng nhập)
   currentUser: User | null;
+
+  // Thêm / bỏ một sản phẩm khỏi danh sách yêu thích. Cần đăng nhập: chưa đăng nhập thì trả về lỗi với field "login".
+  toggleWishlist: (productId: string) => ActionResult;
+
+  // Một lần mở trang chi tiết sản phẩm (dùng cho "Sản phẩm nổi bật")
+  recordView: (productId: string) => void;
 
   // Sản phẩm (Admin)
   // replaceRank: true = đồng ý lấy thứ hạng (ví dụ Top 1) từ sản phẩm đang giữ nó
@@ -78,13 +89,17 @@ type StoreValue = {
   register: (values: RegisterValues) => ActionResult;
   login: (email: string, password: string, remember: boolean) => ActionResult;
   logout: () => void;
-  updateProfile: (fullName: string, phone: string) => ActionResult;
+  // address: có = lưu luôn địa chỉ mặc định (trang thanh toán, lần đầu "Mua cho bản thân")
+  updateProfile: (fullName: string, phone: string, address?: SavedAddress) => ActionResult;
   changePassword: (currentPassword: string, newPassword: string) => ActionResult;
+  updateAddress: (address: SavedAddress) => ActionResult; // địa chỉ giao hàng mặc định
 
   // Đơn hàng
-  // gift: có = gói quà (miễn phí) kèm lời nhắn trên thiệp
-  placeOrder: (customer: CheckoutFields, paymentMethod: PaymentMethod, gift?: { message: string }) => PlaceOrderResult;
+  // options.gift: có = gói quà (miễn phí) kèm lời nhắn trên thiệp; options.forOther: mua tặng người thân
+  placeOrder: (customer: CheckoutFields, paymentMethod: PaymentMethod, options?: PlaceOrderOptions) => PlaceOrderResult;
   updateOrderStatus: (code: string, status: OrderStatus) => ActionResult;
+  // TẠM THỜI: Admin xác nhận đã nhận chuyển khoản (khi có backend, webhook PayOS làm việc này)
+  confirmPayment: (code: string) => ActionResult;
   deleteOrder: (code: string) => ActionResult;
 
   // Đánh giá: chỉ khách đã nhận hàng; viết lại thì thay đánh giá cũ của chính mình
@@ -103,6 +118,14 @@ type StoreValue = {
 
 const StoreContext = createContext<StoreValue | null>(null);
 
+// Cộng (+1) hoặc trừ (-1) tồn kho theo các món của một đơn. Sản phẩm đã bị xóa thì bỏ qua. Kho không bao giờ âm.
+function changeStock(products: Product[], items: OrderItem[], direction: 1 | -1) {
+  return products.map((product) => {
+    const quantity = items.filter((item) => item.productId === product.id).reduce((sum, item) => sum + item.quantity, 0);
+    return quantity === 0 ? product : { ...product, stock: Math.max(0, product.stock + direction * quantity) };
+  });
+}
+
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -111,8 +134,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [contactRequests, setContactRequests] = useState<ContactRequest[]>([]);
+  const [productViews, setProductViews] = useState<Record<string, number>>({});
+  const [wishlists, setWishlists] = useState<Record<string, string[]>>({});
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ id: number; message: string } | null>(null);
+  const [toast, setToast] = useState<Toast | null>(null);
   const closeToast = useCallback(() => setToast(null), []);
 
   // Chạy một lần, chỉ ở trình duyệt (server không có localStorage)
@@ -125,6 +150,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setCart(data.cart);
       setReviews(data.reviews);
       setContactRequests(data.contactRequests);
+      setProductViews(data.productViews);
+      setWishlists(data.wishlists);
       setCurrentUserId(data.currentUserId);
     }
 
@@ -143,6 +170,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   // Người đang đăng nhập được tra trong danh sách người dùng, nên tên hoặc vai trò mới có hiệu lực ngay
   const currentUser = users.find((user) => user.id === currentUserId) ?? null;
   const isAdmin = currentUser?.role === "ADMIN";
+  const wishlist = currentUser ? (wishlists[currentUser.id] ?? []) : [];
 
   // ---------- Lưu: localStorage trước, rồi đến state React ----------
 
@@ -226,35 +254,59 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // ---------- Giỏ hàng ----------
 
+  // Số lượng không bao giờ vượt quá tồn kho: thêm quá thì giỏ chỉ giữ tới mức còn hàng, và thông báo nói rõ
   function addToCart(productId: string, quantity: number) {
-    const amount = cleanQuantity(quantity);
-    const exists = cart.some((item) => item.productId === productId);
+    const product = products.find((p) => p.id === productId);
+    const name = product?.name ?? "sản phẩm";
+    const limit = product ? maxOrderable(product) : 0;
+    const inCart = cart.find((item) => item.productId === productId)?.quantity ?? 0;
+    if (limit === 0) {
+      setToast({ id: Date.now(), message: `${name} đã hết hàng` });
+      return;
+    }
+    if (inCart >= limit) {
+      setToast({ id: Date.now(), message: `Chỉ còn ${limit} ${name}: giỏ hàng của bạn đã có đủ số này` });
+      return;
+    }
+    const nextQuantity = Math.min(limit, cleanQuantity(inCart + cleanQuantity(quantity)));
     const saved = saveCart(
-      exists
-        ? cart.map((item) =>
-            item.productId === productId ? { ...item, quantity: cleanQuantity(item.quantity + amount) } : item
-          )
-        : [...cart, { productId, quantity: amount }]
+      inCart > 0
+        ? cart.map((item) => (item.productId === productId ? { ...item, quantity: nextQuantity } : item))
+        : [...cart, { productId, quantity: nextQuantity }]
     );
-    const name = products.find((p) => p.id === productId)?.name;
+    const capped = nextQuantity < inCart + cleanQuantity(quantity);
     setToast({
       id: Date.now(),
-      message: saved ? `Đã thêm ${name ?? "sản phẩm"} vào giỏ hàng` : SAVE_ERROR,
+      message: !saved
+        ? SAVE_ERROR
+        : capped
+          ? `Chỉ còn ${limit} ${name}: giỏ hàng đã có ${nextQuantity}`
+          : `Đã thêm ${name} vào giỏ hàng`,
     });
   }
 
   function addManyToCart(productIds: string[], message: string) {
     let next = cart;
+    const skipped: string[] = []; // món đã hết hàng, hoặc giỏ đã có đủ số còn lại
     for (const productId of productIds) {
-      next = next.some((item) => item.productId === productId)
-        ? next.map((item) => (item.productId === productId ? { ...item, quantity: cleanQuantity(item.quantity + 1) } : item))
+      const product = products.find((p) => p.id === productId);
+      const inCart = next.find((item) => item.productId === productId)?.quantity ?? 0;
+      if (!product || inCart + 1 > maxOrderable(product)) {
+        if (product) skipped.push(product.name);
+        continue;
+      }
+      next = inCart > 0
+        ? next.map((item) => (item.productId === productId ? { ...item, quantity: inCart + 1 } : item))
         : [...next, { productId, quantity: 1 }];
     }
-    setToast({ id: Date.now(), message: saveCart(next) ? message : SAVE_ERROR });
+    const note = skipped.length > 0 ? ` (không đủ hàng: ${skipped.join(", ")})` : "";
+    setToast({ id: Date.now(), message: saveCart(next) ? message + note : SAVE_ERROR });
   }
 
   function setCartQuantity(productId: string, quantity: number) {
-    const amount = cleanQuantity(quantity);
+    const product = products.find((p) => p.id === productId);
+    // Không vượt tồn kho (nhưng ít nhất 1: muốn bỏ hẳn thì dùng nút "Xóa")
+    const amount = Math.max(1, Math.min(cleanQuantity(quantity), product ? maxOrderable(product) : MAX_QUANTITY));
     saveCart(cart.map((item) => (item.productId === productId ? { ...item, quantity: amount } : item)));
   }
 
@@ -307,11 +359,23 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }
 
   // Tên và số điện thoại của người đang đăng nhập. Email và vai trò không đổi được ở đây.
-  function updateProfile(fullName: string, phone: string): ActionResult {
+  function updateProfile(fullName: string, phone: string, address?: SavedAddress): ActionResult {
     if (!currentUser) return fail("Vui lòng đăng nhập lại.");
+    if (address && Object.keys(validateAddress(address)).length > 0) return fail("Địa chỉ chưa hợp lệ");
     const next = users.map((user) =>
-      user.id === currentUser.id ? { ...user, name: fullName.trim(), phone: normalizePhone(phone) } : user
+      user.id === currentUser.id
+        ? { ...user, name: fullName.trim(), phone: normalizePhone(phone), ...(address ? { address: cleanAddress(address) } : {}) }
+        : user
     );
+    return saveUsers(next) ? OK : fail(SAVE_ERROR);
+  }
+
+  function updateAddress(address: SavedAddress): ActionResult {
+    if (!currentUser) return fail("Vui lòng đăng nhập lại.");
+    const errors = validateAddress(address);
+    const firstField = Object.keys(errors)[0] as keyof SavedAddress | undefined;
+    if (firstField) return fail(errors[firstField] ?? "Địa chỉ chưa hợp lệ", firstField);
+    const next = users.map((user) => (user.id === currentUser.id ? { ...user, address: cleanAddress(address) } : user));
     return saveUsers(next) ? OK : fail(SAVE_ERROR);
   }
 
@@ -328,9 +392,22 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   // ---------- Đơn hàng ----------
 
   // Tạo đơn hàng từ giỏ hàng, dùng giá HIỆN TẠI trong localStorage.
-  function placeOrder(customer: CheckoutFields, paymentMethod: PaymentMethod, gift?: { message: string }): PlaceOrderResult {
+  function placeOrder(customer: CheckoutFields, paymentMethod: PaymentMethod, options: PlaceOrderOptions = {}): PlaceOrderResult {
+    const { gift, forOther } = options;
     const lines = getCartLines(cart, products);
     if (lines.length === 0) return { ok: false, message: "Giỏ hàng của bạn đang trống." };
+
+    // Kiểm tra tồn kho NGAY LÚC đặt (tab khác hoặc khách khác có thể vừa mua hết)
+    const short = lines.find(({ product, quantity }) => quantity > product.stock);
+    if (short) {
+      return {
+        ok: false,
+        message:
+          short.product.stock === 0
+            ? `${short.product.name} đã hết hàng. Vui lòng xóa khỏi giỏ hàng để tiếp tục.`
+            : `${short.product.name} chỉ còn ${short.product.stock} sản phẩm. Vui lòng giảm số lượng trong giỏ hàng.`,
+      };
+    }
 
     // Bản sao của từng sản phẩm tại thời điểm mua: thay đổi giá về sau không bao giờ làm đổi đơn này
     const items: OrderItem[] = lines.map(({ product, quantity }) => ({
@@ -353,12 +430,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       customerName: customer.fullName.trim(),
       phone: normalizePhone(customer.phone),
       email: normalizeEmail(customer.email),
-      province: customer.province.trim(),
-      district: customer.district.trim(),
-      ward: customer.ward.trim(),
-      address: customer.address.trim(),
+      province: customer.address.province.trim(),
+      ward: customer.address.ward.trim(), // địa chỉ 2 cấp: không còn quận/huyện
+      address: customer.address.street.trim(),
       note: customer.note.trim(),
       paymentMethod,
+      ...(paymentMethod === "BANK_TRANSFER" ? { paymentStatus: "UNPAID" as const } : {}),
       status: "PENDING",
       items,
       subtotal: totals.subtotal,
@@ -366,10 +443,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       discount: totals.discount,
       total: totals.total,
       ...(gift ? { gift: { message: gift.message.trim().slice(0, 200) } } : {}),
+      ...(forOther && currentUser ? { forOther: true } : {}),
       createdAt: new Date().toISOString(),
     };
 
+    // Trừ kho trước; nếu không lưu được đơn thì trả lại kho như cũ.
+    // TẠM THỜI (chưa có backend): kho chỉ đúng trên trình duyệt này. Kho thật cần server trừ kho trong một giao dịch.
+    const previousProducts = products;
+    if (!saveProducts(changeStock(products, items, -1))) {
+      return { ok: false, message: "Không thể lưu đơn hàng. Giỏ hàng của bạn vẫn được giữ nguyên, vui lòng thử lại." };
+    }
     if (!saveOrders([...orders, order])) {
+      saveProducts(previousProducts);
       return { ok: false, message: "Không thể lưu đơn hàng. Giỏ hàng của bạn vẫn được giữ nguyên, vui lòng thử lại." };
     }
     writeJSON(STORAGE_KEYS.orderSeq, lastNumber + 1);
@@ -381,14 +466,81 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   function updateOrderStatus(code: string, status: OrderStatus): ActionResult {
     if (!isAdmin) return fail(NO_PERMISSION);
-    if (!orders.some((order) => order.code === code)) return fail("Đơn hàng này không còn tồn tại.");
-    const next = orders.map((order) => (order.code === code ? { ...order, status } : order));
+    const order = orders.find((item) => item.code === code);
+    if (!order) return fail("Đơn hàng này không còn tồn tại.");
+    if (order.status === status) return OK;
+    // Đơn đã hủy là trạng thái cuối: hàng đã trả về kho, mở lại sẽ làm sai tồn kho
+    if (order.status === "CANCELLED") return fail("Đơn đã hủy không thể đổi trạng thái. Hãy để khách đặt đơn mới.");
+    if (status === "CANCELLED") {
+      if (!isNotShipped(order.status)) return fail("Chỉ hủy được đơn chưa giao (Chờ xác nhận hoặc Đã xác nhận).");
+      // Hủy đơn chưa giao: trả hàng lại kho
+      if (!saveProducts(changeStock(products, order.items, +1))) return fail(SAVE_ERROR);
+    }
+    const next = orders.map((item) => (item.code === code ? { ...item, status } : item));
+    return saveOrders(next) ? OK : fail(SAVE_ERROR);
+  }
+
+  function confirmPayment(code: string): ActionResult {
+    if (!isAdmin) return fail(NO_PERMISSION);
+    const order = orders.find((item) => item.code === code);
+    if (!order) return fail("Đơn hàng này không còn tồn tại.");
+    if (order.paymentMethod !== "BANK_TRANSFER") return fail("Đơn này thanh toán khi nhận hàng.");
+    // Xác nhận lần hai không làm gì (không ghi đè ngày đã nhận tiền)
+    if (order.paymentStatus === "PAID") return OK;
+    const next = orders.map((item) =>
+      item.code === code
+        ? {
+            ...item,
+            paymentStatus: "PAID" as const,
+            paidAt: new Date().toISOString(),
+            // Đã nhận tiền thì đơn đang chờ cũng được xác nhận luôn
+            status: item.status === "PENDING" ? ("CONFIRMED" as const) : item.status,
+          }
+        : item
+    );
     return saveOrders(next) ? OK : fail(SAVE_ERROR);
   }
 
   function deleteOrder(code: string): ActionResult {
     if (!isAdmin) return fail(NO_PERMISSION);
-    return saveOrders(orders.filter((order) => order.code !== code)) ? OK : fail(SAVE_ERROR);
+    const order = orders.find((item) => item.code === code);
+    if (!order) return OK;
+    if (!saveOrders(orders.filter((item) => item.code !== code))) return fail(SAVE_ERROR);
+    // Xóa đơn chưa giao: trả hàng lại kho (đơn đã hủy thì đã trả lúc hủy; đơn đã giao thì hàng đã đi)
+    if (isNotShipped(order.status)) saveProducts(changeStock(products, order.items, +1));
+    return OK;
+  }
+
+  // ---------- Yêu thích (lưu theo tài khoản) ----------
+
+  function saveWishlists(next: Record<string, string[]>) {
+    if (!writeJSON(STORAGE_KEYS.wishlists, next)) return false;
+    setWishlists(next);
+    return true;
+  }
+
+  function toggleWishlist(productId: string): ActionResult {
+    if (!currentUser) return fail("Vui lòng đăng nhập để lưu sản phẩm yêu thích.", "login");
+    const isSaved = wishlist.includes(productId);
+    // Món mới thích đứng đầu danh sách
+    const nextList = isSaved ? wishlist.filter((id) => id !== productId) : [productId, ...wishlist];
+    if (!saveWishlists({ ...wishlists, [currentUser.id]: nextList })) return fail(SAVE_ERROR);
+    const name = products.find((p) => p.id === productId)?.name ?? "Sản phẩm";
+    setToast({
+      id: Date.now(),
+      message: isSaved ? `Đã bỏ ${name} khỏi yêu thích` : `Đã thêm ${name} vào yêu thích`,
+      link: { href: "/tai-khoan?tab=wishlist", label: "Xem yêu thích" },
+    });
+    return OK;
+  }
+
+  // ---------- Lượt xem sản phẩm ----------
+
+  function recordView(productId: string) {
+    const next = { ...productViews, [productId]: (productViews[productId] ?? 0) + 1 };
+    // Lượt xem chỉ để xếp hạng "Nổi bật": lưu không được cũng không sao
+    writeJSON(STORAGE_KEYS.productViews, next);
+    setProductViews(next);
   }
 
   // ---------- Đánh giá ----------
@@ -495,6 +647,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (!saveUsers(users.filter((user) => user.id !== userId))) return fail(SAVE_ERROR);
+    // Danh sách yêu thích thuộc về tài khoản: xóa tài khoản thì xóa luôn
+    if (wishlists[userId]) {
+      const rest = { ...wishlists };
+      delete rest[userId];
+      saveWishlists(rest);
+    }
 
     // Đơn hàng của người dùng này được giữ lại, như đơn của khách chưa đăng nhập, để không mất lịch sử đặt hàng
     if (orders.some((order) => order.userId === userId)) {
@@ -513,7 +671,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         cart,
         reviews,
         contactRequests,
+        productViews,
+        wishlist,
         currentUser,
+        recordView,
+        toggleWishlist,
         addProduct,
         updateProduct,
         deleteProduct,
@@ -527,8 +689,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         logout,
         updateProfile,
         changePassword,
+        updateAddress,
         placeOrder,
         updateOrderStatus,
+        confirmPayment,
         deleteOrder,
         submitReview,
         deleteReview,

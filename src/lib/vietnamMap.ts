@@ -1,7 +1,7 @@
 // Dữ liệu cho bản đồ mini ba miền ở trang chủ: đường viền Việt Nam đơn giản hóa, ranh giới ba miền và vị trí các tỉnh.
 // Đây là hình minh họa, không phải bản đồ hành chính chính xác. Tọa độ là (kinh độ °Đ, vĩ độ °B).
+import { provinceLocation } from "@/data/provinces";
 import type { Region } from "@/types";
-import { simplifyText } from "@/lib/text";
 
 // Khung vẽ rộng tới kinh độ 115°Đ và cao tới vĩ độ 7°B, để có chỗ cho hai quần đảo ở Biển Đông
 export const MAP_WIDTH = 250;
@@ -72,24 +72,9 @@ export const regionBands: Record<Region, { top: number; height: number }> = {
 };
 export const regionBoundaries = [northSouthBoundary, centralSouthBoundary];
 
-// Vị trí các tỉnh (kinh độ, vĩ độ). Tỉnh chưa có trong danh sách vẫn được đếm ở vùng, chỉ không có chấm trên bản đồ.
-const provinceLocations: Record<string, [longitude: number, latitude: number]> = {
-  "ha giang": [104.98, 22.8], "cao bang": [106.25, 22.67], "lao cai": [104.0, 22.4], "lang son": [106.76, 21.85],
-  "son la": [103.9, 21.33], "thai nguyen": [105.85, 21.6], "bac ninh": [106.07, 21.19], "ha noi": [105.85, 21.03],
-  "quang ninh": [107.1, 21.0], "hai phong": [106.7, 20.85], "nam dinh": [106.17, 20.43], "ninh binh": [105.97, 20.25],
-  "thanh hoa": [105.78, 19.8], "nghe an": [105.2, 19.0], "ha tinh": [105.9, 18.3], "quang binh": [106.4, 17.5],
-  "quang tri": [107.1, 16.8], "hue": [107.6, 16.45], "da nang": [108.1, 16.05], "quang nam": [108.0, 15.6],
-  "quang ngai": [108.7, 15.1], "gia lai": [108.0, 13.9], "binh dinh": [109.0, 13.8], "phu yen": [109.1, 13.1],
-  "dak lak": [108.05, 12.7], "khanh hoa": [109.0, 12.25], "lam dong": [108.4, 11.95], "ninh thuan": [108.9, 11.6],
-  "binh thuan": [108.2, 11.0], "tay ninh": [106.1, 11.3], "dong nai": [107.0, 10.95], "ho chi minh": [106.7, 10.8],
-  "ba ria vung tau": [107.2, 10.5], "long an": [106.4, 10.6], "tien giang": [106.3, 10.4], "dong thap": [105.6, 10.5],
-  "ben tre": [106.4, 10.25], "vinh long": [105.97, 10.25], "can tho": [105.78, 10.03], "kien giang": [105.1, 10.0],
-  "an giang": [105.2, 10.4], "hau giang": [105.6, 9.8], "tra vinh": [106.3, 9.9], "soc trang": [105.97, 9.6],
-  "bac lieu": [105.7, 9.3], "ca mau": [105.15, 9.2],
-};
-
-// Vị trí chấm trên bản đồ của một tỉnh, hoặc null nếu chưa biết
+// Vị trí chấm trên bản đồ của một tỉnh (tên mới hoặc cũ), hoặc null nếu chưa biết.
+// Tọa độ lấy từ src/data/provinces.ts: cùng vĩ độ với cột vĩ độ của tuyến "Bắc vào Nam".
 export function provinceDot(province: string) {
-  const location = provinceLocations[simplifyText(province).trim()];
+  const location = provinceLocation(province);
   return location ? { x: toMapX(location[0]), y: toMapY(location[1]) } : null;
 }

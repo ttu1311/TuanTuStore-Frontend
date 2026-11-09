@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import AddressSection from "@/components/account/AddressSection";
 import OrdersSection from "@/components/account/OrdersSection";
 import PassportSection from "@/components/account/PassportSection";
 import PasswordSection from "@/components/account/PasswordSection";
 import ProfileSection from "@/components/account/ProfileSection";
+import WishlistSection from "@/components/account/WishlistSection";
 import ContentSidebar from "@/components/layout/PageLayout";
 import { btnBase, btnPrimary } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
@@ -12,6 +14,7 @@ import { useStore } from "@/context/StoreContext";
 const sections = [
   { id: "profile", label: "Thông tin cá nhân" },
   { id: "orders", label: "Đơn hàng của tôi" },
+  { id: "wishlist", label: "Sản phẩm yêu thích" },
   { id: "passport", label: "Hộ chiếu đặc sản" },
   { id: "password", label: "Đổi mật khẩu" },
   { id: "logout", label: "Đăng xuất" },
@@ -60,8 +63,15 @@ export default function AccountView({ initialSection = "profile" }: { initialSec
     >
       <section className="min-w-0 rounded-xl border border-line bg-white p-6 md:p-8">
         {/* key: form bắt đầu lại từ các giá trị đã lưu khi người dùng thay đổi */}
-        {active === "profile" && <ProfileSection key={currentUser.id} user={currentUser} />}
+        {active === "profile" && (
+          <>
+            <ProfileSection key={currentUser.id} user={currentUser} />
+            {/* Địa chỉ giao hàng mặc định chỉ dành cho khách hàng, không hỏi tài khoản ADMIN */}
+            {currentUser.role !== "ADMIN" && <AddressSection key={`address-${currentUser.id}`} user={currentUser} />}
+          </>
+        )}
         {active === "orders" && <OrdersSection userId={currentUser.id} />}
+        {active === "wishlist" && <WishlistSection />}
         {active === "passport" && <PassportSection userId={currentUser.id} />}
         {active === "password" && <PasswordSection />}
         {active === "logout" && (

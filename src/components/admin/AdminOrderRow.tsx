@@ -2,10 +2,19 @@
 
 import { useState } from "react";
 import OrderStatusBadge from "@/components/admin/OrderStatusBadge";
-import { actionDanger, actionEdit, td } from "@/components/admin/tableStyles";
+import PaymentStatusBadge from "@/components/payment/PaymentStatusBadge";
+import { actionButton, actionDanger, actionEdit, td } from "@/components/admin/tableStyles";
 import { useStore } from "@/context/StoreContext";
+import { formatAddress } from "@/lib/address";
 import { formatDate, formatVND } from "@/lib/format";
-import { orderStatusLabels, orderStatuses, paymentMethodLabels } from "@/lib/orders";
+import {
+  adminOrderStatuses,
+  isNotShipped,
+  orderStatusLabels,
+  paymentMethodLabels,
+  paymentStatusLabels,
+  paymentStatusOf,
+} from "@/lib/orders";
 import type { Order, OrderStatus } from "@/types";
 
 const selectStyle =
@@ -14,14 +23,30 @@ const selectStyle =
 // Một dòng của bảng danh sách đơn hàng. "Xem chi tiết" mở phần chi tiết ngay bên dưới,
 // kèm ô đổi trạng thái và nút xóa.
 export default function AdminOrderRow({ order, accountText }: { order: Order; accountText: string }) {
-  const { updateOrderStatus, deleteOrder } = useStore();
+  const { updateOrderStatus, deleteOrder, confirmPayment } = useStore();
+  const paymentStatus = paymentStatusOf(order);
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<OrderStatus>(order.status);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
   function handleSaveStatus() {
+    if (
+      selected === "CANCELLED" &&
+      !window.confirm(`Hủy đơn ${order.code}? Hàng sẽ được trả lại kho, và đơn đã hủy không đổi lại được.`)
+    ) {
+      return;
+    }
     const result = updateOrderStatus(order.code, selected);
     setMessage(result.ok ? { ok: true, text: "Đã cập nhật trạng thái." } : { ok: false, text: result.message });
+  }
+
+  // TẠM THỜI (chưa có backend): Admin xem sao kê ngân hàng, thấy khoản tiền đúng số tiền + nội dung mã đơn thì bấm xác nhận.
+  // Khi có backend, webhook PayOS tự làm bước này.
+  function handleConfirmPayment() {
+    if (!window.confirm(`Xác nhận đã nhận ${formatVND(order.total)} cho đơn ${order.code}?`)) return;
+    const result = confirmPayment(order.code);
+    if (result.ok) setSelected(order.status === "PENDING" ? "CONFIRMED" : order.status);
+    setMessage(result.ok ? { ok: true, text: "Đã xác nhận thanh toán." } : { ok: false, text: result.message });
   }
 
   function handleDelete() {
@@ -31,14 +56,19 @@ export default function AdminOrderRow({ order, accountText }: { order: Order; ac
   }
 
   const customerRows = [
+    // Khách đã đăng nhập mua tặng: họ tên, số điện thoại, địa chỉ là của người nhận
+    ...(order.forOther ? [["Người nhận", "Người thân của khách (mua tặng)"]] : []),
     ["Họ và tên", order.customerName],
     ["Số điện thoại", order.phone],
     ["Email", order.email],
-    ["Địa chỉ giao hàng", [order.address, order.ward, order.district, order.province].join(", ")],
+    ["Địa chỉ giao hàng", formatAddress({ street: order.address, ward: order.ward, district: order.district, province: order.province })],
     ["Ghi chú", order.note || "—"],
     // Có gói quà thì Admin cần biết để gói và in thiệp
     ["Gói quà & thiệp", order.gift ? (order.gift.message ? `“${order.gift.message}”` : "Có (thiệp trống)") : "Không"],
     ["Thanh toán", paymentMethodLabels[order.paymentMethod]],
+    ...(paymentStatus
+      ? [["Trạng thái thanh toán", paymentStatus === "PAID" && order.paidAt ? `${paymentStatusLabels.PAID} (${formatDate(order.paidAt)})` : paymentStatusLabels[paymentStatus]]]
+      : []),
     ["Tài khoản", accountText],
   ];
 
@@ -56,7 +86,10 @@ export default function AdminOrderRow({ order, accountText }: { order: Order; ac
         <td className={td}>{formatDate(order.createdAt)}</td>
         <td className={`${td} whitespace-nowrap`}>{formatVND(order.total)}</td>
         <td className={td}>
-          <OrderStatusBadge status={order.status} />
+          <div className="flex flex-col items-start gap-1">
+            <OrderStatusBadge status={order.status} />
+            <PaymentStatusBadge order={order} />
+          </div>
         </td>
         <td className={td}>
           <button
@@ -123,14 +156,20 @@ export default function AdminOrderRow({ order, accountText }: { order: Order; ac
                 <select
                   id={`status-${order.code}`}
                   value={selected}
+                  disabled={order.status === "CANCELLED"} // đơn đã hủy là trạng thái cuối
                   onChange={(event) => {
                     setSelected(event.target.value as OrderStatus);
                     setMessage(null);
                   }}
                   className={selectStyle}
                 >
-                  {orderStatuses.map((status) => (
-                    <option key={status} value={status}>
+                  {adminOrderStatuses.map((status) => (
+                    // Chỉ hủy được đơn chưa giao
+                    <option
+                      key={status}
+                      value={status}
+                      disabled={status === "CANCELLED" && order.status !== "CANCELLED" && !isNotShipped(order.status)}
+                    >
                       {orderStatusLabels[status]}
                     </option>
                   ))}
@@ -143,6 +182,11 @@ export default function AdminOrderRow({ order, accountText }: { order: Order; ac
                 >
                   Cập nhật
                 </button>
+                {paymentStatus === "UNPAID" && (
+                  <button type="button" onClick={handleConfirmPayment} className={`${actionButton} border-primary text-primary hover:bg-primary-soft`}>
+                    Xác nhận đã nhận tiền
+                  </button>
+                )}
                 <button type="button" onClick={handleDelete} className={`${actionDanger} sm:ml-auto`}>
                   Xóa đơn hàng
                 </button>

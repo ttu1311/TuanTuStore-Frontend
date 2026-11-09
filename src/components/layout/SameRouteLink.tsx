@@ -6,7 +6,7 @@ import type { ComponentProps, MouseEvent } from "react";
 // Một Link bình thường, cộng thêm: bấm vào khi ĐANG Ở đúng trang đó thì cuộn mượt lên đầu trang.
 // Next.js không cuộn khi bấm vào chính trang đang mở (ví dụ "Trang chủ" khi đang ở trang chủ,
 // "Sản phẩm" khi đang ở /san-pham), nên nếu không có phần này thì bấm vào không có gì xảy ra.
-// Liên kết tới một phần của trang ("/#ban-chay") vẫn để Next.js tự cuộn tới phần đó.
+// Liên kết tới một phần của trang ("/#ba-mien") vẫn để Next.js tự cuộn tới phần đó.
 export default function SameRouteLink({ href, onClick, ...props }: ComponentProps<typeof Link> & { href: string }) {
   function handleClick(event: MouseEvent<HTMLAnchorElement>) {
     onClick?.(event);
@@ -17,7 +17,7 @@ export default function SameRouteLink({ href, onClick, ...props }: ComponentProp
     if (href !== window.location.pathname + window.location.search) return;
 
     event.preventDefault();
-    // Đang ở "/#ban-chay" thì bỏ phần "#..." khỏi địa chỉ. Giữ nguyên history.state vì App Router lưu dữ liệu của nó ở đó.
+    // Đang ở "/#ba-mien" thì bỏ phần "#..." khỏi địa chỉ. Giữ nguyên history.state vì App Router lưu dữ liệu của nó ở đó.
     if (window.location.hash) window.history.replaceState(window.history.state, "", href);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }

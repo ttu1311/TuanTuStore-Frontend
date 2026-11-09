@@ -1,4 +1,4 @@
-# TuanTuStore — Front-end
+# Đặc sản 3 Miền — Front-end
 
 University project: **"Thiết kế Front-end cho Website cửa hàng bán đặc sản"**.
 An online store for Vietnamese specialties from the three regions — **Miền Bắc, Miền Trung, Miền Nam**.
@@ -18,7 +18,8 @@ An online store for Vietnamese specialties from the three regions — **Miền B
 | TypeScript | 5.9 | types |
 | Tailwind CSS | 3.4 (LTS) | styling (design tokens in `tailwind.config.ts`) |
 
-No other libraries: no state manager, no UI kit, no authentication library.
+One extra library: `qrcode` 1.5.4, which draws the VietQR bank-transfer code in the browser.
+No state manager, no UI kit, no authentication library.
 
 ## Run the project
 
@@ -30,6 +31,15 @@ npm run dev
 ```
 
 Open the address printed in the terminal (usually http://localhost:3000).
+
+**Environment variables (optional for `npm run dev`).** Copy `.env.example` to `.env.local` and fill it in:
+
+| Variable | Used for | When empty |
+| --- | --- | --- |
+| `NEXT_PUBLIC_BANK_BIN`, `NEXT_PUBLIC_BANK_NAME`, `NEXT_PUBLIC_BANK_ACCOUNT_NO`, `NEXT_PUBLIC_BANK_ACCOUNT_NAME` | the account printed in the bank-transfer QR code | a **sample** account (`0000000000`) with a "do not transfer" warning |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | the Cloudflare Turnstile CAPTCHA on `/dang-ky` | dev: Cloudflare's **test keys** (always pass). Production: registration is refused until real keys are set |
+
+`.env.local` is ignored by git; never commit real keys.
 
 | Command | What it does |
 | --- | --- |
@@ -79,26 +89,29 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 
 | Route | Page |
 | --- | --- |
-| `/` | Homepage: hero, 3 regions, featured products. Sidebar: best sellers, new arrivals, a clickable map of the three regions (regions and provinces), recently viewed |
+| `/` | Homepage: banner, short introduction with the "Bắc vào Nam" route (one stop per **province**, north to south by latitude), featured products (purchases × 5 + views, top 8), the 3 regions, "Về Đặc sản 3 Miền" |
 | `/san-pham` | Product list: search, filter by region / province / brand / price, sort. Reads `?q=`, `?region=`, `?province=`, `?brand=` and `?dip=` (occasion) |
-| `/san-pham/[id]` | Product detail: price, description, information, quantity, "Thêm vào giỏ hàng", "Mua ngay", related products |
-| `/gio-hang` | Cart: change quantity, remove, totals, progress towards free shipping |
-| `/thanh-toan` | Checkout: delivery form, COD or bank transfer (simulated), optional free gift wrap with a card message, creates an order |
-| `/dang-nhap` | Login (customers and Admin use the same page) |
-| `/dang-ky` | Registration |
-| `/tai-khoan` | My account: profile, my orders, "Hộ chiếu đặc sản" (one stamp per province the customer has received), change password, logout. `?tab=orders` / `?tab=passport` open those tabs |
+| `/san-pham/[id]` | Product detail: price, stock left ("Hết hàng" disables buying), stars, description, information, quantity, "Thêm vào giỏ hàng", "Mua ngay", ♡ wishlist, related products |
+| `/gio-hang` | Cart: change quantity (never above the stock), remove, clear all, totals, progress towards free shipping; checkout is blocked while a line exceeds the stock |
+| `/thanh-toan` | Checkout: logged-in customers choose "Mua cho bản thân" (default address from the account, nothing to retype) or "Mua tặng người thân" (recipient form). 2-level address: province (34, after the 2025 merger) → ward typed by hand. COD or bank transfer with a **VietQR code** (amount and order code filled in). Optional free gift wrap |
+| `/dang-nhap` | Login (customers and Admin use the same page). `?next=/path` returns to that page afterwards (only paths inside the site) |
+| `/dang-ky` | Registration with a Cloudflare Turnstile CAPTCHA, verified on the server (`/api/captcha/verify`). Also reads `?next=` |
+| `/tai-khoan` | My account: profile and **default delivery address**, my orders (QR code again for unpaid transfers), **Sản phẩm yêu thích**, "Hộ chiếu đặc sản", change password, logout. `?tab=orders` / `?tab=wishlist` / `?tab=passport` open those tabs |
 | `/hop-qua` | "Hộp quà Ba Miền": pick one product from each region and add the whole box to the cart |
 | `/tra-cuu-don-hang` | Order lookup without login: order code + phone number. Reads `?ma=` (the "Đặt hàng thành công" screen links here) |
 | `/thong-tin/[slug]` | Help and policy pages (content in `src/data/infoPages.ts`): buying guide, payment, FAQ, shipping, returns, privacy, terms |
+| `/ban-do` | Map of the three regions with one dot per province, and the provinces listed north to south with their latitude |
 | `/lien-he` | Contact: call, Zalo and email links, and a "call me back" form (name, phone, topic, preferred time, message). Reads `?chu-de=` to pre-select the topic. Contact details live in `src/data/contact.ts` |
 | `/nguon-anh` | Photo credits: author and licence of each photo |
-| `/admin` | Admin dashboard: numbers and recent orders |
-| `/admin/san-pham` | Admin: product list, delete |
+| `/admin` | Admin dashboard: orders, revenue, average order, unpaid transfers, products, low stock, users, waiting call-backs; orders by status; low-stock list; top 5 sellers; recent orders |
+| `/admin/san-pham` | Admin: product list with stock, delete |
 | `/admin/san-pham/them` | Admin: add a product |
 | `/admin/san-pham/[id]/sua` | Admin: edit a product |
-| `/admin/don-hang` | Admin: orders — details, change status, delete |
+| `/admin/don-hang` | Admin: orders — details, change status ("Đã hủy" returns the goods to stock), "Xác nhận đã nhận tiền" for bank transfers, delete |
+| `/admin/thong-ke` | Admin: purchases per product — sold, orders, revenue, views, stock; click a column to sort |
 | `/admin/nguoi-dung` | Admin: users — change role (USER / ADMIN), delete |
 | `/admin/lien-he` | Admin: "call me back" requests — filter waiting / called, mark as called, delete |
+| `/api/captcha/verify` | Route Handler (server): verifies a Turnstile token with Cloudflare `siteverify` using the secret key |
 
 Unknown pages and unknown products show a Vietnamese "Lỗi 404" message.
 
@@ -115,6 +128,8 @@ Unknown pages and unknown products show a Vietnamese "Lỗi 404" message.
 | `tuantustore-seed-batches` | groups of products added after the first version that this browser already received | `["ca-mau"]` |
 | `tuantustore-reviews` | product reviews (stars + comment) | `[]` (no sample reviews) |
 | `tuantustore-contact-requests` | "call me back" requests sent from `/lien-he` | `[]` |
+| `tuantustore-wishlists` | wishlist per account: `{ userId: [productId, …] }` | — (created at the first ♡) |
+| `tuantustore-product-views` | `{ productId: number of detail-page views }` in this browser (ranks "Sản phẩm nổi bật") | — (created at the first product view) |
 | `tuantustore-recently-viewed` | ids of the products this browser opened last (shown in "Đã xem gần đây") | — (not created until a product is opened) |
 
 - **First visit:** a key that does not exist yet is filled with its default value. A key that already has data is
@@ -144,6 +159,9 @@ src/
 ├── data/
 │   ├── initialData.ts   the 13 products and the demo ADMIN of the first visit
 │   ├── brands.ts        what each brand is (kind, place, short introduction)
+│   ├── provinces.ts     the 34 provinces after the 2025 merger: one latitude/longitude each, old names → new names
+│   ├── contact.ts       the shop's phone, Zalo, email and opening hours
+│   ├── payment.ts       the bank account of the QR code (read from environment variables)
 │   └── seedUpdates.ts   changes to sample products that were already saved in a browser
 ├── lib/                 small helper functions without React (validation, prices, order codes, storage…)
 └── types/index.ts       the data types: Product, User, CartItem, Order…
@@ -162,12 +180,25 @@ read from `localStorage`. This avoids hydration errors, because the server has n
 
 - **Brands** are real brands / labels, written from public information (sources in "Credits"). `src/data/brands.ts` says what
   each one is; which products a brand makes comes from the product list. In the Cà Mau products the "brand" is the
-  **collective trademark of the place** (e.g. "Mật ong U Minh Hạ"), not one company. TuanTuStore is a student project, **not** a
+  **collective trademark of the place** (e.g. "Mật ong U Minh Hạ"), not one company. Đặc sản 3 Miền is a student project, **not** a
   dealer of these brands, and the prices and packs are sample values. Admin can only choose a brand from this list.
 - Prices and packs are sample values for this project, not checked market prices.
-- The province is part of the "Xuất xứ" text (e.g. "Năm Căn, Cà Mau"). There is no separate province field: the
-  province is the last part of "Xuất xứ", and it is used for the "Tỉnh / thành" filter (with the number of products). The search also
-  looks in "Xuất xứ" ("Cà Mau" or "ca mau" finds them).
+- **Provinces after the 2025 merger.** "Xuất xứ" is one of the 34 provinces of `src/data/provinces.ts` (Admin picks it from a
+  list); smaller places (Năm Căn, Rạch Gốc, U Minh…) are part of the product name, e.g. "Bánh pía Sóc Trăng" comes from "Cần Thơ".
+  Old province names still typed somewhere ("Bến Tre", "Kiên Giang"…) are mapped to the new ones, so the route, the filter,
+  the map and the passport group them correctly. Each province has **one** latitude (its administrative centre), used for the
+  route column, the north-to-south order and the map dot. Browsers that saved the old origins get the new ones once.
+- **Addresses** have 2 levels: province → ward ("Xã / Phường / Đặc khu", typed by hand: there is no verified list of the new wards
+  yet; `wardOptions()` in `src/data/provinces.ts` turns the field into a list once one exists). Old orders keep their district.
+- **Stock** starts at 50 for every product. Placing an order takes the goods out of stock; cancelling ("Đã hủy", only for orders
+  not shipped yet) or deleting an order that was not shipped puts them back. A product at 0 shows "Hết hàng" and cannot be added
+  to the cart. ⚠️ The stock lives in the browser like everything else: real stock needs a backend that updates it in a transaction.
+- **Bank transfer (temporary):** the QR code follows the VietQR standard, so banking apps fill in the amount and the order code. The
+  order stays "Chờ thanh toán" until an Admin presses "Xác nhận đã nhận tiền". Automatic confirmation needs a backend receiving a
+  payment webhook (planned: PayOS — check the signature, match order code and amount, never confirm the same payment twice).
+- **CAPTCHA limitation:** the Turnstile token is verified on the server, but the account itself is still created in `localStorage`,
+  so a determined bot could skip the check. With a backend, the registration API must verify the token itself.
+- **Wishlist** is saved per account (in this browser): a guest pressing ♡ is sent to the login page and back.
 - The photo of "Mật ong rừng U Minh Hạ" shows a bottle of honey in general (no free photo of U Minh honey was found), and
   the photo of "Kẹo dừa" shows cocoa coconut candy from Bến Tre. Replace them in Admin → Sản phẩm when you have your own photos.
 - "Khô cá bổi" is dried **cá bổi (cá sặc rằn)**, a freshwater fish farmed around U Minh, not a sea fish.
@@ -181,7 +212,8 @@ read from `localStorage`. This avoids hydration errors, because the server has n
 - Order lookup only finds orders saved in the same browser (there is no server).
 - **Reviews** can only be written by a logged-in customer who has a **completed** order containing that product (one review
   per customer per product; writing again replaces it). The author or an Admin can delete a review. There are no sample
-  reviews, and "Đã bán" counts the quantities in real orders, so new browsers show no stars and no sales until people buy.
+  reviews: products show five empty stars and "Chưa có đánh giá" until someone reviews them. "Đã bán" counts the quantities in
+  real orders, without cancelled orders.
 - **Occasions** ("Dịp tặng": Quà Tết, Biếu ông bà/bố mẹ, Ăn vặt, Cho gian bếp) are listed in `src/data/occasions.ts`; each product
   has a list of them (`Product.occasions`). They are the shop's suggestions and can be changed in the Admin product form.
 - **Câu chuyện sản phẩm** (how to enjoy, storage, best season) is `Product.story`. "Mùa ngon nhất" is only filled in for products
@@ -200,9 +232,21 @@ read from `localStorage`. This avoids hydration errors, because the server has n
   of the project, before passwords were kept as described above. Delete it in Admin → Người dùng and register again, or clear the
   `tuantustore-` keys (see "Start again from zero"). The demo ADMIN above is repaired automatically.
 
+## Name and logo
+
+The shop is called **"Đặc sản 3 Miền"** (the repository, the npm package, the `tuantustore-…` localStorage keys and the demo
+admin e-mail keep the old internal name, so saved data and logins keep working).
+
+Logo: a cream round seal in which Vietnam's S-shaped land is drawn as the **number 3**, in three strokes = three regions
+(north rice-green, centre red-orange, south sunny gold), with two small dot clusters for the Hoàng Sa and Trường Sa
+archipelagos and a young leaf sprouting out of the seal. Wordmark: "ĐẶC SẢN" above "3 MIỀN".
+The site uses the `Logo` / `LogoMark` components (`src/components/brand/Logo.tsx`; the wordmark is real text in the site font);
+the favicon is `src/app/icon.svg`. Standalone files for use outside the site: `public/brand/logo-horizontal.svg`,
+`logo-on-dark.svg` and `logo-mark.svg` (their text falls back to Arial Narrow / Arial where the Phudu font is not installed).
+
 ## Credits
 
-Photos: Wikimedia Commons. The footer links to the page `/nguon-anh`, which lists the author and licence of each photo below (keep the two lists the same). Fonts: Phudu and Be Vietnam Pro (Google Fonts)
+Photos: Wikimedia Commons. The page `/nguon-anh` lists the author and licence of each photo below (keep the two lists the same). Fonts: Phudu and Be Vietnam Pro (Google Fonts)
 
 Photos of the Cà Mau products (cropped and resized):
 

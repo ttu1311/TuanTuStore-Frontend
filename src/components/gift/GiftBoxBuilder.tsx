@@ -26,7 +26,8 @@ function defaultPick(items: Product[]) {
 export default function GiftBoxBuilder() {
   const { isReady, products, addManyToCart } = useStore();
   const byRegion = Object.fromEntries(
-    regionKeys.map((key) => [key, products.filter((p) => p.region === key)])
+    // Món hết hàng không chọn được cho hộp quà
+    regionKeys.map((key) => [key, products.filter((p) => p.region === key && p.stock > 0)])
   ) as Record<Region, Product[]>;
   // null = dùng món chọn sẵn; khách bấm chọn thì lưu lựa chọn của khách
   const [chosen, setChosen] = useState<Choice>({ bac: null, trung: null, nam: null });
