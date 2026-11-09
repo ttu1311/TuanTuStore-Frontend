@@ -47,30 +47,36 @@ export function sortNewestFirst(products: Product[]) {
   return [...products].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-export const FEATURED_COUNT = 8;
+export const BEST_SELLER_COUNT = 8;
+export const TOP_BADGE_COUNT = 3; // chỉ 3 món bán nhiều nhất mới có nhãn "Top 1/2/3"
 
-// "Sản phẩm nổi bật" ở trang chủ: điểm = lượt mua × 5 + lượt xem, lấy 8 món điểm cao nhất.
-// - lượt mua: tổng số lượng trong các đơn (trừ đơn đã hủy), xem soldCounts;
-// - lượt xem: số lần trang chi tiết được mở trên trình duyệt này (chưa có backend để đếm chung mọi khách).
-// Bằng điểm thì món Admin tích "Ưu tiên nổi bật" đứng trước, rồi món mới hơn. Món đã hết hàng không được đưa lên.
-export function getFeaturedProducts(products: Product[], sold: Map<string, number>, views: Record<string, number>) {
-  const score = (product: Product) => (sold.get(product.id) ?? 0) * 5 + (views[product.id] ?? 0);
-  return products
-    .filter((product) => product.stock > 0)
-    .sort(
-      (a, b) =>
-        score(b) - score(a) ||
-        Number(b.isFeatured) - Number(a.isFeatured) ||
-        b.createdAt.localeCompare(a.createdAt)
-    )
-    .slice(0, FEATURED_COUNT);
+// Thứ tự bán chạy, HOÀN TOÀN do khách mua quyết định (Admin không xếp được): số lượng đã bán nhiều nhất trước
+// (tổng số lượng trong các đơn, trừ đơn đã hủy). Bằng nhau, kể cả khi chưa bán được gì: nhiều lượt xem hơn
+// (đếm trên trình duyệt này), rồi món mới hơn, rồi theo tên.
+function compareBySales(sold: Map<string, number>, views: Record<string, number>) {
+  return (a: Product, b: Product) =>
+    (sold.get(b.id) ?? 0) - (sold.get(a.id) ?? 0) ||
+    (views[b.id] ?? 0) - (views[a.id] ?? 0) ||
+    b.createdAt.localeCompare(a.createdAt) ||
+    a.name.localeCompare(b.name, "vi");
 }
 
-// "Đặc sản bán chạy" ở trang chủ: các sản phẩm có thứ hạng, Top 1 lên đầu
-export function getBestSellers(products: Product[]) {
+// "Sản phẩm bán chạy" ở trang chủ: 8 món còn hàng, theo thứ tự trên. Cửa hàng chưa bán được gì thì danh sách vẫn đầy
+// (theo lượt xem rồi món mới), nhưng chưa món nào có nhãn "Top" (xem topSellerRanks).
+export function getBestSellers(products: Product[], sold: Map<string, number>, views: Record<string, number>) {
   return products
-    .filter((product) => product.rank !== undefined)
-    .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0));
+    .filter((product) => product.stock > 0)
+    .sort(compareBySales(sold, views))
+    .slice(0, BEST_SELLER_COUNT);
+}
+
+// Nhãn "Top n" trên thẻ sản phẩm: chỉ món ĐÃ BÁN ĐƯỢC mới có, lấy TOP_BADGE_COUNT món đầu. id -> 1, 2, 3.
+export function topSellerRanks(products: Product[], sold: Map<string, number>, views: Record<string, number>) {
+  const top = products
+    .filter((product) => (sold.get(product.id) ?? 0) > 0)
+    .sort(compareBySales(sold, views))
+    .slice(0, TOP_BADGE_COUNT);
+  return new Map(top.map((product, index) => [product.id, index + 1]));
 }
 
 // Tối đa `count` sản phẩm khác: cùng vùng trước, rồi đến các vùng khác
@@ -105,8 +111,6 @@ export type ProductFormValues = {
   origin: string;
   pack: string;
   stock: string; // số lượng trong kho
-  rank: string;
-  isFeatured: boolean;
   occasions: string[]; // id các dịp tặng đã tích
   enjoy: string; // câu chuyện sản phẩm: Cách thưởng thức
   storage: string; // Bảo quản
@@ -132,8 +136,6 @@ export const emptyProductForm: ProductFormValues = {
   origin: "",
   pack: "",
   stock: String(INITIAL_STOCK),
-  rank: "",
-  isFeatured: false,
   occasions: [],
   enjoy: "",
   storage: "",
@@ -154,8 +156,6 @@ export function productToFormValues(product: Product): ProductFormValues {
     origin: productProvince(product),
     pack: product.pack,
     stock: String(product.stock),
-    rank: product.rank ? String(product.rank) : "",
-    isFeatured: product.isFeatured,
     occasions: product.occasions ?? [],
     enjoy: product.story?.enjoy ?? "",
     storage: product.story?.storage ?? "",
@@ -178,7 +178,7 @@ function toPositiveInt(value: string, max: number) {
 // Kiểm tra form. Trả về các lỗi, và dữ liệu sản phẩm khi không có lỗi.
 export function validateProductForm(values: ProductFormValues): { errors: ProductFormErrors; input?: ProductInput } {
   const errors: ProductFormErrors = {};
-  const text = (field: keyof Omit<ProductFormValues, "isFeatured" | "occasions">) => values[field].trim();
+  const text = (field: keyof Omit<ProductFormValues, "occasions">) => values[field].trim();
 
   if (!text("name")) errors.name = "Vui lòng nhập tên sản phẩm";
   else if (text("name").length > 100) errors.name = "Tên sản phẩm tối đa 100 ký tự";
@@ -217,13 +217,6 @@ export function validateProductForm(values: ProductFormValues): { errors: Produc
   const stockOk = text("stock") !== "" && Number.isInteger(stock) && stock >= 0 && stock <= MAX_STOCK;
   if (!stockOk) errors.stock = `Tồn kho phải là số nguyên từ 0 đến ${MAX_STOCK.toLocaleString("vi-VN")}`;
 
-  let rank: number | undefined;
-  if (text("rank")) {
-    const parsed = toPositiveInt(text("rank"), 99);
-    if (parsed === null) errors.rank = "Thứ hạng phải là số nguyên từ 1 đến 99, hoặc để trống";
-    else rank = parsed;
-  }
-
   if (Object.keys(errors).length > 0 || price === null || !isRegion(region)) return { errors };
 
   return {
@@ -241,8 +234,6 @@ export function validateProductForm(values: ProductFormValues): { errors: Produc
       origin: text("origin"),
       pack: text("pack"),
       stock,
-      rank,
-      isFeatured: values.isFeatured,
       // Luôn ghi cả hai trường (có thể rỗng), để dữ liệu mẫu không điền lại thứ Admin đã xóa (xem applySeedUpdates)
       occasions: allOccasions.map((occasion) => occasion.id).filter((id) => values.occasions.includes(id)),
       story: {

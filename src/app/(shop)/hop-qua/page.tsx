@@ -1,13 +1,22 @@
 import type { Metadata } from "next";
 import GiftBoxBuilder from "@/components/gift/GiftBoxBuilder";
 import { PageContainer } from "@/components/layout/PageLayout";
+import { parseCriteria } from "@/lib/giftBox";
 
 export const metadata: Metadata = {
   title: "Hộp quà Ba Miền — Đặc sản 3 Miền",
-  description: "Tự ghép hộp quà gồm một đặc sản miền Bắc, một miền Trung và một miền Nam, gói chung kèm thiệp.",
+  description: "Ghép hộp quà gồm một đặc sản miền Bắc, một miền Trung và một miền Nam theo dịp và ngân sách của bạn, gói chung kèm thiệp.",
 };
 
-export default function GiftBoxPage() {
+type GiftBoxPageProps = { searchParams: Promise<{ dip?: string | string[]; "ngan-sach"?: string | string[] }> };
+
+const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
+
+// /hop-qua?dip=qua-tet&ngan-sach=100-200: hộp đã ghép sẵn theo dịp và ngân sách (từ 2 câu hỏi ở trang chủ)
+export default async function GiftBoxPage({ searchParams }: GiftBoxPageProps) {
+  const params = await searchParams;
+  const initial = parseCriteria(first(params.dip), first(params["ngan-sach"]));
+
   return (
     <PageContainer>
       <div className="mb-8">
@@ -18,7 +27,8 @@ export default function GiftBoxPage() {
           của bạn.
         </p>
       </div>
-      <GiftBoxBuilder />
+      {/* key: mở trang với dịp hoặc ngân sách khác thì ghép lại từ đầu */}
+      <GiftBoxBuilder key={`${initial.occasion}-${initial.budget}`} initial={initial} />
     </PageContainer>
   );
 }

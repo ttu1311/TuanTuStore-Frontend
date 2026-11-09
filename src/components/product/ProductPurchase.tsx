@@ -10,7 +10,7 @@ import { cleanQuantity, maxOrderable } from "@/lib/cart";
 
 // Ô số lượng + các nút của trang chi tiết sản phẩm.
 export default function ProductPurchase({ productId }: { productId: string }) {
-  const { addToCart, products, cart } = useStore();
+  const { addToCart, buyNow, products, cart } = useStore();
   const product = products.find((item) => item.id === productId);
   const limit = product ? maxOrderable(product) : 0; // không quá tồn kho
   const inCart = cart.find((item) => item.productId === productId)?.quantity ?? 0;
@@ -39,10 +39,10 @@ export default function ProductPurchase({ productId }: { productId: string }) {
     );
   }
 
-  // "Mua ngay": thêm số lượng đã chọn vào giỏ, rồi chuyển thẳng tới trang thanh toán
+  // "Mua ngay": đưa sản phẩm vào giỏ và CHỈ tick sản phẩm này (các món khác trong giỏ không bị mua theo),
+  // rồi chuyển thẳng tới trang thanh toán
   function handleBuyNow() {
-    addToCart(productId, currentAmount());
-    router.push("/thanh-toan");
+    if (buyNow(productId, currentAmount())) router.push("/thanh-toan");
   }
 
   return (

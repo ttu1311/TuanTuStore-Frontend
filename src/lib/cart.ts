@@ -12,7 +12,7 @@ export function cleanQuantity(value: number) {
   return Number.isFinite(value) ? Math.min(MAX_QUANTITY, Math.max(1, Math.floor(value))) : 1;
 }
 
-export type CartLine = { product: Product; quantity: number };
+export type CartLine = { product: Product; quantity: number; selected: boolean };
 
 // Số lượng tối đa khách đặt được cho một sản phẩm: không quá tồn kho, không quá 99
 export function maxOrderable(product: Pick<Product, "stock">) {
@@ -23,8 +23,13 @@ export function maxOrderable(product: Pick<Product, "stock">) {
 export function getCartLines(cart: CartItem[], products: Product[]): CartLine[] {
   return cart.flatMap((item) => {
     const product = products.find((p) => p.id === item.productId);
-    return product ? [{ product, quantity: item.quantity }] : [];
+    return product ? [{ product, quantity: item.quantity, selected: item.selected !== false }] : [];
   });
+}
+
+// Chỉ các dòng khách đã tick chọn: đây là những gì được tính tiền và đặt hàng
+export function selectedLines(lines: CartLine[]) {
+  return lines.filter((line) => line.selected);
 }
 
 // Phí vận chuyển của một đơn: miễn phí khi tạm tính đạt FREE_SHIPPING_MIN

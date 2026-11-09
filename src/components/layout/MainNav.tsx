@@ -2,27 +2,28 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Fragment, useEffect, useRef, useState } from "react";
 import SameRouteLink from "@/components/layout/SameRouteLink";
 import Icon from "@/components/ui/Icon";
 import { useStore } from "@/context/StoreContext";
-import { regions } from "@/lib/regions";
-import type { Region } from "@/types";
+import { regionKeys, regions } from "@/lib/regions";
 
 // Mọi liên kết bắt đầu bằng "/" nên dùng được từ mọi trang.
 // "/#id" nghĩa là: về trang chủ, rồi cuộn tới phần có id đó.
-// Các mục vùng miền mang màu chấm của vùng đó, giống như tuyến ở trang chủ.
 // "Giới thiệu" đứng ngay sau "Trang chủ"; "Bản đồ" mở trang bản đồ riêng (/ban-do).
-const navItems: { label: string; href: string; region?: Region }[] = [
+// Ba miền gộp vào MỘT mục "3 Miền" có bảng thả xuống (RegionMenu), đặt ngay sau "Sản phẩm".
+const navItems: { label: string; href: string }[] = [
   { label: "Trang chủ", href: "/" },
   { label: "Giới thiệu", href: "/#gioi-thieu" },
   { label: "Sản phẩm", href: "/san-pham" },
-  { label: "Miền Bắc", href: "/#mien-bac", region: "bac" },
-  { label: "Miền Trung", href: "/#mien-trung", region: "trung" },
-  { label: "Miền Nam", href: "/#mien-nam", region: "nam" },
   { label: "Hộp quà", href: "/hop-qua" },
   { label: "Bản đồ", href: "/ban-do" },
   { label: "Liên hệ", href: "/lien-he" },
 ];
+
+const linkBase = "flex h-full items-center gap-1.5 whitespace-nowrap border-b-2 text-base transition-colors duration-200";
+const linkIdle = "border-transparent font-medium text-ink-muted hover:text-ink";
+const linkActive = "border-primary font-semibold text-primary";
 
 // Menu chính. Nó tự đọc địa chỉ của trang hiện tại (usePathname),
 // nên không trang nào phải báo cho Header biết nó đang ở đâu.
@@ -36,7 +37,8 @@ export default function MainNav() {
 
   return (
     <nav aria-label="Điều hướng chính" className="border-t border-line">
-      <div className="mx-auto w-full max-w-container px-4 md:px-6 lg:px-8">
+      {/* relative: bảng "3 Miền" mở ngay dưới thanh menu (ngoài danh sách cuộn ngang, nên không bị cắt trên điện thoại) */}
+      <div className="relative mx-auto w-full max-w-container px-4 md:px-6 lg:px-8">
         <ul className="flex h-[52px] items-stretch gap-6 overflow-x-auto lg:gap-8 lg:overflow-visible">
           {showAdminLink && (
             // Đứng đầu danh sách, để điện thoại thấy nó mà không phải cuộn menu ngang.
@@ -56,26 +58,111 @@ export default function MainNav() {
             const isActive = item.href === "/san-pham" ? pathname.startsWith("/san-pham") : item.href === pathname;
 
             return (
-              <li key={item.label} className="flex">
-                <SameRouteLink
-                  href={item.href}
-                  aria-current={isActive ? "page" : undefined}
-                  className={`flex h-full items-center gap-2 whitespace-nowrap border-b-2 text-base transition-colors duration-200 ${
-                    isActive
-                      ? "border-primary font-semibold text-primary"
-                      : "border-transparent font-medium text-ink-muted hover:text-ink"
-                  }`}
-                >
-                  {item.region && (
-                    <span className={`h-2 w-2 rounded-full ${regions[item.region].dotClass}`} aria-hidden="true" />
-                  )}
-                  {item.label}
-                </SameRouteLink>
-              </li>
+              <Fragment key={item.label}>
+                <li className="flex">
+                  <SameRouteLink
+                    href={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`${linkBase} ${isActive ? linkActive : linkIdle}`}
+                  >
+                    {item.label}
+                  </SameRouteLink>
+                </li>
+                {item.href === "/san-pham" && <RegionMenu />}
+              </Fragment>
             );
           })}
         </ul>
       </div>
     </nav>
+  );
+}
+
+// "3 Miền ▾": bảng thả xuống với Miền Bắc / Trung / Nam, mỗi dòng mở trang sản phẩm đã lọc theo miền đó.
+// Đóng khi bấm ra ngoài, nhấn Esc, chọn một dòng, hoặc chuyển trang.
+function RegionMenu() {
+  const pathname = usePathname();
+  const { products } = useStore();
+  const [open, setOpen] = useState(false);
+  const [left, setLeft] = useState(0); // vị trí ngang của bảng, thẳng dưới nút (màn hình lớn)
+  const [shownPath, setShownPath] = useState(pathname);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Chuyển sang trang khác thì đóng bảng (chỉnh state ngay lúc render, như React khuyến nghị)
+  if (pathname !== shownPath) {
+    setShownPath(pathname);
+    setOpen(false);
+  }
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: PointerEvent) {
+      const target = event.target as Node;
+      if (!panelRef.current?.contains(target) && !buttonRef.current?.contains(target)) setOpen(false);
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      setOpen(false);
+      buttonRef.current?.focus();
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  function toggle() {
+    const button = buttonRef.current;
+    const container = button?.closest("nav > div");
+    if (button && container) setLeft(button.getBoundingClientRect().left - container.getBoundingClientRect().left);
+    setOpen(!open);
+  }
+
+  return (
+    <li className="flex">
+      <button
+        ref={buttonRef}
+        type="button"
+        aria-expanded={open}
+        aria-controls="region-menu"
+        onClick={toggle}
+        className={`${linkBase} ${open ? linkActive : linkIdle}`}
+      >
+        3 Miền
+        <Icon name="chevron-down" size={16} className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <div
+          ref={panelRef}
+          id="region-menu"
+          // Điện thoại: rộng theo thanh menu. Màn hình lớn: rộng 18rem, thẳng dưới nút
+          className="absolute inset-x-4 top-full z-40 mt-px rounded-b-xl border border-t-0 border-line bg-white p-2 shadow-card md:inset-x-6 lg:right-auto lg:w-72 lg:[left:var(--menu-left)]"
+          style={{ "--menu-left": `${left}px` } as React.CSSProperties}
+        >
+          <ul>
+            {regionKeys.map((key) => {
+              const count = products.filter((product) => product.region === key).length;
+              return (
+                <li key={key}>
+                  <Link
+                    href={`/san-pham?region=${key}`}
+                    onClick={() => setOpen(false)}
+                    className="flex min-h-12 items-center gap-3 rounded-lg px-3 text-ink transition-colors duration-200 hover:bg-surface"
+                  >
+                    <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${regions[key].dotClass}`} aria-hidden="true" />
+                    <span className="font-semibold">{regions[key].label}</span>
+                    <span className="ml-auto text-sm text-ink-muted">{count} sản phẩm</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </li>
   );
 }

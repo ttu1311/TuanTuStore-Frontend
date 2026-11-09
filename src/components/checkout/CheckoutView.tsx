@@ -9,7 +9,7 @@ import { btnBase, btnPrimary, btnSecondary } from "@/components/ui/buttons";
 import LoadingState from "@/components/ui/LoadingState";
 import { useStore } from "@/context/StoreContext";
 import FreeShippingProgress from "@/components/cart/FreeShippingProgress";
-import { calculateTotals, getCartLines, type CartLine } from "@/lib/cart";
+import { calculateTotals, getCartLines, selectedLines, type CartLine } from "@/lib/cart";
 import { formatVND } from "@/lib/format";
 import { emptyAddress, formatAddress, validateAddress } from "@/lib/address";
 import {
@@ -40,7 +40,8 @@ const paymentOptions: { value: PaymentMethod; label: string }[] = [
 type Recipient = "self" | "other";
 
 type CheckoutFormProps = {
-  lines: CartLine[];
+  lines: CartLine[]; // chỉ các món khách đã tick ở giỏ hàng
+  leftInCart: number; // số món chưa tick, vẫn ở lại trong giỏ sau khi đặt hàng
   user: User | null; // null = khách chưa đăng nhập
   onPlaced: (order: Order) => void;
 };
@@ -53,7 +54,7 @@ function hasDeliveryProfile(user: User | null): user is User & { address: SavedA
 // Form giao hàng + tóm tắt đơn hàng. Chỉ hiển thị khi giỏ hàng có sản phẩm.
 // Khách đã đăng nhập chọn "Mua cho bản thân" (dùng địa chỉ mặc định trong tài khoản, không nhập lại)
 // hoặc "Mua tặng người thân" (nhập người nhận). Khách chưa đăng nhập luôn điền form.
-function CheckoutForm({ lines, user, onPlaced }: CheckoutFormProps) {
+function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) {
   const { placeOrder, updateProfile } = useStore();
   const [recipient, setRecipient] = useState<Recipient>("self");
   // Mỗi lựa chọn giữ form riêng, nên chuyển qua lại không làm mất chữ đã gõ
@@ -207,6 +208,12 @@ function CheckoutForm({ lines, user, onPlaced }: CheckoutFormProps) {
                 </li>
               ))}
             </ul>
+
+            {leftInCart > 0 && (
+              <p className="rounded-lg bg-surface px-3 py-2 text-sm text-ink-muted">
+                {leftInCart} sản phẩm chưa chọn vẫn ở lại trong giỏ hàng.
+              </p>
+            )}
 
             <div className="mt-2 border-t border-line pt-4">
               <FreeShippingProgress subtotal={subtotal} />
@@ -453,14 +460,28 @@ export default function CheckoutView() {
     );
   }
 
-  const lines = getCartLines(cart, products);
+  const allLines = getCartLines(cart, products);
+  const lines = selectedLines(allLines); // chỉ các món đã tick ở giỏ hàng
 
-  if (lines.length === 0) {
+  if (allLines.length === 0) {
     return (
       <div className="rounded-xl border border-line bg-surface px-6 py-16 text-center">
         <p className="font-display text-2xl font-semibold text-ink">Giỏ hàng của bạn đang trống</p>
         <Link href="/san-pham" className={`${btnBase} ${btnPrimary} mt-6`}>
           Tiếp tục mua sắm
+        </Link>
+      </div>
+    );
+  }
+
+  // Có hàng trong giỏ nhưng chưa tick món nào: quay lại giỏ để chọn
+  if (lines.length === 0) {
+    return (
+      <div className="rounded-xl border border-line bg-surface px-6 py-16 text-center">
+        <p className="font-display text-2xl font-semibold text-ink">Bạn chưa chọn sản phẩm nào để mua</p>
+        <p className="mt-2 text-ink-muted">Hãy tick chọn các sản phẩm muốn thanh toán ở trang giỏ hàng.</p>
+        <Link href="/gio-hang" className={`${btnBase} ${btnPrimary} mt-6`}>
+          Về giỏ hàng để chọn
         </Link>
       </div>
     );
@@ -472,5 +493,5 @@ export default function CheckoutView() {
     window.scrollTo({ top: 0 });
   }
 
-  return <CheckoutForm lines={lines} user={currentUser} onPlaced={handlePlaced} />;
+  return <CheckoutForm lines={lines} leftInCart={allLines.length - lines.length} user={currentUser} onPlaced={handlePlaced} />;
 }

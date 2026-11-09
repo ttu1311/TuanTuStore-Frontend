@@ -16,8 +16,6 @@ export interface Product {
   origin: string; // nơi sản xuất
   pack: string; // ví dụ "Gói 200g"
   stock: number; // số lượng còn trong kho. Đặt hàng thì giảm; 0 = "Hết hàng" (không thêm vào giỏ được)
-  isFeatured: boolean; // hiển thị trong "Sản phẩm nổi bật" ở trang chủ
-  rank?: number; // vị trí bán chạy: 1 = "Top 1". Để trống với sản phẩm khác.
   occasions?: string[]; // id các "dịp tặng" (src/data/occasions.ts), ví dụ ["qua-tet", "an-vat"]
   story?: ProductStory; // "Câu chuyện sản phẩm" ở trang chi tiết
   createdAt: string; // ngày ISO, dùng cho cách sắp xếp "Mới nhất"
@@ -67,6 +65,9 @@ export interface SavedAddress {
 export interface CartItem {
   productId: string;
   quantity: number;
+  // Ô tick ở trang giỏ hàng: chỉ các món đã chọn mới được thanh toán, món chưa chọn ở lại trong giỏ.
+  // Không có trường này (giỏ lưu từ trước) = đã chọn, để giỏ cũ vẫn thanh toán như trước.
+  selected?: boolean;
 }
 
 // CANCELLED = "Đã hủy": chỉ hủy được đơn CHƯA GIAO (Chờ xác nhận / Đã xác nhận); hàng được trả lại kho

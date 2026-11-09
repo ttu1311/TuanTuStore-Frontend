@@ -89,15 +89,15 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 
 | Route | Page |
 | --- | --- |
-| `/` | Homepage: banner, short introduction with the "Bắc vào Nam" route (one stop per **province**, north to south by latitude), featured products (purchases × 5 + views, top 8), the 3 regions, "Về Đặc sản 3 Miền" |
+| `/` | Homepage, top to bottom: banner, short introduction, **"Sản phẩm bán chạy"** (top 8 in-stock products by quantity sold, cancelled orders excluded; ties: views, then newest. Only customers' purchases decide the order: Admin cannot rank or pin a product. The "Top 1/2/3" badge on product cards is computed the same way, and only products that have actually sold get one), **"Ghép hộp quà ba miền"** (2 questions: occasion, budget per item; then it opens `/hop-qua` with the box already filled), the 3 regions, "Về Đặc sản 3 Miền" |
 | `/san-pham` | Product list: search, filter by region / province / brand / price, sort. Reads `?q=`, `?region=`, `?province=`, `?brand=` and `?dip=` (occasion) |
 | `/san-pham/[id]` | Product detail: price, stock left ("Hết hàng" disables buying), stars, description, information, quantity, "Thêm vào giỏ hàng", "Mua ngay", ♡ wishlist, related products |
-| `/gio-hang` | Cart: change quantity (never above the stock), remove, clear all, totals, progress towards free shipping; checkout is blocked while a line exceeds the stock |
-| `/thanh-toan` | Checkout: logged-in customers choose "Mua cho bản thân" (default address from the account, nothing to retype) or "Mua tặng người thân" (recipient form). 2-level address: province (34, after the 2025 merger) → ward typed by hand. COD or bank transfer with a **VietQR code** (amount and order code filled in). Optional free gift wrap |
+| `/gio-hang` | Cart with a **tick box per product** and "Chọn tất cả": only ticked products are priced and bought, the others stay in the cart. Change quantity (never above the stock), remove, clear all, progress towards free shipping; checkout is blocked while a *ticked* line exceeds the stock |
+| `/thanh-toan` | Checkout (only the ticked cart products; after the order only those leave the cart; "Mua ngay" on a product page ticks only that product): logged-in customers choose "Mua cho bản thân" (default address from the account, nothing to retype) or "Mua tặng người thân" (recipient form). 2-level address: province (34, after the 2025 merger) → ward typed by hand. COD or bank transfer with a **VietQR code** (amount and order code filled in). Optional free gift wrap |
 | `/dang-nhap` | Login (customers and Admin use the same page). `?next=/path` returns to that page afterwards (only paths inside the site) |
 | `/dang-ky` | Registration with a Cloudflare Turnstile CAPTCHA, verified on the server (`/api/captcha/verify`). Also reads `?next=` |
 | `/tai-khoan` | My account: profile and **default delivery address**, my orders (QR code again for unpaid transfers), **Sản phẩm yêu thích**, "Hộ chiếu đặc sản", change password, logout. `?tab=orders` / `?tab=wishlist` / `?tab=passport` open those tabs |
-| `/hop-qua` | "Hộp quà Ba Miền": pick one product from each region and add the whole box to the cart |
+| `/hop-qua` | "Hộp quà Ba Miền": ask occasion and budget (optional; `?dip=` and `?ngan-sach=` pre-select them), the box is filled with **one in-stock product per region** (best match first, then best seller; if a region has nothing matching it says "món gần nhất"), change any slot, then add the whole box to the cart and go straight to it. Logic in `src/lib/giftBox.ts` |
 | `/tra-cuu-don-hang` | Order lookup without login: order code + phone number. Reads `?ma=` (the "Đặt hàng thành công" screen links here) |
 | `/thong-tin/[slug]` | Help and policy pages (content in `src/data/infoPages.ts`): buying guide, payment, FAQ, shipping, returns, privacy, terms |
 | `/ban-do` | Map of the three regions with one dot per province, and the provinces listed north to south with their latitude |
@@ -129,7 +129,7 @@ Unknown pages and unknown products show a Vietnamese "Lỗi 404" message.
 | `tuantustore-reviews` | product reviews (stars + comment) | `[]` (no sample reviews) |
 | `tuantustore-contact-requests` | "call me back" requests sent from `/lien-he` | `[]` |
 | `tuantustore-wishlists` | wishlist per account: `{ userId: [productId, …] }` | — (created at the first ♡) |
-| `tuantustore-product-views` | `{ productId: number of detail-page views }` in this browser (ranks "Sản phẩm nổi bật") | — (created at the first product view) |
+| `tuantustore-product-views` | `{ productId: number of detail-page views }` in this browser (breaks ties in "Sản phẩm bán chạy" while nothing has been sold) | — (created at the first product view) |
 | `tuantustore-recently-viewed` | ids of the products this browser opened last (shown in "Đã xem gần đây") | — (not created until a product is opened) |
 
 - **First visit:** a key that does not exist yet is filled with its default value. A key that already has data is

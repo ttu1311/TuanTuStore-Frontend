@@ -9,7 +9,7 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import { btnBase, btnGhost } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { getFeaturedProducts } from "@/lib/products";
+import { getBestSellers } from "@/lib/products";
 import { soldCounts } from "@/lib/reviews";
 
 const AUTO_SCROLL_MS = 5000;
@@ -17,18 +17,18 @@ const AUTO_SCROLL_MS = 5000;
 const slideClass =
   "flex w-[85%] shrink-0 snap-start min-[480px]:w-[calc((100%-24px)/2)] lg:w-[calc((100%-48px)/3)] xl:w-[calc((100%-72px)/4)]";
 
-// "Sản phẩm nổi bật": 8 món có điểm cao nhất (lượt mua × 5 + lượt xem, xem getFeaturedProducts), trên một băng trượt ngang.
+// "Sản phẩm bán chạy": 8 món bán được nhiều nhất (xem getBestSellers), trên một băng trượt ngang.
 // Băng tự trượt sang thẻ kế tiếp mỗi 5 giây (hết thì quay về đầu), có nút ‹ › và kéo/vuốt được bằng tay.
 // Tự trượt dừng khi rê chuột, chạm hoặc đưa bàn phím vào băng, và tắt hẳn với người bật "giảm chuyển động".
-export default function FeaturedProducts() {
+export default function BestSellers() {
   const { isReady, products, orders, productViews } = useStore();
-  const featured = getFeaturedProducts(products, soldCounts(orders), productViews);
+  const bestSellers = getBestSellers(products, soldCounts(orders), productViews);
   const reducedMotion = useReducedMotion();
   const trackRef = useRef<HTMLUListElement>(null);
   const [paused, setPaused] = useState(false);
 
   const step = (direction: 1 | -1) => slideTrack(trackRef.current, direction);
-  const canSlide = isReady && featured.length > 1;
+  const canSlide = isReady && bestSellers.length > 1;
 
   useEffect(() => {
     if (!canSlide || paused || reducedMotion) return;
@@ -39,10 +39,10 @@ export default function FeaturedProducts() {
   }, [canSlide, paused, reducedMotion]);
 
   return (
-    <section id="san-pham" aria-labelledby="featured-title" aria-roledescription="carousel">
+    <section id="ban-chay" aria-labelledby="best-sellers-title" aria-roledescription="carousel">
       <SectionHeader
-        id="featured-title"
-        title="Sản phẩm nổi bật"
+        id="best-sellers-title"
+        title="Sản phẩm bán chạy"
         action={
           <div className="flex items-center gap-2">
             {canSlide && (
@@ -61,8 +61,8 @@ export default function FeaturedProducts() {
           </div>
         }
       />
-      {isReady && featured.length === 0 ? (
-        <p className="text-ink-muted">Chưa có sản phẩm nổi bật.</p>
+      {isReady && bestSellers.length === 0 ? (
+        <p className="text-ink-muted">Chưa có sản phẩm bán chạy.</p>
       ) : (
         // relative: chữ ẩn cho trình đọc màn hình (sr-only, position: absolute) trong thẻ phải nằm trong khung cuộn,
         // nếu không chúng thoát ra ngoài và làm cả trang tràn ngang trên điện thoại
@@ -78,7 +78,7 @@ export default function FeaturedProducts() {
           className="relative -mx-1 flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {isReady
-            ? featured.map((product) => (
+            ? bestSellers.map((product) => (
                 <li key={product.id} className={slideClass}>
                   <ProductCard product={product} />
                 </li>

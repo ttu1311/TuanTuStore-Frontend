@@ -205,11 +205,13 @@ function ContactForm({ initial, disabled }: { initial: ContactValues; disabled: 
 
       <fieldset className="mt-5">
         <legend className="mb-2 font-medium text-ink">Bạn cần hỗ trợ về</legend>
-        <div className="flex flex-wrap gap-2">
+        {/* Lưới 4 cột đều nhau (điện thoại: 2×2): cả 4 chủ đề luôn trên một hàng, chữ dài thì xuống dòng TRONG ô.
+            Chữ luôn cùng độ đậm: in đậm khi chọn làm ô rộng ra và đẩy ô khác xuống dòng. */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {contactTopics.map((topic) => (
             <label
               key={topic.id}
-              className="inline-flex min-h-11 cursor-pointer items-center rounded-full border border-line px-4 text-sm text-ink transition-colors duration-200 hover:border-primary has-[:checked]:border-primary has-[:checked]:bg-primary-soft has-[:checked]:font-semibold has-[:checked]:text-primary has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-primary-soft"
+              className="flex min-h-12 cursor-pointer items-center justify-center rounded-xl border border-line px-2 py-1.5 text-center text-sm font-medium leading-snug text-ink transition-colors duration-200 hover:border-primary has-[:checked]:border-primary has-[:checked]:bg-primary-soft has-[:checked]:text-primary has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-primary-soft"
             >
               <input
                 type="radio"

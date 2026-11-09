@@ -23,8 +23,7 @@ import { regionKeys, regions } from "@/lib/regions";
 type ProductFormProps = {
   initialValues?: ProductFormValues; // trống khi thêm, là sản phẩm hiện có khi sửa
   submitLabel: string;
-  onSave: (input: ProductInput, replaceRank?: boolean) => ActionResult; // addProduct hoặc updateProduct
-  editingId?: string; // id sản phẩm đang sửa: chính nó không tính là trùng thứ hạng
+  onSave: (input: ProductInput) => ActionResult; // addProduct hoặc updateProduct
 };
 
 const labelStyle = "mb-1.5 block text-sm font-medium text-ink";
@@ -50,18 +49,15 @@ const fieldOrder: (keyof ProductFormErrors)[] = [
   "enjoy",
   "storage",
   "season",
-  "rank",
 ];
 
 // Form thêm / sửa sản phẩm (Admin). Sản phẩm được lưu vào localStorage.
-export default function ProductForm({ initialValues = emptyProductForm, submitLabel, onSave, editingId }: ProductFormProps) {
+export default function ProductForm({ initialValues = emptyProductForm, submitLabel, onSave }: ProductFormProps) {
   const { products } = useStore();
   const router = useRouter();
   const [values, setValues] = useState<ProductFormValues>(initialValues);
   const [errors, setErrors] = useState<ProductFormErrors>({});
   const [saveError, setSaveError] = useState("");
-  // Thứ hạng nhập vào đang do sản phẩm khác giữ: chờ Admin chọn thay thế hay không
-  const [rankConflict, setRankConflict] = useState<{ input: ProductInput; holderName: string } | null>(null);
   // Ảnh xem trước đã tải được chưa? Nhớ theo từng đường dẫn, để báo đường dẫn sai trước khi lưu.
   const [imageCheck, setImageCheck] = useState<{ path: string; ok: boolean } | null>(null);
 
@@ -77,7 +73,6 @@ export default function ProductForm({ initialValues = emptyProductForm, submitLa
   function setField(field: keyof ProductFormValues, value: string | boolean) {
     setValues({ ...values, [field]: value });
     setSaveError("");
-    if (field === "rank") setRankConflict(null);
     if (errors[field]) setErrors({ ...errors, [field]: undefined });
   }
 
@@ -98,23 +93,9 @@ export default function ProductForm({ initialValues = emptyProductForm, submitLa
       return;
     }
 
-    const holder = input.rank === undefined ? undefined : products.find((p) => p.rank === input.rank && p.id !== editingId);
-    if (holder) {
-      setRankConflict({ input, holderName: holder.name });
-      return;
-    }
-    save(input, false);
-  }
-
-  function save(input: ProductInput, replaceRank: boolean) {
-    const result = onSave(input, replaceRank);
+    const result = onSave(input);
     if (result.ok) router.push("/admin/san-pham");
     else setSaveError(result.message);
-  }
-
-  function keepOtherRank() {
-    setRankConflict(null);
-    document.getElementById("rank")?.focus();
   }
 
   // Props cho một ô nhập chữ/số và thông báo lỗi của nó
@@ -343,58 +324,7 @@ export default function ProductForm({ initialValues = emptyProductForm, submitLa
           {error("season")}
         </div>
 
-        <div>
-          <label htmlFor="rank" className={labelStyle}>
-            Thứ hạng bán chạy (không bắt buộc)
-          </label>
-          <input type="number" min={1} max={99} step={1} placeholder="Ví dụ: 1" {...field("rank")} className={inputClass("rank")} />
-          <p className={hintStyle}>Để trống nếu không phải sản phẩm bán chạy. Số 1 hiển thị là &quot;Top 1&quot;.</p>
-          {error("rank")}
-        </div>
-        <div className="flex items-end">
-          <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-medium text-ink">
-            <input
-              type="checkbox"
-              name="isFeatured"
-              checked={values.isFeatured}
-              onChange={(event) => setField("isFeatured", event.target.checked)}
-              className="h-5 w-5 shrink-0 cursor-pointer accent-primary"
-            />
-            Ưu tiên ở &quot;Sản phẩm nổi bật&quot;
-          </label>
-        </div>
-        <p className={`${hintStyle} -mt-3 sm:col-span-2`}>
-          &quot;Sản phẩm nổi bật&quot; ở trang chủ tự xếp theo lượt mua × 5 + lượt xem. Ô này chỉ đưa sản phẩm lên trước khi bằng điểm.
-        </p>
       </div>
-
-      {rankConflict && (
-        <div role="alertdialog" aria-labelledby="rank-conflict-title" className="mt-5 rounded-lg border border-sale/40 bg-sale/5 p-4">
-          <p id="rank-conflict-title" className="text-sm font-semibold text-sale">
-            Top {rankConflict.input.rank} đã có sản phẩm
-          </p>
-          <p className="mt-1 text-sm text-ink">
-            &quot;{rankConflict.holderName}&quot; đang là Top {rankConflict.input.rank}. Bạn có muốn thay thế không? Sản phẩm
-            đó sẽ không còn thứ hạng.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => save(rankConflict.input, true)}
-              className={`${btnBase} ${btnPrimary} ${btnSmall}`}
-            >
-              Thay thế
-            </button>
-            <button
-              type="button"
-              onClick={keepOtherRank}
-              className="inline-flex min-h-11 items-center px-2 text-sm font-medium text-ink-muted underline underline-offset-4 hover:text-ink"
-            >
-              Chọn thứ hạng khác
-            </button>
-          </div>
-        </div>
-      )}
 
       {saveError && (
         <p role="alert" className="mt-5 text-sm text-sale">

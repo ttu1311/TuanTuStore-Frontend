@@ -16,7 +16,7 @@ export const STORAGE_KEYS = {
   recentlyViewed: "tuantustore-recently-viewed", // id các sản phẩm vừa xem, mới nhất đứng đầu
   reviews: "tuantustore-reviews", // đánh giá sản phẩm của khách đã nhận hàng
   contactRequests: "tuantustore-contact-requests", // yêu cầu liên hệ lại gửi từ trang /lien-he
-  productViews: "tuantustore-product-views", // id sản phẩm -> số lần trang chi tiết được mở (xếp hạng "Nổi bật")
+  productViews: "tuantustore-product-views", // id sản phẩm -> số lần trang chi tiết được mở (xếp hạng "Sản phẩm bán chạy" khi chưa bán được)
   wishlists: "tuantustore-wishlists", // id người dùng -> id các sản phẩm yêu thích (lưu theo tài khoản)
 } as const;
 
@@ -101,6 +101,15 @@ function applySeedUpdates() {
     // Tồn kho thêm về sau: sản phẩm lưu từ trước (cả sản phẩm Admin tự tạo) bắt đầu với INITIAL_STOCK
     if (typeof next.stock !== "number") {
       next = { ...next, stock: INITIAL_STOCK };
+      changed = true;
+    }
+    // Thứ hạng "Top n" và "Ưu tiên" do Admin đặt đã bị bỏ: "Sản phẩm bán chạy" và nhãn Top chỉ tính từ số lượng đã bán.
+    // Sản phẩm lưu từ trước còn hai trường đó thì bỏ đi một lần.
+    if ("rank" in next || "isFeatured" in next) {
+      const legacy: Record<string, unknown> = { ...next };
+      delete legacy.rank;
+      delete legacy.isFeatured;
+      next = legacy as unknown as Product;
       changed = true;
     }
     const newImage = renamedImages[product.image];

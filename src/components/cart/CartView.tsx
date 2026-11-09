@@ -9,15 +9,15 @@ import { btnBase, btnPrimary } from "@/components/ui/buttons";
 import LoadingState from "@/components/ui/LoadingState";
 import { useStore } from "@/context/StoreContext";
 import FreeShippingProgress from "@/components/cart/FreeShippingProgress";
-import { calculateTotals, getCartLines, maxOrderable } from "@/lib/cart";
+import { calculateTotals, getCartLines, maxOrderable, selectedLines } from "@/lib/cart";
 import { formatVND } from "@/lib/format";
 import type { Product } from "@/types";
 
 const stepButton =
   "inline-flex h-11 w-11 items-center justify-center rounded-lg border border-line bg-white text-lg font-semibold text-ink transition-colors duration-200 hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40";
 
-function CartRow({ product, quantity }: { product: Product; quantity: number }) {
-  const { setCartQuantity, removeFromCart } = useStore();
+function CartRow({ product, quantity, selected }: { product: Product; quantity: number; selected: boolean }) {
+  const { setCartQuantity, removeFromCart, setCartSelected } = useStore();
   const limit = maxOrderable(product); // không quá tồn kho
   // Kho đã giảm sau khi khách bỏ vào giỏ (đặt ở tab khác, hoặc Admin sửa kho)
   const problem =
@@ -43,13 +43,25 @@ function CartRow({ product, quantity }: { product: Product; quantity: number }) 
 
   return (
     <li className="flex flex-col gap-4 py-6 sm:flex-row sm:items-center">
-      <Link
-        href={`/san-pham/${product.id}`}
-        aria-label={product.name}
-        className="shrink-0 self-start overflow-hidden rounded-xl border border-line bg-surface sm:self-center"
-      >
-        <Image src={product.image} width={960} height={720} alt="" sizes="120px" className="block h-28 w-28 object-cover" />
-      </Link>
+      {/* Ô tick: chỉ món đã tick mới được mua; món chưa tick ở lại trong giỏ */}
+      <div className="flex shrink-0 items-center gap-3 self-start sm:self-center">
+        <label className="flex h-11 w-9 cursor-pointer items-center justify-center">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={(event) => setCartSelected(product.id, event.target.checked)}
+            aria-label={`Chọn ${product.name} để mua`}
+            className="h-5 w-5 cursor-pointer accent-primary"
+          />
+        </label>
+        <Link
+          href={`/san-pham/${product.id}`}
+          aria-label={product.name}
+          className="shrink-0 overflow-hidden rounded-xl border border-line bg-surface"
+        >
+          <Image src={product.image} width={960} height={720} alt="" sizes="120px" className="block h-28 w-28 object-cover" />
+        </Link>
+      </div>
 
       <div className="min-w-0 flex-1">
         <RegionBadge region={product.region} />
@@ -101,7 +113,10 @@ function CartRow({ product, quantity }: { product: Product; quantity: number }) 
           </button>
         </div>
 
-        <span className="whitespace-nowrap text-xl font-bold text-primary">{formatVND(product.price * quantity)}</span>
+        <span className={`whitespace-nowrap text-xl font-bold ${selected ? "text-primary" : "text-ink-muted"}`}>
+          {formatVND(product.price * quantity)}
+          {!selected && <span className="sr-only"> (chưa chọn để mua)</span>}
+        </span>
 
         <button
           type="button"
@@ -118,7 +133,7 @@ function CartRow({ product, quantity }: { product: Product; quantity: number }) 
 
 // Giỏ hàng chỉ lưu id sản phẩm và số lượng; tên, giá và ảnh lấy từ danh sách sản phẩm.
 export default function CartView() {
-  const { isReady, cart, products, clearCart } = useStore();
+  const { isReady, cart, products, clearCart, setAllCartSelected } = useStore();
   // Bấm "Xóa tất cả" lần đầu chỉ hỏi lại; phải xác nhận mới xóa, tránh bấm nhầm mất cả giỏ
   const [confirmingClear, setConfirmingClear] = useState(false);
 
@@ -138,11 +153,15 @@ export default function CartView() {
     );
   }
 
+  // Chỉ các món đã tick được tính tiền và thanh toán
+  const chosen = selectedLines(lines);
+  const allSelected = chosen.length === lines.length;
+  const someSelected = chosen.length > 0 && !allSelected;
   const { subtotal, shippingFee, discount, total } = calculateTotals(
-    lines.reduce((sum, line) => sum + line.product.price * line.quantity, 0)
+    chosen.reduce((sum, line) => sum + line.product.price * line.quantity, 0)
   );
-  // Có món hết hàng hoặc vượt số còn lại: chưa cho thanh toán
-  const stockProblem = lines.some((line) => line.quantity > line.product.stock);
+  // Món ĐÃ CHỌN hết hàng hoặc vượt số còn lại: chưa cho thanh toán (món chưa chọn không ảnh hưởng)
+  const stockProblem = chosen.some((line) => line.quantity > line.product.stock);
 
   const summaryRows = [
     { label: "Tạm tính", value: formatVND(subtotal) },
@@ -158,32 +177,50 @@ export default function CartView() {
       sidebar={
         <div className="rounded-xl border border-line bg-white p-6">
             <h2 className="font-display text-2xl font-semibold text-ink">Tổng đơn hàng</h2>
-            <div className="mt-4">
-              <FreeShippingProgress subtotal={subtotal} />
-            </div>
-            <dl className="mt-4 space-y-3">
-              {summaryRows.map((row) => (
-                <div key={row.label} className="flex justify-between gap-4">
-                  <dt className="text-ink-muted">{row.label}</dt>
-                  <dd className="font-medium text-ink">{row.value}</dd>
-                </div>
-              ))}
-              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-line pt-4">
-                <dt className="text-lg font-semibold text-ink">Tổng cộng</dt>
-                <dd className="text-2xl font-bold text-primary">{formatVND(total)}</dd>
-              </div>
-            </dl>
-            {stockProblem ? (
+            {chosen.length === 0 ? (
+              // Chưa tick món nào: không có gì để tính tiền
               <>
+                <p className="mt-4 rounded-lg bg-surface px-4 py-3 text-sm text-ink-muted">
+                  Bạn chưa chọn sản phẩm nào. Hãy tick vào ô vuông bên cạnh sản phẩm muốn mua.
+                </p>
                 <button type="button" disabled className={`${btnBase} ${btnPrimary} mt-6 w-full cursor-not-allowed opacity-50`}>
-                  Tiến hành thanh toán
+                  Mua hàng (0)
                 </button>
-                <p className="mt-2 text-sm text-sale">Một số sản phẩm không đủ hàng. Hãy sửa giỏ hàng để tiếp tục.</p>
               </>
             ) : (
-              <Link href="/thanh-toan" className={`${btnBase} ${btnPrimary} mt-6 w-full`}>
-                Tiến hành thanh toán
-              </Link>
+              <>
+                <p className="mt-1 text-sm text-ink-muted">
+                  {chosen.length} sản phẩm đã chọn
+                  {!allSelected && ` · ${lines.length - chosen.length} sản phẩm ở lại trong giỏ`}
+                </p>
+                <div className="mt-4">
+                  <FreeShippingProgress subtotal={subtotal} />
+                </div>
+                <dl className="mt-4 space-y-3">
+                  {summaryRows.map((row) => (
+                    <div key={row.label} className="flex justify-between gap-4">
+                      <dt className="text-ink-muted">{row.label}</dt>
+                      <dd className="font-medium text-ink">{row.value}</dd>
+                    </div>
+                  ))}
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-line pt-4">
+                    <dt className="text-lg font-semibold text-ink">Tổng cộng</dt>
+                    <dd className="text-2xl font-bold text-primary">{formatVND(total)}</dd>
+                  </div>
+                </dl>
+                {stockProblem ? (
+                  <>
+                    <button type="button" disabled className={`${btnBase} ${btnPrimary} mt-6 w-full cursor-not-allowed opacity-50`}>
+                      Mua hàng ({chosen.length})
+                    </button>
+                    <p className="mt-2 text-sm text-sale">Một số sản phẩm đã chọn không đủ hàng. Hãy sửa giỏ hàng để tiếp tục.</p>
+                  </>
+                ) : (
+                  <Link href="/thanh-toan" className={`${btnBase} ${btnPrimary} mt-6 w-full`}>
+                    Mua hàng ({chosen.length})
+                  </Link>
+                )}
+              </>
             )}
             <Link
               href="/san-pham"
@@ -195,9 +232,22 @@ export default function CartView() {
       }
     >
       <div className="mb-4 flex min-h-11 flex-wrap items-center justify-between gap-3">
-        <p className="text-ink-muted">
-          {lines.length} sản phẩm trong giỏ
-        </p>
+        {/* Chọn tất cả / bỏ chọn tất cả; "indeterminate" (gạch ngang) khi mới chọn một phần */}
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 text-ink">
+          <input
+            type="checkbox"
+            checked={allSelected}
+            ref={(element) => {
+              if (element) element.indeterminate = someSelected;
+            }}
+            onChange={(event) => setAllCartSelected(event.target.checked)}
+            className="ml-2 h-5 w-5 cursor-pointer accent-primary"
+          />
+          <span className="font-medium">
+            Chọn tất cả ({lines.length})
+            <span className="font-normal text-ink-muted"> · đã chọn {chosen.length}</span>
+          </span>
+        </label>
         {confirmingClear ? (
           <div role="alertdialog" aria-labelledby="clear-cart-question" className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <span id="clear-cart-question" className="text-sm font-medium text-ink">
@@ -233,7 +283,7 @@ export default function CartView() {
       </div>
       <ul className="divide-y divide-line rounded-xl border border-line bg-white px-6">
         {lines.map((line) => (
-          <CartRow key={line.product.id} product={line.product} quantity={line.quantity} />
+          <CartRow key={line.product.id} product={line.product} quantity={line.quantity} selected={line.selected} />
         ))}
       </ul>
     </ContentSidebar>

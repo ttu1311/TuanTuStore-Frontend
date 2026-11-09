@@ -29,8 +29,7 @@ export default function EditProductView({ id }: { id: string }) {
       key={product.id}
       initialValues={productToFormValues(product)}
       submitLabel="Lưu thay đổi"
-      editingId={product.id}
-      onSave={(input, replaceRank) => updateProduct(product.id, input, replaceRank)}
+      onSave={(input) => updateProduct(product.id, input)}
     />
   );
 }

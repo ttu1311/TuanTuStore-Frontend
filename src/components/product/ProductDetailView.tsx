@@ -27,7 +27,7 @@ export default function ProductDetailView({ id }: { id: string }) {
   const product = products.find((item) => item.id === id);
   const productFound = Boolean(product);
 
-  // Một lượt xem cho mỗi lần mở trang (xếp hạng "Sản phẩm nổi bật"). Ref chặn việc đếm hai lần
+  // Một lượt xem cho mỗi lần mở trang (xếp hạng "Sản phẩm bán chạy" khi chưa bán được). Ref chặn việc đếm hai lần
   // khi React chạy effect hai lần ở chế độ phát triển, hoặc khi danh sách sản phẩm đổi (ví dụ kho giảm).
   const countedId = useRef<string | null>(null);
   useEffect(() => {

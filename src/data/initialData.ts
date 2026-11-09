@@ -23,7 +23,6 @@ export const caMauProducts: Product[] = [
     origin: "Cà Mau",
     pack: "1kg (3–4 con)",
     stock: INITIAL_STOCK,
-    isFeatured: false,
     occasions: ["bieu-nguoi-lon", "vao-bep"],
     story: {
       enjoy: "Hấp với sả hoặc bia khoảng 15–20 phút tùy cỡ cua, chấm muối tiêu chanh. Cua cũng hợp để rang me, nấu lẩu hoặc nấu cháo.",
@@ -45,7 +44,6 @@ export const caMauProducts: Product[] = [
     origin: "Cà Mau",
     pack: "Túi 250g",
     stock: INITIAL_STOCK,
-    isFeatured: false,
     occasions: ["qua-tet", "vao-bep"],
     story: {
       enjoy: "Ăn cùng củ kiệu ngày Tết, nấu canh, xào rau hoặc trộn gỏi. Ngâm tôm vào nước ấm vài phút cho mềm trước khi nấu.",
@@ -67,7 +65,6 @@ export const caMauProducts: Product[] = [
     origin: "Cà Mau",
     pack: "Hũ 500g",
     stock: INITIAL_STOCK,
-    isFeatured: false,
     occasions: ["vao-bep"],
     story: {
       enjoy: "Bóp ba khía với tỏi, ớt, chanh và đường cho vừa vị chua ngọt, ăn cùng cơm trắng.",
@@ -89,7 +86,6 @@ export const caMauProducts: Product[] = [
     origin: "Cà Mau",
     pack: "Chai 500ml",
     stock: INITIAL_STOCK,
-    isFeatured: false,
     occasions: ["qua-tet", "bieu-nguoi-lon"],
     story: {
       enjoy: "Pha với nước ấm (không quá nóng), thêm chanh hoặc gừng; dùng ướp các món nướng. Không dùng mật ong cho trẻ dưới 1 tuổi.",
@@ -112,7 +108,6 @@ export const caMauProducts: Product[] = [
     origin: "Cà Mau",
     pack: "Túi 500g",
     stock: INITIAL_STOCK,
-    isFeatured: false,
     occasions: ["vao-bep"],
     story: {
       enjoy: "Chiên giòn hoặc nướng than, xé nhỏ ăn cùng cơm trắng hay làm món nhắm, chấm nước mắm me hoặc tương ớt.",
@@ -141,7 +136,6 @@ export const initialProducts: Product[] = [
     origin: "Thái Nguyên",
     pack: "Gói 200g",
     stock: INITIAL_STOCK,
-    isFeatured: true,
     occasions: ["qua-tet", "bieu-nguoi-lon"],
     story: {
       enjoy: "Tráng ấm bằng nước sôi, cho khoảng 5–8g chè, rót nước khoảng 80–90°C, đợi 1–2 phút rồi rót ra chén. Nước đầu có thể đổ đi để chè nở đều.",
@@ -164,7 +158,6 @@ export const initialProducts: Product[] = [
     origin: "Hà Nội",
     pack: "Hộp 300g",
     stock: INITIAL_STOCK,
-    isFeatured: true,
     occasions: ["qua-tet", "bieu-nguoi-lon", "an-vat"],
     story: {
       enjoy: "Nhâm nhi trực tiếp hoặc dùng cùng trà nóng; món quen thuộc trên khay bánh kẹo ngày Tết.",
@@ -187,7 +180,6 @@ export const initialProducts: Product[] = [
     origin: "Đà Nẵng",
     pack: "Túi 250g",
     stock: INITIAL_STOCK,
-    isFeatured: true,
     occasions: ["qua-tet", "an-vat"],
     story: {
       enjoy: "Ăn trực tiếp cùng trà hoặc cà phê; bẻ nhỏ rắc lên kem hay sữa chua cũng ngon.",
@@ -209,7 +201,6 @@ export const initialProducts: Product[] = [
     origin: "Cần Thơ",
     pack: "Hộp 4 bánh",
     stock: INITIAL_STOCK,
-    isFeatured: true,
     occasions: ["qua-tet", "an-vat"],
     story: {
       enjoy: "Cắt bánh thành miếng vừa ăn, dùng cùng trà nóng. Có thể nướng lại vài phút cho vỏ bánh thơm và xốp hơn.",
@@ -231,8 +222,6 @@ export const initialProducts: Product[] = [
     origin: "Hà Nội",
     pack: "Hộp 10 bánh",
     stock: INITIAL_STOCK,
-    isFeatured: false,
-    rank: 1,
     occasions: ["bieu-nguoi-lon", "an-vat"],
     story: {
       enjoy: "Dùng cùng trà nóng. Bánh cốm cũng thường có mặt trong lễ ăn hỏi, cưới hỏi của người Hà Nội.",
@@ -256,8 +245,6 @@ export const initialProducts: Product[] = [
     origin: "Đắk Lắk",
     pack: "Gói 500g",
     stock: INITIAL_STOCK,
-    isFeatured: false,
-    rank: 2,
     occasions: ["qua-tet"],
     story: {
       enjoy: "Xay vừa đủ dùng: xay thô hơn khi pha phin, mịn hơn khi pha máy. Pha phin khoảng 20–25g cà phê, rót ít nước sôi ủ 30 giây rồi rót tiếp.",
@@ -280,8 +267,6 @@ export const initialProducts: Product[] = [
     origin: "An Giang",
     pack: "Chai 500ml",
     stock: INITIAL_STOCK,
-    isFeatured: false,
-    rank: 3,
     occasions: ["bieu-nguoi-lon", "vao-bep"],
     story: {
       enjoy: "Pha nước chấm với tỏi, ớt, chanh và đường; khi nấu thì nêm vào cuối để giữ mùi thơm.",
@@ -304,8 +289,6 @@ export const initialProducts: Product[] = [
     origin: "Vĩnh Long",
     pack: "Hộp 400g",
     stock: INITIAL_STOCK,
-    isFeatured: false,
-    rank: 4,
     occasions: ["qua-tet", "an-vat"],
     story: {
       enjoy: "Bóc từng viên ăn trực tiếp; hợp làm quà cho cả trẻ nhỏ và người lớn.",

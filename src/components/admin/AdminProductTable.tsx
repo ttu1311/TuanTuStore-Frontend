@@ -51,8 +51,6 @@ export default function AdminProductTable() {
                   {product.name}
                   <span className="block text-xs font-normal text-ink-muted">
                     {product.pack}
-                    {product.isFeatured && " · Ưu tiên nổi bật"}
-                    {product.rank && ` · Top ${product.rank}`}
                   </span>
                 </td>
                 <td className={td}>

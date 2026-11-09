@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import AddToCartButton from "@/components/product/AddToCartButton";
+import TopBadge from "@/components/product/TopBadge";
 import WishlistButton from "@/components/product/WishlistButton";
 import ProductRatingLine from "@/components/reviews/ProductRatingLine";
 import { formatVND } from "@/lib/format";
@@ -9,16 +10,7 @@ import { regions } from "@/lib/regions";
 import type { Product } from "@/types";
 
 // eager: tải ảnh ngay (cho các thẻ đầu tiên ở đầu trang)
-// showRank: hiện nhãn nhỏ "Top 1" (danh sách bán chạy ở trang chủ tự hiện thứ hạng, nên tắt tùy chọn này)
-export default function ProductCard({
-  product,
-  eager = false,
-  showRank = true,
-}: {
-  product: Product;
-  eager?: boolean;
-  showRank?: boolean;
-}) {
+export default function ProductCard({ product, eager = false }: { product: Product; eager?: boolean }) {
   const discount = discountPercent(product);
   const detailUrl = `/san-pham/${product.id}`;
   const region = regions[product.region];
@@ -39,11 +31,8 @@ export default function ProductCard({
             className="block aspect-square h-auto w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           />
         </Link>
-        {showRank && product.rank && (
-          <span className="absolute left-3 top-3 rounded bg-paper px-2 py-1 text-xs font-semibold text-ink">
-            Top {product.rank}
-          </span>
-        )}
+        {/* Nhãn "Top 1/2/3": tự tính từ số lượng đã bán */}
+        <TopBadge productId={product.id} />
         {/* Trái tim "Yêu thích" ở góc trên bên phải; nhãn giảm giá nằm ngay dưới nó */}
         <div className="absolute right-3 top-3">
           <WishlistButton productId={product.id} productName={product.name} />

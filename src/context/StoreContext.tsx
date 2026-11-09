@@ -13,7 +13,7 @@
 // Đây là mô phỏng front-end: không có server, và các kiểm tra "bảo mật" chỉ dành cho bản demo.
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import CartToast, { type Toast } from "@/components/ui/CartToast";
-import { MAX_QUANTITY, calculateTotals, cleanQuantity, getCartLines, maxOrderable } from "@/lib/cart";
+import { MAX_QUANTITY, calculateTotals, cleanQuantity, getCartLines, maxOrderable, selectedLines } from "@/lib/cart";
 import { formatOrderCode, isNotShipped, orderNumberFromCode, type CheckoutFields } from "@/lib/orders";
 import { isSamePassword } from "@/lib/password";
 import { createProductId, type ProductInput } from "@/lib/products";
@@ -68,21 +68,26 @@ type StoreValue = {
   // Thêm / bỏ một sản phẩm khỏi danh sách yêu thích. Cần đăng nhập: chưa đăng nhập thì trả về lỗi với field "login".
   toggleWishlist: (productId: string) => ActionResult;
 
-  // Một lần mở trang chi tiết sản phẩm (dùng cho "Sản phẩm nổi bật")
+  // Một lần mở trang chi tiết sản phẩm (dùng để xếp "Sản phẩm bán chạy" khi chưa bán được)
   recordView: (productId: string) => void;
 
   // Sản phẩm (Admin)
-  // replaceRank: true = đồng ý lấy thứ hạng (ví dụ Top 1) từ sản phẩm đang giữ nó
-  addProduct: (input: ProductInput, replaceRank?: boolean) => ActionResult;
-  updateProduct: (id: string, input: ProductInput, replaceRank?: boolean) => ActionResult;
+  addProduct: (input: ProductInput) => ActionResult;
+  updateProduct: (id: string, input: ProductInput) => ActionResult;
   deleteProduct: (id: string) => ActionResult;
 
   // Giỏ hàng
   addToCart: (productId: string, quantity: number) => void;
   // Thêm nhiều sản phẩm (mỗi món 1) một lần, với MỘT thông báo (dùng cho "Hộp quà Ba Miền")
-  addManyToCart: (productIds: string[], message: string) => void;
+  // true = đã lưu vào giỏ (false: trình duyệt từ chối lưu)
+  addManyToCart: (productIds: string[], message: string) => boolean;
   setCartQuantity: (productId: string, quantity: number) => void;
   removeFromCart: (productId: string) => void;
+  // Ô tick ở giỏ hàng: chỉ món đã chọn mới được thanh toán
+  setCartSelected: (productId: string, selected: boolean) => void;
+  setAllCartSelected: (selected: boolean) => void;
+  // "Mua ngay": đưa món vào giỏ rồi CHỈ chọn món này để thanh toán. false = không mua được (hết hàng, lỗi lưu)
+  buyNow: (productId: string, quantity: number) => boolean;
   clearCart: () => void; // làm trống cả giỏ hàng
 
   // Tài khoản
@@ -212,35 +217,21 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // ---------- Sản phẩm (Admin) ----------
 
-  // Mỗi thứ hạng chỉ có một sản phẩm. Trả về danh sách mới sau khi xử lý trùng thứ hạng,
-  // hoặc thông báo lỗi nếu thứ hạng đang có người giữ mà Admin chưa đồng ý thay thế.
-  function resolveRank(list: Product[], id: string | null, rank: number | undefined, replaceRank: boolean) {
-    const holder = rank === undefined ? undefined : list.find((p) => p.rank === rank && p.id !== id);
-    if (!holder) return { list };
-    if (!replaceRank) return { error: `"${holder.name}" đang là Top ${rank}. Hãy xác nhận thay thế hoặc chọn thứ hạng khác.` };
-    // Sản phẩm cũ mất thứ hạng, nhưng mọi thứ khác của nó giữ nguyên
-    return { list: list.map((p) => (p.id === holder.id ? { ...p, rank: undefined } : p)) };
-  }
-
-  function addProduct(input: ProductInput, replaceRank = false): ActionResult {
+  function addProduct(input: ProductInput): ActionResult {
     if (!isAdmin) return fail(NO_PERMISSION);
-    const ranked = resolveRank(products, null, input.rank, replaceRank);
-    if (!ranked.list) return fail(ranked.error);
     const product: Product = {
       ...input,
       id: createProductId(input.name, products.map((p) => p.id)),
       createdAt: new Date().toISOString(),
     };
-    return saveProducts([...ranked.list, product]) ? OK : fail(SAVE_ERROR);
+    return saveProducts([...products, product]) ? OK : fail(SAVE_ERROR);
   }
 
-  function updateProduct(id: string, input: ProductInput, replaceRank = false): ActionResult {
+  function updateProduct(id: string, input: ProductInput): ActionResult {
     if (!isAdmin) return fail(NO_PERMISSION);
     if (!products.some((p) => p.id === id)) return fail("Sản phẩm này không còn tồn tại.");
-    const ranked = resolveRank(products, id, input.rank, replaceRank);
-    if (!ranked.list) return fail(ranked.error);
     // Id và ngày tạo không bao giờ đổi, nên các liên kết, giỏ hàng và đơn hàng cũ vẫn hoạt động
-    const next = ranked.list.map((p) => (p.id === id ? { ...input, id: p.id, createdAt: p.createdAt } : p));
+    const next = products.map((p) => (p.id === id ? { ...input, id: p.id, createdAt: p.createdAt } : p));
     return saveProducts(next) ? OK : fail(SAVE_ERROR);
   }
 
@@ -269,10 +260,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     const nextQuantity = Math.min(limit, cleanQuantity(inCart + cleanQuantity(quantity)));
+    // Vừa bấm "Thêm vào giỏ" thì món đó được tick sẵn (khách bỏ tick được ở trang giỏ hàng)
     const saved = saveCart(
       inCart > 0
-        ? cart.map((item) => (item.productId === productId ? { ...item, quantity: nextQuantity } : item))
-        : [...cart, { productId, quantity: nextQuantity }]
+        ? cart.map((item) => (item.productId === productId ? { ...item, quantity: nextQuantity, selected: true } : item))
+        : [...cart, { productId, quantity: nextQuantity, selected: true }]
     );
     const capped = nextQuantity < inCart + cleanQuantity(quantity);
     setToast({
@@ -285,7 +277,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   }
 
-  function addManyToCart(productIds: string[], message: string) {
+  function addManyToCart(productIds: string[], message: string): boolean {
     let next = cart;
     const skipped: string[] = []; // món đã hết hàng, hoặc giỏ đã có đủ số còn lại
     for (const productId of productIds) {
@@ -296,11 +288,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         continue;
       }
       next = inCart > 0
-        ? next.map((item) => (item.productId === productId ? { ...item, quantity: inCart + 1 } : item))
-        : [...next, { productId, quantity: 1 }];
+        ? next.map((item) => (item.productId === productId ? { ...item, quantity: inCart + 1, selected: true } : item))
+        : [...next, { productId, quantity: 1, selected: true }];
     }
     const note = skipped.length > 0 ? ` (không đủ hàng: ${skipped.join(", ")})` : "";
-    setToast({ id: Date.now(), message: saveCart(next) ? message + note : SAVE_ERROR });
+    const saved = saveCart(next);
+    setToast({ id: Date.now(), message: saved ? message + note : SAVE_ERROR });
+    return saved;
   }
 
   function setCartQuantity(productId: string, quantity: number) {
@@ -312,6 +306,35 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   function clearCart() {
     saveCart([]);
+  }
+
+  function setCartSelected(productId: string, selected: boolean) {
+    saveCart(cart.map((item) => (item.productId === productId ? { ...item, selected } : item)));
+  }
+
+  function setAllCartSelected(selected: boolean) {
+    saveCart(cart.map((item) => ({ ...item, selected })));
+  }
+
+  function buyNow(productId: string, quantity: number): boolean {
+    const product = products.find((p) => p.id === productId);
+    const limit = product ? maxOrderable(product) : 0;
+    if (!product || limit === 0) {
+      setToast({ id: Date.now(), message: `${product?.name ?? "Sản phẩm"} đã hết hàng` });
+      return false;
+    }
+    const inCart = cart.find((item) => item.productId === productId)?.quantity ?? 0;
+    const nextQuantity = Math.min(limit, cleanQuantity(inCart + cleanQuantity(quantity)));
+    const withItem =
+      inCart > 0
+        ? cart.map((item) => (item.productId === productId ? { ...item, quantity: nextQuantity } : item))
+        : [...cart, { productId, quantity: nextQuantity }];
+    // Chỉ món này được chọn; các món khác vẫn ở trong giỏ, chưa tick
+    if (!saveCart(withItem.map((item) => ({ ...item, selected: item.productId === productId })))) {
+      setToast({ id: Date.now(), message: SAVE_ERROR });
+      return false;
+    }
+    return true;
   }
 
   function removeFromCart(productId: string) {
@@ -394,8 +417,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   // Tạo đơn hàng từ giỏ hàng, dùng giá HIỆN TẠI trong localStorage.
   function placeOrder(customer: CheckoutFields, paymentMethod: PaymentMethod, options: PlaceOrderOptions = {}): PlaceOrderResult {
     const { gift, forOther } = options;
-    const lines = getCartLines(cart, products);
-    if (lines.length === 0) return { ok: false, message: "Giỏ hàng của bạn đang trống." };
+    // Chỉ các món khách đã tick ở giỏ hàng; món chưa tick ở lại trong giỏ
+    const allLines = getCartLines(cart, products);
+    const lines = selectedLines(allLines);
+    if (allLines.length === 0) return { ok: false, message: "Giỏ hàng của bạn đang trống." };
+    if (lines.length === 0) return { ok: false, message: "Bạn chưa chọn sản phẩm nào để mua. Hãy tick chọn ở trang giỏ hàng." };
 
     // Kiểm tra tồn kho NGAY LÚC đặt (tab khác hoặc khách khác có thể vừa mua hết)
     const short = lines.find(({ product, quantity }) => quantity > product.stock);
@@ -459,8 +485,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
     writeJSON(STORAGE_KEYS.orderSeq, lastNumber + 1);
 
-    // Đơn đã được lưu: chỉ đến lúc này mới an toàn để làm trống giỏ hàng
-    saveCart([]);
+    // Đơn đã được lưu: chỉ đến lúc này mới an toàn để bỏ các món ĐÃ MUA khỏi giỏ (món chưa tick vẫn còn)
+    const bought = new Set(lines.map((line) => line.product.id));
+    saveCart(cart.filter((item) => !bought.has(item.productId)));
     return { ok: true, order };
   }
 
@@ -538,7 +565,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   function recordView(productId: string) {
     const next = { ...productViews, [productId]: (productViews[productId] ?? 0) + 1 };
-    // Lượt xem chỉ để xếp hạng "Nổi bật": lưu không được cũng không sao
+    // Lượt xem chỉ để xếp hạng "Sản phẩm bán chạy": lưu không được cũng không sao
     writeJSON(STORAGE_KEYS.productViews, next);
     setProductViews(next);
   }
@@ -683,6 +710,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         addManyToCart,
         setCartQuantity,
         removeFromCart,
+        setCartSelected,
+        setAllCartSelected,
+        buyNow,
         clearCart,
         register,
         login,

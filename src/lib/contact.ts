@@ -4,7 +4,7 @@ import { MAX_NAME_LENGTH, isValidEmail, isValidPhone } from "@/lib/validation";
 export const contactTopics = [
   { id: "tu-van", label: "Tư vấn chọn quà" },
   { id: "don-hang", label: "Hỏi về đơn hàng" },
-  { id: "so-luong-lon", label: "Đặt số lượng lớn / quà doanh nghiệp" },
+  { id: "so-luong-lon", label: "Đặt số lượng lớn" }, // cả quà doanh nghiệp (ví dụ ở ô Nội dung)
   { id: "khac", label: "Vấn đề khác" },
 ] as const;
 
