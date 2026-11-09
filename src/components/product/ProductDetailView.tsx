@@ -36,15 +36,24 @@ export default function ProductDetailView({ id }: { id: string }) {
     recordView(id);
   }, [isReady, productFound, id, recordView]);
 
-  // Tab trình duyệt hiện tên sản phẩm (chỉ biết được sau khi đọc xong localStorage)
-  useEffect(() => {
-    if (!isReady) return;
-    document.title = product ? `${product.name} — Đặc sản 3 Miền` : "Không tìm thấy sản phẩm — Đặc sản 3 Miền";
-  }, [isReady, product]);
+  // Tiêu đề tab trình duyệt. React 19 tự đưa thẻ <title> này lên <head> (ở server lẫn trình duyệt).
+  // Tên sản phẩm chỉ có sau khi đọc xong localStorage; trước đó (kể cả HTML từ server) là tiêu đề chung.
+  // Route này không đặt title trong metadata, để Next.js không chèn thẻ <title> của nó đè lên thẻ này:
+  // xem src/app/(shop)/san-pham/[id]/page.tsx.
+  const tabTitle = (
+    <title>
+      {!isReady
+        ? "Chi tiết sản phẩm — Đặc sản 3 Miền"
+        : product
+          ? `${product.name} — Đặc sản 3 Miền`
+          : "Không tìm thấy sản phẩm — Đặc sản 3 Miền"}
+    </title>
+  );
 
   if (!isReady) {
     return (
       <PageContainer className="py-0">
+        {tabTitle}
         <LoadingState text="Đang tải sản phẩm…" />
       </PageContainer>
     );
@@ -54,6 +63,7 @@ export default function ProductDetailView({ id }: { id: string }) {
   if (!product) {
     return (
       <PageContainer>
+        {tabTitle}
         <NotFoundMessage
           title="Không tìm thấy sản phẩm"
           description="Sản phẩm bạn đang tìm không tồn tại hoặc đã bị xóa khỏi cửa hàng. Hãy xem các đặc sản khác của Đặc sản 3 Miền."
@@ -82,6 +92,7 @@ export default function ProductDetailView({ id }: { id: string }) {
 
   return (
     <PageContainer>
+      {tabTitle}
       <ContentSidebar
         sidebarLabel="Sản phẩm liên quan và đã xem gần đây"
         sidebar={
