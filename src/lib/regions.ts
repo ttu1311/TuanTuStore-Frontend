@@ -1,7 +1,7 @@
 import type { Region } from "@/types";
 
 // Nhãn hiển thị và màu sắc của từng vùng miền.
-// Dùng bởi RegionBadge, tuyến ở trang chủ, menu header, bộ lọc sản phẩm, trang chi tiết sản phẩm
+// Dùng bởi RegionBadge, các tab ở trang chủ, bản đồ, menu header, bộ lọc sản phẩm, trang chi tiết sản phẩm
 // và form sản phẩm Admin. dotClass tô màu chấm vùng, textClass tô màu tên vùng.
 export const regions: Record<Region, { label: string; dotClass: string; textClass: string }> = {
   bac: { label: "Miền Bắc", dotClass: "bg-che", textClass: "text-che" },

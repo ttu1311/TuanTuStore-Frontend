@@ -16,7 +16,8 @@ function normalize(password: string) {
   return password.normalize("NFKC");
 }
 
-// Mật khẩu đã gõ có khớp với mật khẩu đã lưu không? `saved` là undefined với tài khoản cũ không có mật khẩu.
+// Mật khẩu đã gõ có khớp với mật khẩu đã lưu không? `saved` có thể là undefined nếu bản ghi trong trình duyệt bị hỏng:
+// khi đó không mật khẩu nào khớp.
 export function isSamePassword(typed: string, saved: string | undefined) {
   return typeof saved === "string" && normalize(typed) === normalize(saved);
 }

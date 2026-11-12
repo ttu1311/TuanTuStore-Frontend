@@ -26,7 +26,7 @@ const fillOpacity: Record<Region, number> = { bac: 0.75, trung: 0.72, nam: 0.85 
 const strokeClass: Record<Region, string> = { bac: "stroke-che", trung: "stroke-brown", nam: "stroke-gold-ink" };
 
 // Bản đồ ba miền của trang /ban-do. Bấm một miền: mở danh sách miền đó; bấm một chấm: mở danh sách tỉnh đó.
-// Bên cạnh là danh sách các tỉnh xếp từ Bắc vào Nam (cùng thứ tự và vĩ độ với tuyến ở trang chủ).
+// Bên cạnh là danh sách các tỉnh xếp từ Bắc vào Nam theo vĩ độ (xem src/lib/route.ts).
 // Số sản phẩm đếm từ dữ liệu trong localStorage, nên Admin thêm sản phẩm là bản đồ tự cập nhật.
 export default function VietnamMapSection() {
   const { isReady, products } = useStore();

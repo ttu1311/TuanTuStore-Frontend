@@ -89,7 +89,7 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 
 | Route | Page |
 | --- | --- |
-| `/` | Homepage, top to bottom: banner, short introduction, **"Sản phẩm bán chạy"** (top 8 in-stock products by quantity sold, cancelled orders excluded; ties: views, then newest. Only customers' purchases decide the order: Admin cannot rank or pin a product. The "Top 1/2/3" badge on product cards is computed the same way, and only products that have actually sold get one), **"Ghép hộp quà ba miền"** (2 questions: occasion, budget per item; then it opens `/hop-qua` with the box already filled), the 3 regions, "Về Đặc sản 3 Miền" |
+| `/` | Homepage, top to bottom: banner (3 slides: pick a gift, gift box, free shipping), **"Tất cả sản phẩm"** (tabs: Bán chạy · Tất cả · Miền Bắc · Miền Trung · Miền Nam; up to 8 products per tab, and a "Xem tất cả sản phẩm" button at the bottom that opens `/san-pham`, filtered by region on a region tab; **Bán chạy** = top 8 in-stock products by quantity sold, cancelled orders excluded, ties: views then newest; only customers' purchases decide the order, Admin cannot rank or pin a product; the "Top 1/2/3" badge on product cards is computed the same way and only products that have sold get one), **"Ghép hộp quà ba miền"** (2 questions: occasion, budget per item; then it opens `/hop-qua` with the box already filled), "Về Đặc sản 3 Miền" |
 | `/san-pham` | Product list: search, filter by region / province / brand / price, sort. Reads `?q=`, `?region=`, `?province=`, `?brand=` and `?dip=` (occasion) |
 | `/san-pham/[id]` | Product detail: price, stock left ("Hết hàng" disables buying), stars, description, information, quantity, "Thêm vào giỏ hàng", "Mua ngay", ♡ wishlist, related products |
 | `/gio-hang` | Cart with a **tick box per product** and "Chọn tất cả": only ticked products are priced and bought, the others stay in the cart. Change quantity (never above the stock), remove, clear all, progress towards free shipping; checkout is blocked while a *ticked* line exceeds the stock |
@@ -228,21 +228,21 @@ read from `localStorage`. This avoids hydration errors, because the server has n
 - **A phone cannot open the page:** check that both devices use the same Wi-Fi, that you typed the **current** Network address
   of the terminal, and that the computer's firewall allows Node.js. Some campus or public Wi-Fi networks stop devices from
   reaching each other — a phone hotspot or a home router usually works.
-- **"Tài khoản này được tạo bằng phiên bản cũ…" when logging in:** that account was saved in this browser by an earlier version
-  of the project, before passwords were kept as described above. Delete it in Admin → Người dùng and register again, or clear the
-  `tuantustore-` keys (see "Start again from zero"). The demo ADMIN above is repaired automatically.
 
 ## Name and logo
 
 The shop is called **"Đặc sản 3 Miền"** (the repository, the npm package, the `tuantustore-…` localStorage keys and the demo
 admin e-mail keep the old internal name, so saved data and logins keep working).
 
-Logo: a cream round seal in which Vietnam's S-shaped land is drawn as the **number 3**, in three strokes = three regions
-(north rice-green, centre red-orange, south sunny gold), with two small dot clusters for the Hoàng Sa and Trường Sa
-archipelagos and a young leaf sprouting out of the seal. Wordmark: "ĐẶC SẢN" above "3 MIỀN".
-The site uses the `Logo` / `LogoMark` components (`src/components/brand/Logo.tsx`; the wordmark is real text in the site font);
-the favicon is `src/app/icon.svg`. Standalone files for use outside the site: `public/brand/logo-horizontal.svg`,
-`logo-on-dark.svg` and `logo-mark.svg` (their text falls back to Arial Narrow / Arial where the Phudu font is not installed).
+Logo (design supplied by the shop owner): a wine-red bowl whose steam curls into the number 3, a pair of chopsticks and a gold
+conical hat. The original picture (symbol and words) is `public/brand/logo-full.webp`; the symbol alone, with the background
+removed (a transparent picture in two colours, wine red and gold), is `public/brand/mark.webp`; the favicon and the iOS icon are
+`src/app/icon.png` and `src/app/apple-icon.png` (the symbol on a cream square). The words "ĐẶC SẢN 3 MIỀN" next to the symbol are
+real text in the serif font Lora (loaded in `src/app/layout.tsx`), in the colours of the logo (wine red and gold), so they stay
+sharp at any size. The footer adds the line "TINH HOA ẨM THỰC VIỆT". The site uses the `Logo` component
+(`src/components/brand/Logo.tsx`). The pictures are bitmaps (not vectors): sharp up to about 3× the size shown on the site; for
+print, ask the designer for a vector or a larger file. The homepage banner tints its photos with the same wine red and puts the
+symbol on its small label.
 
 ## Credits
 

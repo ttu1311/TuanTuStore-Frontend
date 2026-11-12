@@ -50,7 +50,7 @@ export default function ProductCard({ product, eager = false }: { product: Produ
       </div>
 
       <div className="flex flex-1 flex-col pt-4">
-        {/* Chấm vùng miền gắn thẻ này với màu của tuyến ở trang chủ */}
+        {/* Chấm màu của vùng miền (cùng màu với tab miền và bản đồ) */}
         <p className="flex items-center gap-2 text-sm text-ink-muted">
           <span className={`h-2 w-2 shrink-0 rounded-full ${region.dotClass}`} aria-hidden="true" />
           <span className="sr-only">{region.label}, </span>

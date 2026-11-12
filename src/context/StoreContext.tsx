@@ -49,9 +49,6 @@ function fail(message: string, field?: string): ActionResult {
 const SAVE_ERROR = "Không thể lưu dữ liệu vào trình duyệt. Vui lòng thử lại.";
 const NO_PERMISSION = "Bạn không có quyền thực hiện thao tác này.";
 const WRONG_LOGIN = "Email hoặc mật khẩu không đúng";
-// Tài khoản lưu bởi phiên bản cũ của dự án không còn mật khẩu nữa (xem repairDemoAdmin trong storage.ts)
-const OLD_ACCOUNT =
-  "Tài khoản này được tạo bằng phiên bản cũ của website nên không dùng được nữa. Hãy nhờ quản trị viên xóa tài khoản này rồi đăng ký lại.";
 
 type StoreValue = {
   isReady: boolean; // false cho tới khi dữ liệu được đọc xong từ localStorage
@@ -77,7 +74,8 @@ type StoreValue = {
   deleteProduct: (id: string) => ActionResult;
 
   // Giỏ hàng
-  addToCart: (productId: string, quantity: number) => void;
+  // true = giỏ có thêm hàng (false: hết hàng, giỏ đã có đủ số còn lại, hoặc trình duyệt từ chối lưu)
+  addToCart: (productId: string, quantity: number) => boolean;
   // Thêm nhiều sản phẩm (mỗi món 1) một lần, với MỘT thông báo (dùng cho "Hộp quà Ba Miền")
   // true = đã lưu vào giỏ (false: trình duyệt từ chối lưu)
   addManyToCart: (productIds: string[], message: string) => boolean;
@@ -179,41 +177,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // ---------- Lưu: localStorage trước, rồi đến state React ----------
 
-  function saveProducts(next: Product[]) {
-    if (!writeJSON(STORAGE_KEYS.products, next)) return false;
-    setProducts(next);
+  // false = trình duyệt từ chối lưu (storage đầy hoặc bị chặn): state không đổi
+  function persist<T>(key: string, next: T, setState: (value: T) => void) {
+    if (!writeJSON(key, next)) return false;
+    setState(next);
     return true;
   }
 
-  function saveUsers(next: User[]) {
-    if (!writeJSON(STORAGE_KEYS.users, next)) return false;
-    setUsers(next);
-    return true;
-  }
-
-  function saveOrders(next: Order[]) {
-    if (!writeJSON(STORAGE_KEYS.orders, next)) return false;
-    setOrders(next);
-    return true;
-  }
-
-  function saveReviews(next: Review[]) {
-    if (!writeJSON(STORAGE_KEYS.reviews, next)) return false;
-    setReviews(next);
-    return true;
-  }
-
-  function saveContactRequests(next: ContactRequest[]) {
-    if (!writeJSON(STORAGE_KEYS.contactRequests, next)) return false;
-    setContactRequests(next);
-    return true;
-  }
-
-  function saveCart(next: CartItem[]) {
-    if (!writeJSON(STORAGE_KEYS.cart, next)) return false;
-    setCart(next);
-    return true;
-  }
+  const saveProducts = (next: Product[]) => persist(STORAGE_KEYS.products, next, setProducts);
+  const saveUsers = (next: User[]) => persist(STORAGE_KEYS.users, next, setUsers);
+  const saveOrders = (next: Order[]) => persist(STORAGE_KEYS.orders, next, setOrders);
+  const saveReviews = (next: Review[]) => persist(STORAGE_KEYS.reviews, next, setReviews);
+  const saveContactRequests = (next: ContactRequest[]) => persist(STORAGE_KEYS.contactRequests, next, setContactRequests);
+  const saveCart = (next: CartItem[]) => persist(STORAGE_KEYS.cart, next, setCart);
+  const saveWishlists = (next: Record<string, string[]>) => persist(STORAGE_KEYS.wishlists, next, setWishlists);
 
   // ---------- Sản phẩm (Admin) ----------
 
@@ -246,18 +223,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   // ---------- Giỏ hàng ----------
 
   // Số lượng không bao giờ vượt quá tồn kho: thêm quá thì giỏ chỉ giữ tới mức còn hàng, và thông báo nói rõ
-  function addToCart(productId: string, quantity: number) {
+  function addToCart(productId: string, quantity: number): boolean {
     const product = products.find((p) => p.id === productId);
     const name = product?.name ?? "sản phẩm";
     const limit = product ? maxOrderable(product) : 0;
     const inCart = cart.find((item) => item.productId === productId)?.quantity ?? 0;
     if (limit === 0) {
       setToast({ id: Date.now(), message: `${name} đã hết hàng` });
-      return;
+      return false;
     }
     if (inCart >= limit) {
       setToast({ id: Date.now(), message: `Chỉ còn ${limit} ${name}: giỏ hàng của bạn đã có đủ số này` });
-      return;
+      return false;
     }
     const nextQuantity = Math.min(limit, cleanQuantity(inCart + cleanQuantity(quantity)));
     // Vừa bấm "Thêm vào giỏ" thì món đó được tick sẵn (khách bỏ tick được ở trang giỏ hàng)
@@ -275,6 +252,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           ? `Chỉ còn ${limit} ${name}: giỏ hàng đã có ${nextQuantity}`
           : `Đã thêm ${name} vào giỏ hàng`,
     });
+    return saved;
   }
 
   function addManyToCart(productIds: string[], message: string): boolean {
@@ -366,7 +344,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   function login(email: string, password: string, remember: boolean): ActionResult {
     const user = users.find((u) => u.email === normalizeEmail(email));
-    if (user && typeof user.password !== "string") return fail(OLD_ACCOUNT);
     // Cùng một thông báo cho email sai và mật khẩu sai
     if (!user || !isSamePassword(password, user.password)) return fail(WRONG_LOGIN);
 
@@ -539,12 +516,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }
 
   // ---------- Yêu thích (lưu theo tài khoản) ----------
-
-  function saveWishlists(next: Record<string, string[]>) {
-    if (!writeJSON(STORAGE_KEYS.wishlists, next)) return false;
-    setWishlists(next);
-    return true;
-  }
 
   function toggleWishlist(productId: string): ActionResult {
     if (!currentUser) return fail("Vui lòng đăng nhập để lưu sản phẩm yêu thích.", "login");

@@ -7,15 +7,7 @@ import { useStore } from "@/context/StoreContext";
 
 // Nút "Thêm vào giỏ" của thẻ sản phẩm. Thêm 1 sản phẩm vào giỏ trong localStorage,
 // rồi hiện "Đã thêm vào giỏ" trong 2 giây để khách thấy đã thành công.
-export default function AddToCartButton({
-  productId,
-  productName,
-  className = "mt-auto w-full",
-}: {
-  productId: string;
-  productName: string;
-  className?: string;
-}) {
+export default function AddToCartButton({ productId, productName }: { productId: string; productName: string }) {
   const { addToCart, products } = useStore();
   const [added, setAdded] = useState(false);
   // Hết hàng: nút bị khóa và ghi rõ "Hết hàng"
@@ -33,10 +25,10 @@ export default function AddToCartButton({
         type="button"
         disabled={soldOut}
         onClick={() => {
-          addToCart(productId, 1);
-          setAdded(true);
+          // Chỉ báo "Đã thêm" khi giỏ thật sự có thêm hàng (giỏ đã đủ số còn lại thì thông báo góc màn hình nói rõ)
+          if (addToCart(productId, 1)) setAdded(true);
         }}
-        className={`${btnBase} ${btnPrimary} ${btnSmall} ${className} disabled:cursor-not-allowed disabled:opacity-50`}
+        className={`${btnBase} ${btnPrimary} ${btnSmall} mt-auto w-full disabled:cursor-not-allowed disabled:opacity-50`}
       >
         {!soldOut && <Icon name={added ? "check" : "plus"} size={16} />}
         {soldOut ? "Hết hàng" : added ? "Đã thêm vào giỏ" : "Thêm vào giỏ"}

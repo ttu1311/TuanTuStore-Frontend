@@ -6,35 +6,48 @@ import { useState } from "react";
 import Icon from "@/components/ui/Icon";
 import { btnBase, btnLight } from "@/components/ui/buttons";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { regions } from "@/lib/regions";
-import type { Region } from "@/types";
+import { DISCOUNT, FREE_SHIPPING_MIN } from "@/lib/cart";
+import { formatVND } from "@/lib/format";
 
-const slides: { region: Region; image: string; alt: string; title: string; text: string }[] = [
+// Ba slide hướng khách tới việc mua hàng (ảnh nền là ba ảnh ba miền). Mức miễn phí vận chuyển và giảm giá lấy từ src/lib/cart.ts.
+const slides: { key: string; image: string; alt: string; kicker: string; title: string; text: string; tab: string; cta: string; href: string }[] = [
   {
-    region: "bac",
+    key: "chon-qua",
     image: "/images/region-bac.jpg",
     alt: "Đồi chè xanh mướt ở Thái Nguyên",
-    title: "Hương chè, vị cốm",
-    text: "Chè Tân Cương, ô mai Hàng Đường, bánh cốm Hà Nội: quà của đất Bắc.",
+    kicker: "Đặc sản ba miền",
+    title: "Quà quê, từ Bắc vào Nam",
+    text: "Từ đồi chè Tân Cương đến nhà thùng nước mắm Phú Quốc: món nào cũng ghi rõ nơi làm ra.",
+    tab: "Chọn quà",
+    cta: "Chọn quà ngay",
+    href: "#san-pham",
   },
   {
-    region: "trung",
+    key: "hop-qua",
     image: "/images/region-trung.jpg",
     alt: "Thuyền gỗ trên sông Thu Bồn, phố cổ Hội An",
-    title: "Mè giòn, cà phê đậm",
-    text: "Bánh khô mè Cẩm Lệ và cà phê Buôn Ma Thuột, từ dải đất miền Trung.",
+    kicker: "Quà tặng",
+    title: "Ghép hộp quà ba miền",
+    text: "Mỗi miền một món, gói chung một hộp kèm thiệp, miễn phí gói quà.",
+    tab: "Hộp quà",
+    cta: "Ghép hộp quà",
+    href: "/hop-qua",
   },
   {
-    region: "nam",
+    key: "uu-dai",
     image: "/images/region-nam.jpg",
     alt: "Thuyền chở dưa hấu ở chợ nổi Cần Thơ, đồng bằng sông Cửu Long",
-    title: "Sông nước tới Đất Mũi",
-    text: "Kẹo dừa Bến Tre, nước mắm Phú Quốc và các đặc sản Cà Mau.",
+    kicker: "Ưu đãi",
+    title: `Miễn phí vận chuyển từ ${formatVND(FREE_SHIPPING_MIN)}`,
+    text: `Mỗi đơn hàng còn được giảm ${formatVND(DISCOUNT)}.`,
+    tab: "Ưu đãi",
+    cta: "Mua sắm ngay",
+    href: "/san-pham",
   },
 ];
 
-// Banner động đầu trang chủ: ba ảnh ba miền thay nhau hiện ra (mờ dần, ảnh phóng to rất chậm).
-// Mỗi ảnh ở lại 6 giây (animate-progress trong tailwind.config.ts); thanh tiến trình dưới tên miền chạy hết thì sang ảnh kế tiếp.
+// Banner động đầu trang chủ: ba ảnh thay nhau hiện ra (mờ dần, ảnh phóng to rất chậm).
+// Mỗi ảnh ở lại 6 giây (animate-progress trong tailwind.config.ts); thanh tiến trình dưới tên slide chạy hết thì sang ảnh kế tiếp.
 // Tạm dừng khi rê chuột / đưa bàn phím vào banner, hoặc bằng nút tạm dừng.
 // Người bật "giảm chuyển động" thì banner không tự chuyển, chỉ đổi khi bấm.
 export default function HeroBanner() {
@@ -53,8 +66,10 @@ export default function HeroBanner() {
       aria-label="Đặc sản ba miền"
       className="mx-auto w-full max-w-container px-4 pt-6 md:px-6 lg:px-8"
     >
+      {/* Tiêu đề trang (chỉ cho trình đọc màn hình và công cụ tìm kiếm); chữ lớn nằm ở slide đầu */}
+      <h1 className="sr-only">Đặc sản 3 Miền: quà quê từ Bắc vào Nam</h1>
       <div
-        className="relative h-[420px] overflow-hidden rounded-2xl bg-primary-dark sm:h-[460px] lg:h-[520px]"
+        className="relative h-[440px] overflow-hidden rounded-2xl bg-primary-dark sm:h-[400px] lg:h-[400px]"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onFocus={() => setHovered(true)}
@@ -64,13 +79,12 @@ export default function HeroBanner() {
       >
         {slides.map((slide, index) => {
           const isActive = index === active;
-          const region = regions[slide.region];
           return (
             <div
-              key={slide.region}
+              key={slide.key}
               role="group"
               aria-roledescription="slide"
-              aria-label={`${index + 1} / ${slides.length}: ${region.label}`}
+              aria-label={`${index + 1} / ${slides.length}: ${slide.tab}`}
               inert={!isActive}
               className={`absolute inset-0 transition-opacity duration-1000 ease-out ${
                 isActive ? "opacity-100" : "opacity-0"
@@ -89,52 +103,64 @@ export default function HeroBanner() {
               />
               <div
                 aria-hidden="true"
-                // Lớp phủ chỉ tối ở phía có chữ (dưới trên điện thoại, trái trên màn hình lớn); phần còn lại để ảnh sáng tự nhiên
-                className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent lg:bg-gradient-to-r lg:from-black/60 lg:via-black/20 lg:to-transparent"
+                // Lớp phủ đỏ rượu đậm (màu của logo) chỉ ở phía có chữ (dưới trên điện thoại, trái trên màn hình lớn); phần còn lại để ảnh sáng tự nhiên
+                className="absolute inset-0 bg-gradient-to-t from-[#2b050c]/75 via-[#2b050c]/20 to-transparent lg:bg-gradient-to-r lg:from-[#2b050c]/70 lg:via-[#2b050c]/25 lg:to-transparent"
               />
 
               {/* key: chữ của ảnh mới chạy lại hiệu ứng hiện lên */}
               {isActive && (
                 <div
                   key={active}
-                  className="absolute inset-x-0 bottom-0 p-6 pb-20 text-white [text-shadow:0_1px_14px_rgb(0_0_0/0.45)] sm:p-10 sm:pb-24 lg:bottom-auto lg:top-1/2 lg:max-w-[40rem] lg:-translate-y-1/2 lg:p-14"
+                  className="absolute inset-x-0 bottom-0 p-6 pb-20 text-white [text-shadow:0_1px_14px_rgb(0_0_0/0.45)] sm:p-10 sm:pb-20 lg:bottom-auto lg:top-[44%] lg:max-w-[40rem] lg:-translate-y-1/2 lg:p-12 lg:pb-12"
                 >
-                  <p className="flex animate-fade-up items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-white/85">
-                    <span className={`h-2.5 w-2.5 rounded-full ${region.dotClass} ring-2 ring-white/70`} aria-hidden="true" />
-                    {region.label}
+                  {/* Nhãn kem có biểu tượng logo: chữ đỏ rượu đọc rõ trên mọi ảnh (tương phản 10:1) */}
+                  <p className="inline-flex animate-fade-up items-center gap-2 rounded-full bg-[#FFF8EC] py-1.5 pl-2.5 pr-4 text-xs font-bold uppercase tracking-[0.16em] text-[#830E20] [text-shadow:none] sm:text-sm">
+                    <Image src="/brand/mark.webp" alt="" width={291} height={360} sizes="24px" className="h-6 w-auto" />
+                    {slide.kicker}
                   </p>
-                  <h2
-                    className="mt-3 animate-fade-up font-display text-5xl/[1.08] font-bold [animation-delay:120ms] sm:text-6xl/[1.08] lg:text-7xl/[1.08]"
-                  >
+                  <h2 className="mt-3 animate-fade-up text-balance font-display text-4xl/[1.08] font-bold [animation-delay:120ms] sm:text-5xl/[1.08] lg:text-6xl/[1.08]">
                     {slide.title}
                   </h2>
-                  <p className="mt-4 max-w-[30rem] animate-fade-up text-lg text-white/85 [animation-delay:240ms]">
+                  <p className="mt-3 max-w-[30rem] animate-fade-up text-base text-white/85 [animation-delay:240ms] sm:text-lg">
                     {slide.text}
                   </p>
-                  <Link
-                    href={`/san-pham?region=${slide.region}`}
-                    className={`${btnBase} ${btnLight} mt-6 animate-fade-up [animation-delay:360ms]`}
-                  >
-                    Xem đặc sản {region.label}
-                    <Icon name="arrow" size={18} />
-                  </Link>
+                  {slide.href.startsWith("#") ? (
+                    // Cuộn tới một khối của CHÍNH trang này. Tự cuộn (không đổi địa chỉ), vì liên kết "#…" chỉ cuộn được MỘT lần:
+                    // địa chỉ đã có "#san-pham" thì bấm lần nữa không làm gì.
+                    <a
+                      href={slide.href}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        document.getElementById(slide.href.slice(1))?.scrollIntoView({ block: "start" });
+                      }}
+                      className={`${btnBase} ${btnLight} mt-5 animate-fade-up [animation-delay:360ms]`}
+                    >
+                      {slide.cta}
+                      <Icon name="arrow" size={18} />
+                    </a>
+                  ) : (
+                    <Link href={slide.href} className={`${btnBase} ${btnLight} mt-5 animate-fade-up [animation-delay:360ms]`}>
+                      {slide.cta}
+                      <Icon name="arrow" size={18} />
+                    </Link>
+                  )}
                 </div>
               )}
             </div>
           );
         })}
 
-        {/* Điều khiển: tên ba miền kèm thanh tiến trình, nút trước/sau và tạm dừng */}
+        {/* Điều khiển: tên ba slide kèm thanh tiến trình, nút trước/sau và tạm dừng */}
         <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4 sm:p-6 lg:px-14">
           <div className="flex flex-1 gap-3 sm:max-w-[26rem]">
             {slides.map((slide, index) => {
               const isActive = index === active;
               return (
                 <button
-                  key={slide.region}
+                  key={slide.key}
                   type="button"
                   onClick={() => go(index)}
-                  aria-label={`Xem ảnh ${regions[slide.region].label}`}
+                  aria-label={`Xem slide: ${slide.tab}`}
                   aria-current={isActive ? "true" : undefined}
                   className="group flex min-h-11 flex-1 flex-col justify-end gap-2 text-left"
                 >
@@ -143,7 +169,7 @@ export default function HeroBanner() {
                       isActive ? "text-white" : "text-white/85 group-hover:text-white"
                     }`}
                   >
-                    {regions[slide.region].label}
+                    {slide.tab}
                   </span>
                   <span className="block h-1 w-full overflow-hidden rounded-full bg-white/30">
                     {isActive &&

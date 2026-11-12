@@ -61,7 +61,6 @@ export function initializeStorage() {
   if (!Array.isArray(readJSON(STORAGE_KEYS.contactRequests))) writeJSON(STORAGE_KEYS.contactRequests, []);
   addNewSeedBatches();
   applySeedUpdates();
-  repairDemoAdmin();
 }
 
 // Trình duyệt đã lưu danh sách sản phẩm TRƯỚC khi một nhóm tồn tại sẽ nhận nhóm đó ở đây, MỘT LẦN:
@@ -103,15 +102,6 @@ function applySeedUpdates() {
       next = { ...next, stock: INITIAL_STOCK };
       changed = true;
     }
-    // Thứ hạng "Top n" và "Ưu tiên" do Admin đặt đã bị bỏ: "Sản phẩm bán chạy" và nhãn Top chỉ tính từ số lượng đã bán.
-    // Sản phẩm lưu từ trước còn hai trường đó thì bỏ đi một lần.
-    if ("rank" in next || "isFeatured" in next) {
-      const legacy: Record<string, unknown> = { ...next };
-      delete legacy.rank;
-      delete legacy.isFeatured;
-      next = legacy as unknown as Product;
-      changed = true;
-    }
     const newImage = renamedImages[product.image];
     if (newImage) {
       next = { ...next, image: newImage };
@@ -146,35 +136,7 @@ function applySeedUpdates() {
   if (changed) writeJSON(STORAGE_KEYS.products, updated);
 }
 
-// Một người dùng như có thể được lưu trong trình duyệt cũ: một phiên bản TRƯỚC của dự án giữ `passwordHash`
-// (mã băm không kiểm tra được nữa) thay vì `password`.
-type SavedUser = Partial<User> & { passwordHash?: string };
-
-// ADMIN demo trong README.md là tài khoản mẫu duy nhất.
-const demoAdmin = initialUsers[0];
-
-// Nếu ADMIN demo được lưu bởi phiên bản trước (không có `password`), trả lại cho nó mật khẩu đã ghi trong tài liệu,
-// để thông tin đăng nhập ghi trong README.md cũng dùng được trên trình duyệt đang giữ dữ liệu cũ.
-// Không đụng tới gì khác: các tài khoản cũ khác giữ nguyên (login() giải thích cách xử lý chúng).
-function repairDemoAdmin() {
-  const users = readJSON<SavedUser[]>(STORAGE_KEYS.users);
-  if (!Array.isArray(users)) return;
-
-  const needsRepair = (user: SavedUser) => user.id === demoAdmin.id && typeof user.password !== "string";
-  if (!users.some(needsRepair)) return;
-
-  writeJSON(
-    STORAGE_KEYS.users,
-    users.map((user) => {
-      if (!needsRepair(user)) return user;
-      const repaired = { ...user, password: demoAdmin.password };
-      delete repaired.passwordHash; // mã băm cũ giờ vô dụng
-      return repaired;
-    })
-  );
-}
-
-export type StoredData = {
+type StoredData = {
   products: Product[];
   users: User[];
   orders: Order[];
@@ -225,7 +187,7 @@ function readWishlists(): Record<string, string[]> {
 // "Ghi nhớ đăng nhập" được tích   -> id người dùng được giữ trong localStorage (còn sau khi đóng trình duyệt).
 // "Ghi nhớ đăng nhập" không tích  -> id người dùng được giữ trong sessionStorage (chỉ tab này, mất khi đóng tab).
 
-export function readCurrentUserId(): string | null {
+function readCurrentUserId(): string | null {
   return (
     readJSON<string>(STORAGE_KEYS.currentUser, window.sessionStorage) ??
     readJSON<string>(STORAGE_KEYS.currentUser, window.localStorage)

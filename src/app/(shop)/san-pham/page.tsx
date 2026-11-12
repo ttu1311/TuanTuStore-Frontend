@@ -20,17 +20,17 @@ function firstValue(value: string | string[] | undefined) {
 
 export default async function ProductListingPage({ searchParams }: ProductListingPageProps) {
   const params = await searchParams;
-  // Ô tìm kiếm ở header mở /san-pham?q=<từ khóa>; các thẻ vùng miền mở /san-pham?region=bac
+  // Ô tìm kiếm ở header mở /san-pham?q=<từ khóa>; menu "3 Miền" và các tab miền ở trang chủ mở /san-pham?region=bac
   const initialSearch = firstValue(params.q).trim().slice(0, 100);
   const regionValue = firstValue(params.region);
   const initialRegion = isRegion(regionValue) ? regionValue : undefined;
-  // Các mục "Tìm theo tỉnh" ở trang chủ mở /san-pham?province=Cà Mau
+  // Bản đồ (/ban-do) và hộ chiếu đặc sản mở /san-pham?province=Cà Mau
   // Liên kết cũ còn ghi tên tỉnh trước sáp nhập (?province=Sóc Trăng) vẫn mở đúng tỉnh mới (Cần Thơ)
   const provinceParam = firstValue(params.province).trim().slice(0, 100);
   const initialProvince = provinceParam && normalizeProvince(provinceParam);
   // Trang chi tiết sản phẩm mở /san-pham?brand=Hồng Lam để xem mọi sản phẩm của thương hiệu đó
   const initialBrand = firstValue(params.brand).trim().slice(0, 100);
-  // "Chọn quà theo dịp" ở trang chủ mở /san-pham?dip=qua-tet
+  // Các thẻ dịp tặng ở trang chi tiết sản phẩm mở /san-pham?dip=qua-tet
   const initialOccasion = firstValue(params.dip).trim().slice(0, 50);
 
   return (

@@ -20,7 +20,7 @@ const sections = [
   { id: "logout", label: "Đăng xuất" },
 ] as const;
 
-export type SectionId = (typeof sections)[number]["id"];
+type SectionId =(typeof sections)[number]["id"];
 
 // Trang tài khoản. Luôn nằm trong <RequireLogin>, nên ở đây chắc chắn đã có người đăng nhập.
 export default function AccountView({ initialSection = "profile" }: { initialSection?: SectionId }) {

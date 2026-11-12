@@ -297,7 +297,7 @@ export default function ProductForm({ initialValues = emptyProductForm, submitLa
               </label>
             ))}
           </div>
-          <p className={hintStyle}>Khách lọc sản phẩm theo dịp ở trang Sản phẩm và mục &quot;Chọn quà theo dịp&quot; ở trang chủ.</p>
+          <p className={hintStyle}>Khách lọc sản phẩm theo dịp ở trang Sản phẩm; Hộp quà Ba Miền cũng chọn món theo dịp.</p>
         </fieldset>
 
         {/* Câu chuyện sản phẩm: hiện ở trang chi tiết; ô nào để trống thì không hiện */}

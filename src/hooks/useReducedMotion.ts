@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
-// Người dùng có bật "giảm chuyển động" trong hệ điều hành không? Khi đó không tự chạy banner hay băng trượt.
+// Người dùng có bật "giảm chuyển động" trong hệ điều hành không? Khi đó banner trang chủ không tự chuyển ảnh.
 // Trên server (và ở lần vẽ đầu) trả về false; trình duyệt cập nhật ngay sau đó, và cả khi người dùng đổi cài đặt.
 const QUERY = "(prefers-reduced-motion: reduce)";
 

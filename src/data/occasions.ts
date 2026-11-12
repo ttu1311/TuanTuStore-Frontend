@@ -1,4 +1,4 @@
-// Các "dịp tặng" để khách chọn quà theo mục đích (lọc ở /san-pham?dip=..., và mục "Chọn quà theo dịp" ở trang chủ).
+// Các "dịp tặng" để khách chọn quà theo mục đích (lọc ở /san-pham?dip=..., và câu hỏi "dịp nào" của Hộp quà Ba Miền).
 // Mỗi sản phẩm có thể thuộc nhiều dịp (Product.occasions). Đây là gợi ý của cửa hàng, Admin sửa được trong form sản phẩm.
 export type Occasion = { id: string; label: string; description: string };
 

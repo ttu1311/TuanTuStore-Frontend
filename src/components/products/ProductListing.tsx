@@ -66,10 +66,10 @@ function matchesSearch(product: Product, search: string) {
 
 type ProductListingProps = {
   initialSearch?: string; // từ ô tìm kiếm ở header: /san-pham?q=...
-  initialRegion?: Region; // từ các thẻ vùng miền ở trang chủ: /san-pham?region=bac
-  initialProvince?: string; // từ bản đồ ở trang chủ: /san-pham?province=Cà Mau
+  initialRegion?: Region; // từ menu "3 Miền" và các tab miền ở trang chủ: /san-pham?region=bac
+  initialProvince?: string; // từ bản đồ (/ban-do) và hộ chiếu đặc sản: /san-pham?province=Cà Mau
   initialBrand?: string; // từ phần "Về thương hiệu" ở trang chi tiết: /san-pham?brand=Hồng Lam
-  initialOccasion?: string; // từ "Chọn quà theo dịp" ở trang chủ: /san-pham?dip=qua-tet
+  initialOccasion?: string; // từ các thẻ dịp tặng ở trang chi tiết: /san-pham?dip=qua-tet
 };
 
 // Giữ state tìm kiếm / lọc / sắp xếp và hiển thị các sản phẩm đã lọc từ localStorage.

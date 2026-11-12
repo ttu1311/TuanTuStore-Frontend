@@ -7,7 +7,7 @@ export function PageContainer({ children, className = "py-10 lg:py-16" }: { chil
 
 type ContentSidebarProps = {
   children: ReactNode; // nội dung chính (trái)
-  sidebar?: ReactNode; // nếu không có nó, nội dung đơn giản là chiếm toàn bộ chiều rộng
+  sidebar: ReactNode;
   sidebarLabel?: string; // tên truy cập (accessible name) của <aside>
   // Điện thoại và máy tính bảng hiển thị một cột. Mặc định sidebar nằm DƯỚI nội dung;
   // `sidebarFirst` đưa nó lên TRÊN nội dung (bộ lọc, menu tài khoản).
@@ -20,10 +20,8 @@ type ContentSidebarProps = {
 // Bố cục các trang cửa hàng: Nội dung (khoảng 72%) với Sidebar (khoảng 28%) ở bên PHẢI từ 1024px trở lên.
 // Dưới 1024px: một cột.
 export default function ContentSidebar({ children, sidebar, sidebarLabel, sidebarFirst, sticky }: ContentSidebarProps) {
-  if (!sidebar) return <div className="min-w-0">{children}</div>;
-
   return (
-    // Một cột minmax(0,1fr) trên màn nhỏ: nếu không, cột ngầm định ("auto") phình theo nội dung rộng như băng trượt ngang
+    // Một cột minmax(0,1fr) trên màn nhỏ: nếu không, cột ngầm định ("auto") phình theo nội dung rộng (bảng, hàng tab cuộn ngang)
     <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(15rem,28%)] lg:gap-10">
       <div className="min-w-0">{children}</div>
       <aside
