@@ -6,7 +6,7 @@ import { formatVND } from "@/lib/format";
 // Mức miễn phí vận chuyển lấy từ src/lib/cart.ts, nên luôn khớp với giỏ hàng.
 export default function AnnouncementBar() {
   return (
-    // Dải màu đặc trưng (đỏ cam), chữ trắng (≈ 4,9:1): tươi, nổi bật ưu đãi miễn phí vận chuyển
+    // Dải màu đặc trưng (đỏ rượu của logo), chữ trắng (≈ 10:1): nổi bật ưu đãi miễn phí vận chuyển
     <div className="bg-primary text-sm text-white">
       <div className="mx-auto flex w-full max-w-container flex-wrap items-center justify-center gap-x-6 gap-y-1 px-4 py-2 text-center md:px-6 lg:justify-between lg:px-8">
         <p>

@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 // Các design token của Đặc sản 3 Miền. Đổi một giá trị ở đây thì cả website thay đổi theo.
-// Màu đặc trưng là đỏ cam (primary), cộng một màu cho mỗi vùng:
+// Màu đặc trưng là đỏ rượu của logo (primary), cộng một màu cho mỗi vùng:
 // chè (xanh lá trà) cho Bắc, cà phê (rang đậm) cho Trung, nước mắm (hổ phách) cho Nam.
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],

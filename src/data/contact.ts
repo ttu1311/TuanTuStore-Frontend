@@ -6,7 +6,7 @@ export const storeContact = {
   phoneDisplay: "0969 087 677", // cách hiển thị cho dễ đọc
   email: "votuantu184@gmail.com",
   zalo: "https://zalo.me/0969087677",
-  facebook: "", // để trống thì không hiện; điền link trang Facebook (https://facebook.com/...) để hiện
+  facebook: "https://www.facebook.com/votuantu1311", // để trống thì không hiện
   hours: "8:00 – 21:00, Thứ 2 – Chủ nhật",
 };
 
