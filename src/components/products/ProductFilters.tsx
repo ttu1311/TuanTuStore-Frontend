@@ -3,7 +3,6 @@
 import { useState } from "react";
 import FilterGroup from "@/components/products/FilterGroup";
 import { btnBase, btnGhost, btnSmall } from "@/components/ui/buttons";
-import type { BrandSummary } from "@/lib/brands";
 import { regions as allRegions } from "@/lib/regions";
 import type { Region } from "@/types";
 
@@ -19,9 +18,7 @@ const optionLabel = "flex min-h-11 cursor-pointer items-center gap-3 text-ink";
 const optionInput = "h-5 w-5 shrink-0 cursor-pointer accent-primary";
 
 type ProductFiltersProps = {
-  brandOptions: BrandSummary[]; // mọi thương hiệu đang có sản phẩm, kèm số sản phẩm và tên các sản phẩm
   regions: Region[]; // các vùng đã tích
-  brands: string[]; // các thương hiệu đã tích
   provinceOptions: { name: string; count: number }[]; // mọi tỉnh có sản phẩm, kèm số sản phẩm
   occasionOptions: { id: string; label: string; count: number }[]; // mọi dịp tặng, kèm số sản phẩm
   occasions: string[]; // id các dịp tặng đã tích
@@ -29,7 +26,6 @@ type ProductFiltersProps = {
   provinces: string[]; // các tỉnh đã tích
   price: string; // giá trị mức giá đang chọn
   onToggleRegion: (region: Region) => void;
-  onToggleBrand: (brand: string) => void;
   onToggleProvince: (province: string) => void;
   onPriceChange: (price: string) => void;
   onReset: () => void;
@@ -38,9 +34,7 @@ type ProductFiltersProps = {
 // Các bộ lọc, hiển thị trong Sidebar của danh sách sản phẩm (ContentSidebar cung cấp thẻ <aside>).
 // State nằm ở ProductListing; component này chỉ hiển thị nó.
 export default function ProductFilters({
-  brandOptions,
   regions,
-  brands,
   provinceOptions,
   provinces,
   occasionOptions,
@@ -48,7 +42,6 @@ export default function ProductFilters({
   onToggleOccasion,
   price,
   onToggleRegion,
-  onToggleBrand,
   onToggleProvince,
   onPriceChange,
   onReset,
@@ -56,7 +49,7 @@ export default function ProductFilters({
   // Trên điện thoại, các bộ lọc được gập lại sau nút "Bộ lọc", để sản phẩm không bị đẩy xuống quá xa.
   // Từ cỡ lg trở lên các bộ lọc luôn mở (xem các class lg: bên dưới).
   const [isOpen, setIsOpen] = useState(false);
-  const activeCount = regions.length + brands.length + provinces.length + occasions.length + (price === "all" ? 0 : 1);
+  const activeCount = regions.length + provinces.length + occasions.length + (price === "all" ? 0 : 1);
 
   return (
     <div>
@@ -128,28 +121,6 @@ export default function ProductFilters({
               />
               <span>
                 {province.name} <span className="text-ink-muted">({province.count})</span>
-              </span>
-            </label>
-          ))}
-        </FilterGroup>
-
-        <FilterGroup title="Thương hiệu">
-          {brandOptions.map((brand) => (
-            // Dòng nhỏ bên dưới cho biết thương hiệu này làm những sản phẩm nào
-            <label key={brand.name} className="flex min-h-11 cursor-pointer items-center gap-3 py-1 text-ink">
-              <input
-                type="checkbox"
-                name="brand"
-                value={brand.name}
-                checked={brands.includes(brand.name)}
-                onChange={() => onToggleBrand(brand.name)}
-                className={optionInput}
-              />
-              <span className="min-w-0">
-                <span className="block">
-                  {brand.name} <span className="text-ink-muted">({brand.count})</span>
-                </span>
-                <span className="block text-sm leading-snug text-ink-muted">{brand.productNames}</span>
               </span>
             </label>
           ))}

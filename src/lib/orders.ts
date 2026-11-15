@@ -1,13 +1,24 @@
 // Nhãn, màu sắc, mã đơn hàng và quy tắc thanh toán. Dùng chung cho trang thanh toán, trang tài khoản và các trang Admin.
 import type { Order, OrderStatus, PaymentMethod, PaymentStatus, SavedAddress } from "@/types";
 import { validateAddress } from "@/lib/address";
-import { isValidEmail, isValidPhone } from "@/lib/validation";
+import { isValidEmail, isValidPhone, normalizePhone } from "@/lib/validation";
 
 // 4 trạng thái, theo thứ tự một đơn hàng đi qua (đơn "Đã hủy" thì dừng lại, không đi tiếp)
 export const orderStatuses: OrderStatus[] = ["PENDING", "CONFIRMED", "SHIPPING", "COMPLETED"];
 
 // Các trạng thái Admin chọn được: 4 bước + "Đã hủy"
 export const adminOrderStatuses: OrderStatus[] = [...orderStatuses, "CANCELLED"];
+
+// "+84901234567" và "090 123 4567" là cùng một số
+export function samePhone(a: string, b: string) {
+  const comparable = (phone: string) => normalizePhone(phone).replace(/^\+84/, "0");
+  return comparable(a) === comparable(b);
+}
+
+// Khách chỉ tự hủy được khi cửa hàng CHƯA xác nhận đơn. Đã xác nhận rồi thì phải liên hệ cửa hàng.
+export function customerCanCancel(order: Pick<Order, "status">) {
+  return order.status === "PENDING";
+}
 
 // Đơn chưa giao (hàng còn ở cửa hàng): hủy hoặc xóa đơn thì trả hàng lại kho
 export function isNotShipped(status: OrderStatus) {

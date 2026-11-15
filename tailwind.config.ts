@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 // Các design token của Đặc sản 3 Miền. Đổi một giá trị ở đây thì cả website thay đổi theo.
-// Màu đặc trưng là đỏ rượu của logo (primary), cộng một màu cho mỗi vùng:
+// Màu chủ đạo là đỏ tươi (primary, sáng hơn đỏ rượu của logo), cộng một màu cho mỗi vùng:
 // chè (xanh lá trà) cho Bắc, cà phê (rang đậm) cho Trung, nước mắm (hổ phách) cho Nam.
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
@@ -55,16 +55,11 @@ const config: Config = {
           "0%, 100%": { transform: "scale(1)" },
           "40%": { transform: "scale(1.35)" },
         },
-        "map-ping": {
-          "0%": { transform: "scale(1)", opacity: "1" },
-          "80%, 100%": { transform: "scale(3.2)", opacity: "0" },
-        },
       },
       animation: {
         "fade-up": "fade-up 0.6s ease-out both",
         progress: "progress 6s linear both", // một ảnh của banner trang chủ (SLIDE_SECONDS trong HeroBanner)
         "cart-pop": "cart-pop 0.4s ease-out",
-        "map-ping": "map-ping 2.4s ease-out infinite",
       },
     },
   },

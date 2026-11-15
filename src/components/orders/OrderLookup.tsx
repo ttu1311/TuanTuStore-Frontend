@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import OrderStatusBadge from "@/components/admin/OrderStatusBadge";
+import CancelOrderButton from "@/components/orders/CancelOrderButton";
 import BankTransferQR from "@/components/payment/BankTransferQR";
 import PaymentStatusBadge from "@/components/payment/PaymentStatusBadge";
 import { btnBase, btnPrimary } from "@/components/ui/buttons";
@@ -16,15 +17,12 @@ import {
   orderStatusLabels,
   paymentMethodLabels,
   paymentStatusLabels,
+  customerCanCancel,
   paymentStatusOf,
+  samePhone,
 } from "@/lib/orders";
-import { isValidPhone, normalizePhone } from "@/lib/validation";
+import { isValidPhone } from "@/lib/validation";
 import type { Order } from "@/types";
-
-// "+84901234567" và "090 123 4567" -> "0901234567", để so sánh số điện thoại dù khách gõ kiểu nào
-function comparablePhone(phone: string) {
-  return normalizePhone(phone).replace(/^\+84/, "0");
-}
 
 // "tt-000001", "TT-1", "1" -> "TT-000001". Trả về "" nếu không có số nào.
 function cleanCode(code: string) {
@@ -44,6 +42,7 @@ export default function OrderLookup({ initialCode = "" }: { initialCode?: string
   const [errors, setErrors] = useState<{ code?: string; phone?: string }>({});
   // Mã của đơn tìm thấy (null = chưa tìm, "" = không thấy). Đơn được đọc lại từ danh sách, nên luôn là trạng thái mới nhất.
   const [foundCode, setFoundCode] = useState<string | null>(null);
+  const [foundPhone, setFoundPhone] = useState(""); // số điện thoại đã dùng để tìm (để khách tự hủy đơn chờ xác nhận)
   const order = foundCode ? orders.find((item) => item.code === foundCode) : undefined;
 
   function handleSubmit(event: React.FormEvent) {
@@ -61,9 +60,10 @@ export default function OrderLookup({ initialCode = "" }: { initialCode?: string
     }
 
     const match = orders.find(
-      (item) => item.code === wantedCode && comparablePhone(item.phone) === comparablePhone(phone)
+      (item) => item.code === wantedCode && samePhone(item.phone, phone)
     );
     setFoundCode(match ? match.code : "");
+    setFoundPhone(phone);
   }
 
   return (
@@ -140,20 +140,20 @@ export default function OrderLookup({ initialCode = "" }: { initialCode?: string
             </Link>
           </div>
         )}
-        {order && <OrderDetails order={order} />}
+        {order && <OrderDetails order={order} phone={foundPhone} />}
       </div>
     </div>
   );
 }
 
 // Kết quả: trạng thái theo từng bước, các sản phẩm, tiền và địa chỉ giao hàng
-function OrderDetails({ order }: { order: Order }) {
+function OrderDetails({ order, phone }: { order: Order; phone: string }) {
   const currentStep = orderStatuses.indexOf(order.status);
   const paymentStatus = paymentStatusOf(order); // null với đơn COD
   const money: [string, string][] = [
     ["Tạm tính", formatVND(order.subtotal)],
-    ["Phí vận chuyển", order.shippingFee === 0 ? "Miễn phí" : formatVND(order.shippingFee)],
-    ["Giảm giá", `−${formatVND(order.discount)}`],
+    [order.shippingCoupon ? `Phí vận chuyển (mã ${order.shippingCoupon})` : "Phí vận chuyển", order.shippingFee === 0 ? "Miễn phí" : formatVND(order.shippingFee)],
+    [order.coupon ? `Giảm giá (mã ${order.coupon})` : "Giảm giá", `−${formatVND(order.discount)}`],
   ];
 
   return (
@@ -181,7 +181,7 @@ function OrderDetails({ order }: { order: Order }) {
       {/* Các bước của đơn: bước đã qua và bước hiện tại được tô màu. Đơn đã hủy thì không còn bước nào. */}
       {order.status === "CANCELLED" ? (
         <p className="mt-6 rounded-lg bg-sale/10 px-4 py-3 text-sm font-medium text-sale">
-          Đơn hàng này đã bị hủy. Cần hỗ trợ, hãy liên hệ cửa hàng.
+          {order.cancelledByCustomer ? "Bạn đã hủy đơn hàng này." : "Đơn hàng này đã bị hủy. Cần hỗ trợ, hãy liên hệ cửa hàng."}
         </p>
       ) : (
         <ol aria-label="Tiến trình đơn hàng" className="mt-6 grid grid-cols-4 gap-2">
@@ -197,6 +197,13 @@ function OrderDetails({ order }: { order: Order }) {
             );
           })}
         </ol>
+      )}
+
+      {/* Còn "Chờ xác nhận" thì khách tự hủy được; cửa hàng đã xác nhận thì không */}
+      {customerCanCancel(order) && (
+        <div className="mt-3">
+          <CancelOrderButton code={order.code} phone={phone} />
+        </div>
       )}
 
       <ul className="mt-6 divide-y divide-line border-y border-line">

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import RankedBars, { type BarItem } from "@/components/admin/charts/RankedBars";
-import SalesLineChart from "@/components/admin/charts/SalesLineChart";
 import { table, tableWrap, td, th } from "@/components/admin/tableStyles";
 import { useStore } from "@/context/StoreContext";
 import { formatVND } from "@/lib/format";
@@ -12,7 +11,6 @@ import {
   ordersBetween,
   productStats,
   rangeBounds,
-  salesSeries,
   salesSummary,
   type ProductStat,
   type RangeDays,
@@ -65,7 +63,6 @@ export default function AdminProductStats() {
   const inRange = ordersBetween(orders, from, to);
   const summary = salesSummary(inRange);
   const previous = rangeDays === null ? null : salesSummary(ordersBetween(orders, from - rangeDays, from - 1));
-  const series = salesSeries(orders, from, to);
   const rangeLabel = ranges.find((range) => range.days === rangeDays)?.label.toLowerCase() ?? "";
 
   const stats = productStats(products, inRange, productViews);
@@ -169,48 +166,6 @@ export default function AdminProductStats() {
           </div>
         ))}
       </div>
-
-      <section aria-labelledby="sales-chart-title" className={`${cardStyle} mt-6`}>
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 id="sales-chart-title" className={cardTitle}>
-            Doanh số theo {series.length > 0 && series[0].label.includes("–") ? "tuần" : "ngày"}
-          </h2>
-          <p className="text-sm text-ink-muted">Tổng tiền các đơn không hủy · rê chuột để xem từng ngày</p>
-        </div>
-        <div className="mt-4">
-          {summary.orders === 0 ? (
-            <p className="py-10 text-center text-sm text-ink-muted">Chưa có đơn hàng nào trong khoảng này.</p>
-          ) : (
-            <SalesLineChart points={series} />
-          )}
-        </div>
-        {/* Cùng số liệu ở dạng bảng (cho người không xem được biểu đồ) */}
-        {summary.orders > 0 && (
-          <details className="mt-3 text-sm">
-            <summary className="cursor-pointer font-medium text-primary">Xem dạng bảng</summary>
-            <table className="mt-2 w-full max-w-md text-left">
-              <thead>
-                <tr className="text-ink-muted">
-                  <th className="py-1 font-medium">Ngày</th>
-                  <th className="py-1 text-right font-medium">Số đơn</th>
-                  <th className="py-1 text-right font-medium">Doanh số</th>
-                </tr>
-              </thead>
-              <tbody>
-                {series
-                  .filter((point) => point.orders > 0)
-                  .map((point) => (
-                    <tr key={point.key} className="border-t border-line">
-                      <td className="py-1">{point.label}</td>
-                      <td className="py-1 text-right tabular-nums">{point.orders}</td>
-                      <td className="py-1 text-right tabular-nums">{formatVND(point.value)}</td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </details>
-        )}
-      </section>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <section aria-labelledby="top-products-title" className={cardStyle}>

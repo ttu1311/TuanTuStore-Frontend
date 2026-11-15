@@ -16,7 +16,7 @@ export default function AdminProductTable() {
 
   return (
     <div className={tableWrap}>
-      <table className={`${table} min-w-[820px]`}>
+      <table className={`${table} min-w-[960px]`}>
         <thead>
           <tr>
             <th className={th}>Ảnh</th>

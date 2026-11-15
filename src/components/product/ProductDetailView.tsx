@@ -79,7 +79,6 @@ export default function ProductDetailView({ id }: { id: string }) {
   // Dịp tặng của sản phẩm, theo thứ tự trong src/data/occasions.ts; id lạ (đã bị bỏ) thì bỏ qua
   const productOccasions = (product.occasions ?? []).flatMap((id) => findOccasion(id) ?? []);
   const sameBrandProducts = products.filter((item) => item.brand === product.brand && item.id !== product.id);
-  const brandHref = `/san-pham?brand=${encodeURIComponent(product.brand)}`;
 
   // Các dòng của bảng "Thông tin sản phẩm"
   const productInfo = [
@@ -161,7 +160,7 @@ export default function ProductDetailView({ id }: { id: string }) {
 
             <dl className="mt-4 space-y-1 text-ink-muted">
               <div className="flex gap-2">
-                <dt>Thương hiệu:</dt>
+                <dt className="shrink-0">Thương hiệu:</dt>
                 <dd className="font-medium text-ink">{product.brand}</dd>
               </div>
               <div className="flex items-center gap-2">
@@ -260,12 +259,6 @@ export default function ProductDetailView({ id }: { id: string }) {
                   </ul>
                 </div>
               )}
-              <Link
-                href={brandHref}
-                className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary transition-colors duration-200 hover:underline"
-              >
-                Xem tất cả sản phẩm của {product.brand}
-              </Link>
             </div>
           </div>
 

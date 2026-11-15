@@ -113,7 +113,7 @@ export default function GiftBoxBuilder({ initial }: { initial: BoxCriteria }) {
           <dl className="mt-4 space-y-2 border-t border-line pt-4">
             {picks.map(({ region, product }) => (
               <div key={region} className="flex justify-between gap-3 text-sm">
-                <dt className="min-w-0 truncate text-ink">{product?.name ?? `Chưa có món ${regions[region].label}`}</dt>
+                <dt className="min-w-0 break-words text-ink">{product?.name ?? `Chưa có món ${regions[region].label}`}</dt>
                 <dd className="shrink-0 text-ink-muted">{product ? formatVND(product.price) : "—"}</dd>
               </div>
             ))}
@@ -232,8 +232,8 @@ export default function GiftBoxBuilder({ initial }: { initial: BoxCriteria }) {
                         </span>
                       )}
                       <span className="block p-3">
-                        <span className="block font-semibold leading-snug text-ink">{product.name}</span>
-                        <span className="mt-0.5 block text-sm text-ink-muted">
+                        <span className="block text-balance font-semibold leading-snug text-ink">{product.name}</span>
+                        <span className="mt-0.5 block text-balance text-sm text-ink-muted">
                           {formatVND(product.price)} · {product.pack}
                         </span>
                       </span>

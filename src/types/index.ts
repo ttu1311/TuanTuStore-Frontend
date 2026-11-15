@@ -28,8 +28,9 @@ export interface ProductStory {
   season?: string; // Mùa ngon nhất (chỉ ghi khi món đó có mùa rõ ràng)
 }
 
-// Loại thương hiệu, để khách biết "thương hiệu" này thực chất là gì
-export type BrandKind = "Thương hiệu" | "Nhãn hiệu tập thể" | "Chỉ dẫn địa lý" | "Nghề truyền thống";
+// Loại thương hiệu, để khách biết "thương hiệu" này thực chất là gì.
+// "Đặc sản địa phương": sản vật nổi tiếng của một vùng, không phải làng nghề và chưa có chỉ dẫn địa lý được kiểm chứng.
+export type BrandKind = "Thương hiệu" | "Nhãn hiệu tập thể" | "Chỉ dẫn địa lý" | "Nghề truyền thống" | "Đặc sản địa phương";
 
 // Thông tin về một thương hiệu (xem src/data/brands.ts). Sản phẩm chỉ giữ TÊN thương hiệu (Product.brand).
 export interface Brand {
@@ -104,14 +105,32 @@ export interface Order {
   paymentStatus?: PaymentStatus; // chỉ có ở đơn chuyển khoản (đơn chuyển khoản cũ không có = chưa thanh toán)
   paidAt?: string; // ngày ISO Admin xác nhận đã nhận tiền
   status: OrderStatus;
+  cancelledByCustomer?: true; // khách tự hủy khi đơn còn "Chờ xác nhận" (không có = Admin hủy, hoặc đơn chưa hủy)
   items: OrderItem[];
   subtotal: number;
   shippingFee: number;
   discount: number;
+  coupon?: string; // mã giảm giá đã dùng (ví dụ "HOCHIEU50", xem src/lib/coupons.ts); không có = giảm mặc định
+  shippingCoupon?: string; // mã miễn phí vận chuyển đã dùng (khi đó shippingFee = 0)
   total: number;
   // Có = khách chọn gói quà (miễn phí) khi thanh toán; `message` là lời nhắn in trên thiệp ("" = thiệp trống).
   // Không có ở đơn cũ và đơn không gói quà.
   gift?: { message: string };
+  createdAt: string; // ngày ISO
+}
+
+// Mã giảm giá do chủ cửa hàng tạo ở /admin/ma-giam-gia (mã hộ chiếu HOCHIEU50 thì cố định, không nằm ở đây).
+// PERCENT: giảm value% tạm tính; AMOUNT: giảm value đồng; FREE_SHIPPING: miễn phí vận chuyển (value = 0).
+export type CouponKind = "PERCENT" | "AMOUNT" | "FREE_SHIPPING";
+
+export interface Coupon {
+  code: string; // chữ in hoa và số, không dấu cách, ví dụ "TET2027"
+  kind: CouponKind;
+  value: number;
+  maxDiscount?: number; // chỉ mã PERCENT: giảm tối đa (VND)
+  minSubtotal?: number; // tạm tính tối thiểu (VND)
+  usageLimit?: number; // tổng số lượt dùng của mọi khách; không có = không giới hạn
+  active: boolean; // Admin tạm tắt mã mà không cần xóa
   createdAt: string; // ngày ISO
 }
 

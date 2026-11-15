@@ -35,7 +35,7 @@ export default function Header() {
             name="q"
             type="search"
             maxLength={100}
-            placeholder="Tìm đặc sản, ví dụ: chè, ô mai, nước mắm…"
+            placeholder="Tìm chè, ô mai, nước mắm…"
             autoComplete="off"
             className="h-12 w-full rounded-md border border-line bg-white pl-12 pr-4 text-ink transition-colors duration-200 placeholder:text-[#686D69] focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-soft"
           />

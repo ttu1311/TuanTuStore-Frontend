@@ -11,9 +11,10 @@
     --c-ink-muted: 87 83 78; /* #57534E — chữ phụ (7,6:1 trên nền, 7,1:1 trên surface) */
     --c-line: 236 231 225; /* #ECE7E1 — đường kẻ, viền */
     --c-surface: 250 247 243; /* #FAF7F3 — vùng xen kẽ: trắng ấm rất nhạt */
-    --c-primary: 131 14 32; /* #830E20 — MÀU ĐẶC TRƯNG: đỏ rượu, đúng màu chữ logo (chữ trắng trên nút 10,3:1) */
-    --c-primary-dark: 99 10 24; /* #630A18 — nút khi rê chuột */
-    --c-primary-soft: 252 242 240; /* #FCF2F0 — nền nhạt của mục đang chọn (chữ đỏ rượu trên nền này ≥ 4,5:1) */
+    --c-primary: 196 34 56; /* #C42238 — MÀU CHỦ ĐẠO: đỏ tươi, cùng sắc với đỏ rượu của logo nhưng sáng hơn (chữ trắng trên nút 5,8:1).
+                               Logo và banner giữ đỏ rượu #830E20 (mã màu viết thẳng trong Logo.tsx, HeroBanner.tsx). */
+    --c-primary-dark: 163 22 43; /* #A3162B — nút khi rê chuột */
+    --c-primary-soft: 252 242 240; /* #FCF2F0 — nền nhạt của mục đang chọn (chữ đỏ trên nền này 5,3:1) */
     --c-che: 63 106 59; /* #3F6A3B — Miền Bắc: xanh lá trà */
     --c-che-soft: 228 237 225; /* #E4EDE1 */
     --c-brown: 91 59 42; /* #5B3B2A — Miền Trung: cà phê rang */
@@ -32,6 +33,21 @@
 
   body {
     @apply bg-paper font-sans text-base leading-relaxed text-ink antialiased;
+    /* Không để một chữ lẻ loi rơi xuống dòng cuối ("Yến sào Khánh / Hòa" -> "Yến sào / Khánh Hòa") */
+    text-wrap: pretty;
+  }
+
+  /* Tiêu đề, ô bảng, nhãn, nút (chữ ngắn): chia các dòng dài gần bằng nhau ("Chả mực Hạ / Long" -> "Chả mực / Hạ Long") */
+  h1,
+  h2,
+  h3,
+  h4,
+  th,
+  td,
+  dt,
+  label,
+  button {
+    text-wrap: balance;
   }
 
   :focus-visible {

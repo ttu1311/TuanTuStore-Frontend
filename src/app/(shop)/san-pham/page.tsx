@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 type ProductListingPageProps = {
-  searchParams: Promise<{ q?: string | string[]; region?: string | string[]; province?: string | string[]; brand?: string | string[]; dip?: string | string[] }>;
+  searchParams: Promise<{ q?: string | string[]; region?: string | string[]; province?: string | string[]; dip?: string | string[] }>;
 };
 
 // Giá trị đầu tiên khi một tham số truy vấn xuất hiện nhiều lần
@@ -24,12 +24,10 @@ export default async function ProductListingPage({ searchParams }: ProductListin
   const initialSearch = firstValue(params.q).trim().slice(0, 100);
   const regionValue = firstValue(params.region);
   const initialRegion = isRegion(regionValue) ? regionValue : undefined;
-  // Bản đồ (/ban-do) và hộ chiếu đặc sản mở /san-pham?province=Cà Mau
+  // Hộ chiếu đặc sản mở /san-pham?province=Cà Mau
   // Liên kết cũ còn ghi tên tỉnh trước sáp nhập (?province=Sóc Trăng) vẫn mở đúng tỉnh mới (Cần Thơ)
   const provinceParam = firstValue(params.province).trim().slice(0, 100);
   const initialProvince = provinceParam && normalizeProvince(provinceParam);
-  // Trang chi tiết sản phẩm mở /san-pham?brand=Hồng Lam để xem mọi sản phẩm của thương hiệu đó
-  const initialBrand = firstValue(params.brand).trim().slice(0, 100);
   // Các thẻ dịp tặng ở trang chi tiết sản phẩm mở /san-pham?dip=qua-tet
   const initialOccasion = firstValue(params.dip).trim().slice(0, 50);
 
@@ -42,11 +40,10 @@ export default async function ProductListingPage({ searchParams }: ProductListin
 
       {/* key: tìm kiếm mới từ header (một ?q= khác) làm danh sách bắt đầu lại với từ khóa mới */}
       <ProductListing
-        key={`${initialSearch}|${initialRegion ?? ""}|${initialProvince}|${initialBrand}|${initialOccasion}`}
+        key={`${initialSearch}|${initialRegion ?? ""}|${initialProvince}|${initialOccasion}`}
         initialSearch={initialSearch}
         initialRegion={initialRegion}
         initialProvince={initialProvince}
-        initialBrand={initialBrand}
         initialOccasion={initialOccasion}
       />
     </PageContainer>

@@ -3,14 +3,18 @@
 import Link from "next/link";
 import { useState } from "react";
 import OrderStatusBadge from "@/components/admin/OrderStatusBadge";
+import CancelOrderButton from "@/components/orders/CancelOrderButton";
 import BankTransferQR from "@/components/payment/BankTransferQR";
 import PaymentStatusBadge from "@/components/payment/PaymentStatusBadge";
+import Stars from "@/components/reviews/Stars";
+import { ReviewForm, ratingLabels } from "@/components/reviews/ProductReviews";
 import { btnBase, btnPrimary } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
 import { formatDate, formatVND } from "@/lib/format";
-import { paymentStatusOf } from "@/lib/orders";
+import { customerCanCancel, paymentStatusOf } from "@/lib/orders";
 
-// "Đơn hàng của tôi": chỉ gồm đơn của người đang đăng nhập, mới nhất lên đầu
+// "Lịch sử mua hàng": chỉ gồm đơn của người đang đăng nhập, mới nhất lên đầu.
+// Đơn đã hoàn thành (khách đã nhận hàng): mỗi món có nút chấm sao và nhận xét. Đánh giá này cũng hiện ở trang chi tiết sản phẩm.
 export default function OrdersSection({ userId }: { userId: string }) {
   const { orders } = useStore();
   const myOrders = orders
@@ -21,7 +25,7 @@ export default function OrdersSection({ userId }: { userId: string }) {
 
   return (
     <div>
-      <h2 className="font-display text-2xl font-semibold text-ink">Đơn hàng của tôi</h2>
+      <h2 className="font-display text-2xl font-semibold text-ink">Lịch sử mua hàng</h2>
 
       {myOrders.length === 0 ? (
         <div className="mt-6 rounded-xl border border-line bg-surface px-6 py-12 text-center">
@@ -57,9 +61,12 @@ export default function OrdersSection({ userId }: { userId: string }) {
                     onClick={() => setOpenCode(isOpen ? null : order.code)}
                     className="min-h-11 text-sm font-medium text-primary underline underline-offset-4 hover:text-primary-dark"
                   >
-                    {isOpen ? "Ẩn chi tiết" : "Xem chi tiết"}
+                    {isOpen ? "Ẩn chi tiết" : order.status === "COMPLETED" ? "Xem chi tiết và đánh giá" : "Xem chi tiết"}
                   </button>
                 </div>
+
+                {/* Còn "Chờ xác nhận" thì khách tự hủy được; cửa hàng đã xác nhận thì không */}
+                {customerCanCancel(order) && <CancelOrderButton code={order.code} />}
 
                 {isOpen && paymentStatusOf(order) === "UNPAID" && order.status !== "CANCELLED" && (
                   <div className="mt-3">
@@ -69,14 +76,17 @@ export default function OrdersSection({ userId }: { userId: string }) {
                 {isOpen && (
                   <ul className="mt-3 divide-y divide-line border-t border-line">
                     {order.items.map((item) => (
-                      <li key={item.productId} className="flex justify-between gap-4 py-2 text-ink-muted">
-                        <span className="min-w-0">
-                          {item.name}
-                          <span className="block text-xs">
-                            {formatVND(item.price)} x {item.quantity}
+                      <li key={item.productId} className="py-2">
+                        <div className="flex justify-between gap-4 text-ink-muted">
+                          <span className="min-w-0">
+                            {item.name}
+                            <span className="block text-xs">
+                              {formatVND(item.price)} x {item.quantity}
+                            </span>
                           </span>
-                        </span>
-                        <span className="whitespace-nowrap font-medium text-ink">{formatVND(item.price * item.quantity)}</span>
+                          <span className="whitespace-nowrap font-medium text-ink">{formatVND(item.price * item.quantity)}</span>
+                        </div>
+                        {order.status === "COMPLETED" && <ItemReview productId={item.productId} userId={userId} />}
                       </li>
                     ))}
                   </ul>
@@ -85,6 +95,42 @@ export default function OrdersSection({ userId }: { userId: string }) {
             );
           })}
         </ul>
+      )}
+    </div>
+  );
+}
+
+// Đánh giá một món của đơn đã hoàn thành: số sao đã chấm (nếu có) và nút mở form viết / sửa đánh giá
+function ItemReview({ productId, userId }: { productId: string; userId: string }) {
+  const { products, reviews } = useStore();
+  const [isOpen, setIsOpen] = useState(false);
+  // Sản phẩm đã bị xóa khỏi cửa hàng thì không đánh giá được nữa
+  if (!products.some((product) => product.id === productId)) return null;
+  const myReview = reviews.find((review) => review.productId === productId && review.userId === userId);
+
+  return (
+    <div className="mt-1">
+      <div className="flex flex-wrap items-center gap-x-3">
+        {myReview && (
+          <span className="flex items-center gap-2 text-sm text-ink-muted">
+            <Stars value={myReview.rating} size={16} />
+            {ratingLabels[myReview.rating]}
+            <span className="sr-only">, bạn đã chấm {myReview.rating} trên 5 sao</span>
+          </span>
+        )}
+        <button
+          type="button"
+          aria-expanded={isOpen}
+          onClick={() => setIsOpen(!isOpen)}
+          className="min-h-11 text-sm font-semibold text-primary underline-offset-4 hover:underline"
+        >
+          {isOpen ? "Đóng" : myReview ? "Sửa đánh giá" : "Đánh giá sản phẩm"}
+        </button>
+      </div>
+      {isOpen && (
+        <div className="mt-1">
+          <ReviewForm productId={productId} existing={myReview} />
+        </div>
       )}
     </div>
   );

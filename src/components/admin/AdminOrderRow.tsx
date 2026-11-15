@@ -70,12 +70,13 @@ export default function AdminOrderRow({ order, accountText }: { order: Order; ac
       ? [["Trạng thái thanh toán", paymentStatus === "PAID" && order.paidAt ? `${paymentStatusLabels.PAID} (${formatDate(order.paidAt)})` : paymentStatusLabels[paymentStatus]]]
       : []),
     ["Tài khoản", accountText],
+    ...(order.cancelledByCustomer ? [["Hủy đơn", "Khách tự hủy khi đơn còn chờ xác nhận"]] : []),
   ];
 
   const totalRows = [
     ["Tạm tính", formatVND(order.subtotal)],
-    ["Phí vận chuyển", order.shippingFee === 0 ? "Miễn phí" : formatVND(order.shippingFee)],
-    ["Giảm giá", `−${formatVND(order.discount)}`],
+    [order.shippingCoupon ? `Phí vận chuyển (mã ${order.shippingCoupon})` : "Phí vận chuyển", order.shippingFee === 0 ? "Miễn phí" : formatVND(order.shippingFee)],
+    [order.coupon ? `Giảm giá (mã ${order.coupon})` : "Giảm giá", `−${formatVND(order.discount)}`],
   ];
 
   return (

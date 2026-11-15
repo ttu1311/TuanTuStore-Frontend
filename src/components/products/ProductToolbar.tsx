@@ -32,7 +32,7 @@ export default function ProductToolbar({ total, search, onSearchChange, sort, on
         <input
           id="product-search"
           type="search"
-          placeholder="Tìm đặc sản, ví dụ: chè, ô mai, nước mắm…"
+          placeholder="Tìm chè, ô mai, nước mắm…"
           autoComplete="off"
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}

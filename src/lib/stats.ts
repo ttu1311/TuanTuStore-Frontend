@@ -37,6 +37,14 @@ export function ordersByStatus(orders: Order[]) {
   return counts;
 }
 
+// 10 sản phẩm tồn kho nhiều nhất. Bằng nhau thì món bán được ít hơn lên trước (hàng đứng lâu), rồi theo tên.
+export function topStock(stats: ProductStat[], count = 10) {
+  return [...stats]
+    .filter((stat) => stat.product.stock > 0)
+    .sort((a, b) => b.product.stock - a.product.stock || a.sold - b.sold || a.product.name.localeCompare(b.product.name, "vi"))
+    .slice(0, count);
+}
+
 // Sản phẩm còn từ LOW_STOCK trở xuống (kể cả đã hết), ít nhất lên đầu
 export function lowStockProducts(products: Product[]) {
   return products.filter((product) => product.stock <= LOW_STOCK).sort((a, b) => a.stock - b.stock || a.name.localeCompare(b.name, "vi"));
@@ -85,37 +93,94 @@ export function ordersBetween(orders: Order[], from: number, to: number) {
   });
 }
 
-export type SalesPoint = {
-  key: string; // ngày đầu của nhóm, "YYYY-MM-DD"
-  label: string; // "08/11", hoặc "02/11–08/11" khi gộp theo tuần
-  value: number; // doanh số: tổng tiền các đơn không hủy
-  orders: number; // số đơn không hủy
-};
-
-// Doanh số theo ngày trong khoảng [from, to]. Khoảng dài hơn 92 ngày thì gộp theo tuần cho dễ đọc.
-export function salesSeries(orders: Order[], from: number, to: number): SalesPoint[] {
-  const step = to - from + 1 > 92 ? 7 : 1;
-  const points: SalesPoint[] = [];
-  for (let start = from; start <= to; start += step) {
-    const end = Math.min(start + step - 1, to);
-    const label = step === 1 ? shortDay(keyFromNumber(start)) : `${shortDay(keyFromNumber(start))}–${shortDay(keyFromNumber(end))}`;
-    points.push({ key: keyFromNumber(start), label, value: 0, orders: 0 });
-  }
-  for (const order of orders) {
-    if (order.status === "CANCELLED") continue;
-    const n = dayNumber(dayKey(order.createdAt));
-    if (n < from || n > to) continue;
-    const point = points[Math.floor((n - from) / step)];
-    point.value += order.total;
-    point.orders += 1;
-  }
-  return points;
-}
-
 // Số liệu chính của một nhóm đơn (đơn đã hủy không tính)
 export function salesSummary(orders: Order[]) {
   const live = orders.filter((order) => order.status !== "CANCELLED");
   const revenue = live.reduce((sum, order) => sum + order.total, 0);
   const items = live.reduce((sum, order) => sum + order.items.reduce((s, item) => s + item.quantity, 0), 0);
   return { revenue, orders: live.length, items, average: live.length > 0 ? Math.round(revenue / live.length) : 0 };
+}
+
+// ---------- Doanh thu theo ngày / tuần / quý / năm (trang Tổng quan) ----------
+
+export type RevenueUnit = "day" | "week" | "quarter" | "year";
+
+export type RevenuePoint = {
+  key: string; // ngày "2026-11-08", thứ Hai đầu tuần "2026-11-02", quý "2026-Q4", năm "2026"
+  label: string; // nhãn ngắn dưới trục: "08/11", "02/11", "Q4/26", "2026"
+  longLabel: string; // trong chú thích và bảng: "08/11/2026", "02/11–08/11/2026", "Quý 4/2026", "Năm 2026"
+  value: number; // doanh thu: tổng tiền (khách trả) của các đơn ĐÃ HOÀN THÀNH đặt trong kỳ này
+  orders: number; // số đơn hoàn thành
+};
+
+// Số kỳ hiển thị của mỗi đơn vị (năm: từ năm có đơn đầu tiên tới nay)
+export const revenueWindow: Record<Exclude<RevenueUnit, "year">, number> = { day: 30, week: 12, quarter: 8 };
+
+// Thứ Hai của tuần chứa ngày n (ngày 0 = 01/01/1970 là thứ Năm)
+function mondayOf(n: number) {
+  return n - ((((n + 3) % 7) + 7) % 7);
+}
+
+function yearOf(key: string) {
+  return Number(key.slice(0, 4));
+}
+
+function quarterOf(key: string) {
+  return Math.floor((Number(key.slice(5, 7)) - 1) / 3) + 1;
+}
+
+// Kỳ (của đơn vị unit) chứa ngày "YYYY-MM-DD"
+function bucketKey(unit: RevenueUnit, key: string) {
+  if (unit === "day") return key;
+  if (unit === "week") return keyFromNumber(mondayOf(dayNumber(key)));
+  if (unit === "quarter") return `${yearOf(key)}-Q${quarterOf(key)}`;
+  return String(yearOf(key));
+}
+
+// Doanh thu theo kỳ, kỳ cũ nhất bên trái, kỳ hiện tại bên phải (kỳ không có đơn = 0)
+export function revenueSeries(orders: Order[], unit: RevenueUnit, now = new Date()): RevenuePoint[] {
+  const todayKey = dayKey(now);
+  const today = dayNumber(todayKey);
+  const points: RevenuePoint[] = [];
+
+  if (unit === "day") {
+    for (let n = today - revenueWindow.day + 1; n <= today; n++) {
+      const key = keyFromNumber(n);
+      points.push({ key, label: shortDay(key), longLabel: `${shortDay(key)}/${key.slice(0, 4)}`, value: 0, orders: 0 });
+    }
+  } else if (unit === "week") {
+    const thisMonday = mondayOf(today);
+    for (let i = revenueWindow.week - 1; i >= 0; i--) {
+      const start = keyFromNumber(thisMonday - i * 7);
+      const end = keyFromNumber(thisMonday - i * 7 + 6);
+      points.push({ key: start, label: shortDay(start), longLabel: `Tuần ${shortDay(start)}–${shortDay(end)}/${end.slice(0, 4)}`, value: 0, orders: 0 });
+    }
+  } else if (unit === "quarter") {
+    let year = yearOf(todayKey);
+    let quarter = quarterOf(todayKey);
+    for (let i = 0; i < revenueWindow.quarter; i++) {
+      points.unshift({ key: `${year}-Q${quarter}`, label: `Q${quarter}/${String(year).slice(2)}`, longLabel: `Quý ${quarter}/${year}`, value: 0, orders: 0 });
+      quarter -= 1;
+      if (quarter === 0) {
+        quarter = 4;
+        year -= 1;
+      }
+    }
+  } else {
+    const thisYear = yearOf(todayKey);
+    const firstYear = orders.reduce((min, order) => Math.min(min, yearOf(dayKey(order.createdAt))), thisYear);
+    for (let year = firstYear; year <= thisYear; year++) {
+      points.push({ key: String(year), label: String(year), longLabel: `Năm ${year}`, value: 0, orders: 0 });
+    }
+  }
+
+  const byKey = new Map(points.map((point) => [point.key, point]));
+  for (const order of orders) {
+    if (order.status !== "COMPLETED") continue;
+    const point = byKey.get(bucketKey(unit, dayKey(order.createdAt)));
+    if (!point) continue; // ngoài khoảng đang xem
+    point.value += order.total;
+    point.orders += 1;
+  }
+  return points;
 }

@@ -38,7 +38,7 @@ export default function RankedBars({ items, label, empty }: { items: BarItem[]; 
           >
             <span className="flex min-w-0 items-center gap-2 text-sm text-ink">
               {item.dotClass && <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${item.dotClass}`} aria-hidden="true" />}
-              <span className="truncate" title={item.label}>
+              <span className="min-w-0 break-words" title={item.label}>
                 {item.label}
               </span>
             </span>

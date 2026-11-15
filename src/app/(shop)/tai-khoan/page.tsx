@@ -20,7 +20,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
       <h1 className="mb-8 font-display text-3xl font-semibold leading-tight text-ink md:text-title">Tài khoản của tôi</h1>
       {/* Chỉ dành cho người đã đăng nhập: khách chưa đăng nhập bị chuyển tới /dang-nhap */}
       <RequireLogin>
-        {/* /tai-khoan?tab=orders mở "Đơn hàng của tôi" trước, ?tab=wishlist "Sản phẩm yêu thích", ?tab=passport "Hộ chiếu đặc sản" */}
+        {/* /tai-khoan?tab=orders mở "Lịch sử mua hàng" trước, ?tab=wishlist "Sản phẩm yêu thích", ?tab=passport "Hộ chiếu đặc sản" */}
         <AccountView initialSection={tab === "orders" || tab === "wishlist" || tab === "passport" ? tab : "profile"} />
       </RequireLogin>
     </PageContainer>

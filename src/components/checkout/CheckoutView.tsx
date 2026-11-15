@@ -10,6 +10,7 @@ import LoadingState from "@/components/ui/LoadingState";
 import { useStore } from "@/context/StoreContext";
 import FreeShippingProgress from "@/components/cart/FreeShippingProgress";
 import { calculateTotals, getCartLines, selectedLines, type CartLine } from "@/lib/cart";
+import { PASSPORT_COUPON, applyCodes, codeExists, codeProblem, codeSlot, describeCode, normalizeCouponCode, type AppliedCodes } from "@/lib/coupons";
 import { formatVND } from "@/lib/format";
 import { emptyAddress, formatAddress, validateAddress } from "@/lib/address";
 import {
@@ -55,7 +56,7 @@ function hasDeliveryProfile(user: User | null): user is User & { address: SavedA
 // Khách đã đăng nhập chọn "Mua cho bản thân" (dùng địa chỉ mặc định trong tài khoản, không nhập lại)
 // hoặc "Mua tặng người thân" (nhập người nhận). Khách chưa đăng nhập luôn điền form.
 function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) {
-  const { placeOrder, updateProfile } = useStore();
+  const { placeOrder, updateProfile, products, orders, coupons } = useStore();
   const [recipient, setRecipient] = useState<Recipient>("self");
   // Mỗi lựa chọn giữ form riêng, nên chuyển qua lại không làm mất chữ đã gõ
   const [forms, setForms] = useState<Record<Recipient, CheckoutFields>>({
@@ -77,6 +78,10 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
   // Lần đầu "Mua cho bản thân" khi hồ sơ chưa có địa chỉ: lưu luôn làm địa chỉ mặc định
   const [saveAsDefault, setSaveAsDefault] = useState(true);
   const [saveError, setSaveError] = useState(""); // lỗi không thuộc về một ô nào
+  // Mã giảm giá: chữ khách gõ, các mã đã áp dụng (tối đa một mã giảm giá + một mã miễn phí vận chuyển) và lỗi của ô mã
+  const [couponText, setCouponText] = useState("");
+  const [codes, setCodes] = useState<AppliedCodes>({});
+  const [couponError, setCouponError] = useState("");
 
   // Mua cho bản thân với hồ sơ đầy đủ: không có ô nào để nhập, chỉ hiện địa chỉ đã lưu
   const useSavedAddress = recipient === "self" && hasDeliveryProfile(user);
@@ -84,9 +89,40 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
   const values = forms[recipient];
 
   // Giá lấy từ danh sách sản phẩm hiện tại trong localStorage
-  const { subtotal, shippingFee, discount, total } = calculateTotals(
-    lines.reduce((sum, line) => sum + line.product.price * line.quantity, 0)
-  );
+  const lineTotal = lines.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
+  const couponContext = { user, products, orders, coupons, subtotal: lineTotal };
+  // Mã đã áp dụng mà nay không còn hợp lệ (ví dụ Admin vừa tắt mã ở tab khác): tính như chưa có mã, placeOrder sẽ báo lỗi
+  const priced = applyCodes(codes, couponContext);
+  const { subtotal, shippingFee, discount, total } = priced.ok ? priced.totals : calculateTotals(lineTotal);
+
+  function applyCoupon() {
+    const code = normalizeCouponCode(couponText);
+    if (!code) {
+      setCouponError("Vui lòng nhập mã giảm giá.");
+      return;
+    }
+    const slot = codeSlot(code, coupons) === "shipping" ? "shippingCoupon" : "coupon";
+    const current = codes[slot];
+    const problem = !codeExists(code, coupons)
+      ? "Mã giảm giá không đúng."
+      : current === code
+        ? "Bạn đã áp dụng mã này."
+        : current
+          ? slot === "coupon"
+            ? `Mỗi đơn chỉ dùng một mã giảm giá. Bỏ mã ${current} trước nếu muốn đổi.`
+            : `Đơn đã có mã miễn phí vận chuyển ${current}.`
+          : codeProblem(code, couponContext);
+    setCouponError(problem ?? "");
+    if (!problem) {
+      setCodes({ ...codes, [slot]: code });
+      setCouponText("");
+    }
+  }
+
+  function removeCode(slot: keyof AppliedCodes) {
+    setCodes({ ...codes, [slot]: undefined });
+    setCouponError("");
+  }
 
   function clearError(field: keyof CheckoutErrors) {
     setSaveError("");
@@ -135,6 +171,7 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
     const result = placeOrder(customer, payment, {
       gift: giftWrap ? { message: giftMessage } : undefined,
       forOther: Boolean(user) && recipient === "other",
+      codes,
     });
     if (!result.ok) {
       setSaveError(result.message);
@@ -181,8 +218,11 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
 
   const summaryRows = [
     { label: "Tạm tính", value: formatVND(subtotal) },
-    { label: "Phí vận chuyển", value: shippingFee === 0 ? "Miễn phí" : formatVND(shippingFee) },
-    { label: "Giảm giá", value: `−${formatVND(discount)}` },
+    {
+      label: codes.shippingCoupon ? `Phí vận chuyển (mã ${codes.shippingCoupon})` : "Phí vận chuyển",
+      value: shippingFee === 0 ? "Miễn phí" : formatVND(shippingFee),
+    },
+    { label: codes.coupon ? `Giảm giá (mã ${codes.coupon})` : "Giảm giá", value: `−${formatVND(discount)}` },
     ...(giftWrap ? [{ label: "Gói quà & thiệp", value: "Miễn phí" }] : []),
   ];
 
@@ -215,8 +255,71 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
               </p>
             )}
 
-            <div className="mt-2 border-t border-line pt-4">
-              <FreeShippingProgress subtotal={subtotal} />
+            {/* Đã có mã miễn phí vận chuyển thì không cần nhắc "mua thêm để được miễn phí vận chuyển" */}
+            {!codes.shippingCoupon && (
+              <div className="mt-2 border-t border-line pt-4">
+                <FreeShippingProgress subtotal={subtotal} />
+              </div>
+            )}
+
+            {/* Mã giảm giá. Enter trong ô này áp dụng mã, KHÔNG gửi đơn hàng. */}
+            <div className="mt-4 border-t border-line pt-4">
+              <label htmlFor="coupon" className="mb-2 block font-medium text-ink">
+                Mã giảm giá
+              </label>
+              {(["coupon", "shippingCoupon"] as const).map((slot) => {
+                const code = codes[slot];
+                if (!code) return null;
+                return (
+                  <div key={slot} className="mb-2 flex flex-wrap items-center justify-between gap-x-3 rounded-lg bg-che-soft px-4 py-1">
+                    <p className="text-sm text-ink">
+                      <span className="font-semibold">{code}</span>: {describeCode(code, coupons)}
+                    </p>
+                    <button type="button" onClick={() => removeCode(slot)} className="min-h-11 text-sm font-medium text-primary underline underline-offset-4">
+                      Bỏ mã
+                    </button>
+                  </div>
+                );
+              })}
+              <div className="flex gap-2">
+                <input
+                  id="coupon"
+                  type="text"
+                  autoComplete="off"
+                  value={couponText}
+                  maxLength={30}
+                  onChange={(event) => {
+                    setCouponText(event.target.value);
+                    setCouponError("");
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      applyCoupon();
+                    }
+                  }}
+                  placeholder="Nhập mã"
+                  aria-invalid={couponError ? true : undefined}
+                  aria-describedby={couponError ? "coupon-error" : "coupon-hint"}
+                  className={`${fieldStyle} min-w-0 flex-1 uppercase placeholder:normal-case ${couponError ? fieldBad : fieldOk}`}
+                />
+                <button type="button" onClick={applyCoupon} className={`${btnBase} ${btnSecondary} shrink-0`}>
+                  Áp dụng
+                </button>
+              </div>
+              {couponError ? (
+                <p id="coupon-error" role="alert" className="mt-1.5 text-sm text-sale">
+                  {couponError}
+                </p>
+              ) : (
+                <p id="coupon-hint" className="mt-1.5 text-sm text-ink-muted">
+                  Mỗi đơn dùng được một mã giảm giá và một mã miễn phí vận chuyển. Đóng đủ {PASSPORT_COUPON.stampsNeeded} dấu trong{" "}
+                  <Link href="/tai-khoan?tab=passport" className="font-medium text-primary underline underline-offset-4">
+                    Hộ chiếu đặc sản
+                  </Link>{" "}
+                  để nhận mã giảm {PASSPORT_COUPON.percent}%.
+                </p>
+              )}
             </div>
 
             <dl className="mt-4 space-y-3 border-t border-line pt-4">
@@ -310,7 +413,7 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
                 )}
                 {user && recipient === "other" && (
                   <p className="mt-5 text-sm text-ink-muted">
-                    Nhập thông tin của người nhận. Thông báo đơn hàng vẫn gửi tới email của bạn ({user.email}).
+                    Nhập thông tin của người nhận.
                   </p>
                 )}
                 <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -447,7 +550,7 @@ export default function CheckoutView() {
           </Link>
           {placedOrder.userId ? (
             <Link href="/tai-khoan?tab=orders" className={`${btnBase} ${btnSecondary}`}>
-              Xem đơn hàng của tôi
+              Xem lịch sử mua hàng
             </Link>
           ) : (
             // Khách chưa đăng nhập: theo dõi đơn bằng mã đơn + số điện thoại

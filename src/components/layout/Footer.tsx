@@ -17,7 +17,6 @@ const linkColumns: { title: string; links: FooterItem[] }[] = [
       { label: "Sản phẩm", href: "/san-pham" },
       { label: "Sản phẩm theo miền", href: "/#san-pham" },
       { label: "Hộp quà Ba Miền", href: "/hop-qua" },
-      { label: "Bản đồ đặc sản", href: "/ban-do" },
     ],
   },
   {

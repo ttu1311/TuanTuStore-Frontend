@@ -7,7 +7,7 @@ import Reveal from "@/components/ui/Reveal";
 
 // Trang chủ, gọn còn các khối chính:
 // banner (3 slide: chọn quà, hộp quà, ưu đãi) → "Tất cả sản phẩm" (tab bán chạy / tất cả / ba miền) → ghép hộp quà (2 câu hỏi) → giới thiệu ngắn.
-// Bản đồ có trang riêng (/ban-do); hộp quà, dịp tặng, sản phẩm… vẫn có trang của chúng.
+// Hộp quà, sản phẩm… có trang riêng của chúng.
 // "Tất cả sản phẩm" đọc sản phẩm và đơn hàng từ localStorage ở trình duyệt.
 export default function HomePage() {
   return (

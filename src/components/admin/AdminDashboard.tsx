@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import AdminRevenue from "@/components/admin/AdminRevenue";
 import OrderStatusBadge from "@/components/admin/OrderStatusBadge";
 import { table, tableWrap, td, th } from "@/components/admin/tableStyles";
 import { useStore } from "@/context/StoreContext";
 import { LOW_STOCK } from "@/lib/cart";
 import { formatDate, formatVND } from "@/lib/format";
 import { adminOrderStatuses, orderStatusLabels, paymentStatusOf } from "@/lib/orders";
-import { lowStockProducts, ordersByStatus, productStats } from "@/lib/stats";
+import { lowStockProducts, ordersByStatus, productStats, topStock } from "@/lib/stats";
 import type { OrderStatus } from "@/types";
 
 // Màu thanh của từng trạng thái (cùng tông với huy hiệu trạng thái)
@@ -39,7 +40,9 @@ export default function AdminDashboard() {
   const byStatus = ordersByStatus(orders);
   const maxStatus = Math.max(1, ...Object.values(byStatus));
   const lowStock = lowStockProducts(products);
-  const topSellers = productStats(products, orders, productViews)
+  const allStats = productStats(products, orders, productViews);
+  const mostStock = topStock(allStats);
+  const topSellers = allStats
     .filter((stat) => stat.sold > 0)
     .sort((a, b) => b.sold - a.sold || b.revenue - a.revenue)
     .slice(0, 5);
@@ -86,7 +89,9 @@ export default function AdminDashboard() {
         })}
       </div>
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-2">
+      <AdminRevenue />
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
         {/* Đơn theo trạng thái: thanh ngang, dài theo số đơn */}
         <section aria-labelledby="by-status-title" className="rounded-xl border border-line bg-white p-5">
           <h2 id="by-status-title" className={cardTitle}>
@@ -147,12 +152,48 @@ export default function AdminDashboard() {
               <li key={stat.product.id} className="grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-3 text-sm">
                 <span className="font-semibold text-ink-muted">{index + 1}</span>
                 <span className="min-w-0">
-                  <span className="block truncate text-ink">{stat.product.name}</span>
+                  <span className="block break-words text-ink">{stat.product.name}</span>
                   <span className="mt-1 block h-2 overflow-hidden rounded-full bg-surface" aria-hidden="true">
                     <span className="block h-full rounded-full bg-primary" style={{ width: `${(stat.sold / topSellers[0].sold) * 100}%` }} />
                   </span>
                 </span>
                 <span className="whitespace-nowrap font-semibold tabular-nums text-ink">{stat.sold} đã bán</span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+
+      {/* Tồn kho nhiều nhất: 10 món còn nhiều hàng nhất, để biết món nào đang ứ */}
+      <section aria-labelledby="most-stock-title" className="mt-6 rounded-xl border border-line bg-white p-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 id="most-stock-title" className={cardTitle}>
+            Tồn kho nhiều nhất
+          </h2>
+          <Link href="/admin/san-pham" className={linkStyle}>
+            Xem tất cả sản phẩm →
+          </Link>
+        </div>
+        <p className="mt-1 text-sm text-ink-muted">Top 10 món còn nhiều hàng nhất. Cùng số tồn thì món bán chậm hơn xếp trước.</p>
+        {mostStock.length === 0 ? (
+          <p className="mt-4 text-sm text-ink-muted">Không còn sản phẩm nào trong kho.</p>
+        ) : (
+          <ol className="mt-4 space-y-3">
+            {mostStock.map((stat, index) => (
+              <li key={stat.product.id} className="grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-3 text-sm">
+                <span className="font-semibold text-ink-muted">{index + 1}</span>
+                <span className="min-w-0">
+                  <Link href={`/admin/san-pham/${stat.product.id}/sua`} className="block break-words text-ink hover:text-primary hover:underline">
+                    {stat.product.name}
+                  </Link>
+                  <span className="mt-1 block h-2 overflow-hidden rounded-full bg-surface" aria-hidden="true">
+                    <span className="block h-full rounded-full bg-gold" style={{ width: `${(stat.product.stock / mostStock[0].product.stock) * 100}%` }} />
+                  </span>
+                </span>
+                <span className="text-right">
+                  <span className="block whitespace-nowrap font-semibold tabular-nums text-ink">{stat.product.stock} trong kho</span>
+                  <span className="block whitespace-nowrap text-xs tabular-nums text-ink-muted">Đã bán {stat.sold}</span>
+                </span>
               </li>
             ))}
           </ol>

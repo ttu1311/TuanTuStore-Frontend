@@ -8,7 +8,6 @@ import ProductFilters from "@/components/products/ProductFilters";
 import ProductToolbar from "@/components/products/ProductToolbar";
 import { useStore } from "@/context/StoreContext";
 import { occasions } from "@/data/occasions";
-import { brandSummaries } from "@/lib/brands";
 import { groupProducts, productProvince, sortNewestFirst } from "@/lib/products";
 import { simplifyText } from "@/lib/text";
 import type { Product, Region } from "@/types";
@@ -67,8 +66,7 @@ function matchesSearch(product: Product, search: string) {
 type ProductListingProps = {
   initialSearch?: string; // từ ô tìm kiếm ở header: /san-pham?q=...
   initialRegion?: Region; // từ menu "3 Miền" và các tab miền ở trang chủ: /san-pham?region=bac
-  initialProvince?: string; // từ bản đồ (/ban-do) và hộ chiếu đặc sản: /san-pham?province=Cà Mau
-  initialBrand?: string; // từ phần "Về thương hiệu" ở trang chi tiết: /san-pham?brand=Hồng Lam
+  initialProvince?: string; // từ hộ chiếu đặc sản: /san-pham?province=Cà Mau
   initialOccasion?: string; // từ các thẻ dịp tặng ở trang chi tiết: /san-pham?dip=qua-tet
 };
 
@@ -77,13 +75,11 @@ export default function ProductListing({
   initialSearch = "",
   initialRegion,
   initialProvince = "",
-  initialBrand = "",
   initialOccasion = "",
 }: ProductListingProps) {
   const { isReady, products } = useStore();
   const [search, setSearch] = useState(initialSearch);
   const [regions, setRegions] = useState<Region[]>(initialRegion ? [initialRegion] : []);
-  const [brands, setBrands] = useState<string[]>(initialBrand ? [initialBrand] : []);
   const [provinces, setProvinces] = useState<string[]>(initialProvince ? [initialProvince] : []);
   // Dịp tặng lạ trên địa chỉ thì bỏ qua ngay (danh sách dịp cố định, không phụ thuộc localStorage)
   const [occasionIds, setOccasionIds] = useState<string[]>(
@@ -91,9 +87,6 @@ export default function ProductListing({
   );
   const [price, setPrice] = useState("all");
   const [sort, setSort] = useState("newest");
-
-  // Các ô chọn thương hiệu: mọi thương hiệu đang có sản phẩm, kèm số sản phẩm và tên các sản phẩm đó, xếp A đến Z
-  const brandOptions = brandSummaries(products);
 
   // Các ô chọn tỉnh kèm số sản phẩm của tỉnh đó, xếp A đến Z
   const provinceOptions = groupProducts(products, productProvince).map(({ name, items }) => ({
@@ -104,9 +97,6 @@ export default function ProductListing({
   // Tên tỉnh trên địa chỉ không có trong dữ liệu (gõ sai, hoặc sản phẩm đã bị xóa) thì bỏ qua, để không lọc ra rỗng mà không thấy ô nào được tích
   const activeProvinces = isReady ? provinces.filter((province) => provinceOptions.some((option) => option.name === province)) : provinces;
 
-  // Tên thương hiệu trên địa chỉ không có trong dữ liệu thì bỏ qua, giống như tỉnh ở trên
-  const activeBrands = isReady ? brands.filter((brand) => brandOptions.some((option) => option.name === brand)) : brands;
-
   // Các ô chọn dịp tặng, kèm số sản phẩm của mỗi dịp
   const occasionOptions = occasions.map((occasion) => ({
     id: occasion.id,
@@ -114,12 +104,11 @@ export default function ProductListing({
     count: products.filter((product) => product.occasions?.includes(occasion.id)).length,
   }));
 
-  // 1. Lọc. Danh sách vùng/thương hiệu rỗng nghĩa là "không lọc".
+  // 1. Lọc. Danh sách vùng/tỉnh/dịp tặng rỗng nghĩa là "không lọc".
   const filtered = products.filter(
     (product) =>
       matchesSearch(product, search) &&
       (regions.length === 0 || regions.includes(product.region)) &&
-      (activeBrands.length === 0 || activeBrands.includes(product.brand)) &&
       (occasionIds.length === 0 || occasionIds.some((id) => product.occasions?.includes(id))) &&
       (activeProvinces.length === 0 || activeProvinces.includes(productProvince(product))) &&
       matchesPrice(product.price, price)
@@ -133,7 +122,6 @@ export default function ProductListing({
   function resetFilters() {
     setSearch("");
     setRegions([]);
-    setBrands([]);
     setProvinces([]);
     setOccasionIds([]);
     setPrice("all");
@@ -149,8 +137,6 @@ export default function ProductListing({
       sidebar={
         <ProductFilters
           regions={regions}
-          brandOptions={brandOptions}
-          brands={activeBrands}
           occasionOptions={occasionOptions}
           occasions={occasionIds}
           onToggleOccasion={(id) => setOccasionIds(toggle(occasionIds, id))}
@@ -158,7 +144,6 @@ export default function ProductListing({
           provinces={activeProvinces}
           price={price}
           onToggleRegion={(region) => setRegions(toggle(regions, region))}
-          onToggleBrand={(brand) => setBrands(toggle(brands, brand))}
           onToggleProvince={(province) => setProvinces(toggle(provinces, province))}
           onPriceChange={setPrice}
           onReset={resetFilters}

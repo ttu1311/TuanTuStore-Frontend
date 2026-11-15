@@ -10,14 +10,13 @@ import { regionKeys, regions } from "@/lib/regions";
 
 // Mọi liên kết bắt đầu bằng "/" nên dùng được từ mọi trang.
 // "/#id" nghĩa là: về trang chủ, rồi cuộn tới phần có id đó.
-// "Giới thiệu" đứng ngay sau "Trang chủ"; "Bản đồ" mở trang bản đồ riêng (/ban-do).
+// "Giới thiệu" đứng ngay sau "Trang chủ".
 // Ba miền gộp vào MỘT mục "3 Miền" có bảng thả xuống (RegionMenu), đặt ngay sau "Sản phẩm".
 const navItems: { label: string; href: string }[] = [
   { label: "Trang chủ", href: "/" },
   { label: "Giới thiệu", href: "/#gioi-thieu" },
   { label: "Sản phẩm", href: "/san-pham" },
   { label: "Hộp quà", href: "/hop-qua" },
-  { label: "Bản đồ", href: "/ban-do" },
   { label: "Liên hệ", href: "/lien-he" },
 ];
 

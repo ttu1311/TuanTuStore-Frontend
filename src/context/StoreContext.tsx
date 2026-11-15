@@ -13,8 +13,9 @@
 // Đây là mô phỏng front-end: không có server, và các kiểm tra "bảo mật" chỉ dành cho bản demo.
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import CartToast, { type Toast } from "@/components/ui/CartToast";
-import { MAX_QUANTITY, calculateTotals, cleanQuantity, getCartLines, maxOrderable, selectedLines } from "@/lib/cart";
-import { formatOrderCode, isNotShipped, orderNumberFromCode, type CheckoutFields } from "@/lib/orders";
+import { MAX_QUANTITY, cleanQuantity, getCartLines, maxOrderable, selectedLines } from "@/lib/cart";
+import { applyCodes, type AppliedCodes } from "@/lib/coupons";
+import { customerCanCancel, formatOrderCode, isNotShipped, orderNumberFromCode, samePhone, type CheckoutFields } from "@/lib/orders";
 import { isSamePassword } from "@/lib/password";
 import { createProductId, type ProductInput } from "@/lib/products";
 import {
@@ -31,12 +32,12 @@ import { normalizeEmail, normalizePhone, type RegisterValues } from "@/lib/valid
 import { MAX_COMMENT_LENGTH, reviewEligibility } from "@/lib/reviews";
 import { validateContact, type ContactValues } from "@/lib/contact";
 import { cleanAddress, validateAddress } from "@/lib/address";
-import type { CartItem, ContactRequest, SavedAddress, Order, OrderItem, OrderStatus, PaymentMethod, Product, Review, Role, User } from "@/types";
+import type { CartItem, ContactRequest, Coupon, SavedAddress, Order, OrderItem, OrderStatus, PaymentMethod, Product, Review, Role, User } from "@/types";
 
 // Kết quả mà mọi thao tác trả về. `field` cho biết thông báo thuộc về ô nhập nào (nếu có).
 export type ActionResult = { ok: true } | { ok: false; message: string; field?: string };
 
-export type PlaceOrderOptions = { gift?: { message: string }; forOther?: boolean };
+export type PlaceOrderOptions = { gift?: { message: string }; forOther?: boolean; codes?: AppliedCodes };
 
 export type PlaceOrderResult = { ok: true; order: Order } | { ok: false; message: string };
 
@@ -58,6 +59,7 @@ type StoreValue = {
   cart: CartItem[];
   reviews: Review[];
   contactRequests: ContactRequest[];
+  coupons: Coupon[]; // mã giảm giá chủ cửa hàng đã tạo
   productViews: Record<string, number>; // id sản phẩm -> số lần trang chi tiết được mở (trên trình duyệt này)
   wishlist: string[]; // id các sản phẩm yêu thích của người đang đăng nhập (rỗng khi chưa đăng nhập)
   currentUser: User | null;
@@ -101,6 +103,8 @@ type StoreValue = {
   // options.gift: có = gói quà (miễn phí) kèm lời nhắn trên thiệp; options.forOther: mua tặng người thân
   placeOrder: (customer: CheckoutFields, paymentMethod: PaymentMethod, options?: PlaceOrderOptions) => PlaceOrderResult;
   updateOrderStatus: (code: string, status: OrderStatus) => ActionResult;
+  // Khách tự hủy đơn còn "Chờ xác nhận". Chủ đơn: tài khoản đã đặt, hoặc (khách tra cứu đơn) đúng số điện thoại đặt hàng.
+  cancelOrderByCustomer: (code: string, phone?: string) => ActionResult;
   // TẠM THỜI: Admin xác nhận đã nhận chuyển khoản (khi có backend, webhook PayOS làm việc này)
   confirmPayment: (code: string) => ActionResult;
   deleteOrder: (code: string) => ActionResult;
@@ -113,6 +117,11 @@ type StoreValue = {
   submitContactRequest: (values: ContactValues) => ActionResult;
   setContactRequestDone: (id: string, done: boolean) => ActionResult;
   deleteContactRequest: (id: string) => ActionResult;
+
+  // Mã giảm giá (Admin). Mã đã kiểm tra bằng validateCouponForm (src/lib/coupons.ts).
+  addCoupon: (coupon: Coupon) => ActionResult;
+  setCouponActive: (code: string, active: boolean) => ActionResult;
+  deleteCoupon: (code: string) => ActionResult;
 
   // Người dùng (Admin)
   changeUserRole: (userId: string, role: Role) => ActionResult;
@@ -137,6 +146,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [contactRequests, setContactRequests] = useState<ContactRequest[]>([]);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [productViews, setProductViews] = useState<Record<string, number>>({});
   const [wishlists, setWishlists] = useState<Record<string, string[]>>({});
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -153,6 +163,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setCart(data.cart);
       setReviews(data.reviews);
       setContactRequests(data.contactRequests);
+      setCoupons(data.coupons);
       setProductViews(data.productViews);
       setWishlists(data.wishlists);
       setCurrentUserId(data.currentUserId);
@@ -191,6 +202,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const saveContactRequests = (next: ContactRequest[]) => persist(STORAGE_KEYS.contactRequests, next, setContactRequests);
   const saveCart = (next: CartItem[]) => persist(STORAGE_KEYS.cart, next, setCart);
   const saveWishlists = (next: Record<string, string[]>) => persist(STORAGE_KEYS.wishlists, next, setWishlists);
+  const saveCoupons = (next: Coupon[]) => persist(STORAGE_KEYS.coupons, next, setCoupons);
 
   // ---------- Sản phẩm (Admin) ----------
 
@@ -393,7 +405,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // Tạo đơn hàng từ giỏ hàng, dùng giá HIỆN TẠI trong localStorage.
   function placeOrder(customer: CheckoutFields, paymentMethod: PaymentMethod, options: PlaceOrderOptions = {}): PlaceOrderResult {
-    const { gift, forOther } = options;
+    const { gift, forOther, codes = {} } = options;
     // Chỉ các món khách đã tick ở giỏ hàng; món chưa tick ở lại trong giỏ
     const allLines = getCartLines(cart, products);
     const lines = selectedLines(allLines);
@@ -419,7 +431,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       price: product.price,
       quantity,
     }));
-    const totals = calculateTotals(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
+    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    // Mã giảm giá được kiểm tra lại ở đây (không chỉ ở giao diện): mã còn dùng được, đủ điều kiện, khách chưa dùng
+    const priced = applyCodes(codes, { user: currentUser, products, orders, coupons, subtotal });
+    if (!priced.ok) return { ok: false, message: priced.message };
+    const { totals } = priced;
 
     // Lớn hơn số cuối cùng từng dùng một đơn vị, nên mã của một đơn đã xóa không bao giờ được cấp lại
     const lastNumber = Math.max(
@@ -444,6 +460,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       subtotal: totals.subtotal,
       shippingFee: totals.shippingFee,
       discount: totals.discount,
+      ...(codes.coupon ? { coupon: codes.coupon } : {}),
+      ...(codes.shippingCoupon ? { shippingCoupon: codes.shippingCoupon } : {}),
       total: totals.total,
       ...(gift ? { gift: { message: gift.message.trim().slice(0, 200) } } : {}),
       ...(forOther && currentUser ? { forOther: true } : {}),
@@ -482,6 +500,26 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
     const next = orders.map((item) => (item.code === code ? { ...item, status } : item));
     return saveOrders(next) ? OK : fail(SAVE_ERROR);
+  }
+
+  function cancelOrderByCustomer(code: string, phone?: string): ActionResult {
+    const order = orders.find((item) => item.code === code);
+    if (!order) return fail("Đơn hàng này không còn tồn tại.");
+    const isOwner = (currentUser !== null && order.userId === currentUser.id) || (phone !== undefined && samePhone(order.phone, phone));
+    if (!isOwner) return fail(NO_PERMISSION);
+    if (order.status === "CANCELLED") return fail("Đơn này đã được hủy.");
+    if (!customerCanCancel(order)) {
+      return fail("Cửa hàng đã xác nhận đơn này nên không thể hủy nữa. Cần thay đổi, vui lòng liên hệ cửa hàng.");
+    }
+    // Trả hàng lại kho trước; nếu không lưu được đơn thì đặt lại kho như cũ
+    const previousProducts = products;
+    if (!saveProducts(changeStock(products, order.items, +1))) return fail(SAVE_ERROR);
+    const next = orders.map((item) => (item.code === code ? { ...item, status: "CANCELLED" as const, cancelledByCustomer: true as const } : item));
+    if (!saveOrders(next)) {
+      saveProducts(previousProducts);
+      return fail(SAVE_ERROR);
+    }
+    return OK;
   }
 
   function confirmPayment(code: string): ActionResult {
@@ -610,6 +648,26 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     return saveContactRequests(contactRequests.filter((request) => request.id !== id)) ? OK : fail(SAVE_ERROR);
   }
 
+  // ---------- Mã giảm giá (Admin) ----------
+
+  function addCoupon(coupon: Coupon): ActionResult {
+    if (!isAdmin) return fail(NO_PERMISSION);
+    if (coupons.some((item) => item.code === coupon.code)) return fail("Mã này đã có", "code");
+    return saveCoupons([...coupons, coupon]) ? OK : fail(SAVE_ERROR);
+  }
+
+  function setCouponActive(code: string, active: boolean): ActionResult {
+    if (!isAdmin) return fail(NO_PERMISSION);
+    if (!coupons.some((coupon) => coupon.code === code)) return fail("Mã này không còn tồn tại.");
+    return saveCoupons(coupons.map((coupon) => (coupon.code === code ? { ...coupon, active } : coupon))) ? OK : fail(SAVE_ERROR);
+  }
+
+  // Đơn đã dùng mã vẫn giữ tên mã và số tiền đã giảm
+  function deleteCoupon(code: string): ActionResult {
+    if (!isAdmin) return fail(NO_PERMISSION);
+    return saveCoupons(coupons.filter((coupon) => coupon.code !== code)) ? OK : fail(SAVE_ERROR);
+  }
+
   // ---------- Người dùng (Admin) ----------
 
   function adminCount() {
@@ -669,6 +727,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         cart,
         reviews,
         contactRequests,
+        coupons,
         productViews,
         wishlist,
         currentUser,
@@ -693,6 +752,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         updateAddress,
         placeOrder,
         updateOrderStatus,
+        cancelOrderByCustomer,
         confirmPayment,
         deleteOrder,
         submitReview,
@@ -700,6 +760,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         submitContactRequest,
         setContactRequestDone,
         deleteContactRequest,
+        addCoupon,
+        setCouponActive,
+        deleteCoupon,
         changeUserRole,
         deleteUser,
       }}

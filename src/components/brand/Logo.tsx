@@ -1,7 +1,6 @@
 // Logo "Đặc sản 3 Miền" (thiết kế do chủ cửa hàng cung cấp).
 // Biểu tượng: chiếc bát đỏ rượu có hơi nước cuộn thành số 3, đôi đũa và nón lá vàng.
-// Ảnh gốc đầy đủ (biểu tượng + chữ): public/brand/logo-full.webp. Phần biểu tượng đã tách nền (ảnh trong suốt,
-// chỉ hai màu đỏ rượu và vàng): public/brand/mark.webp. Favicon: src/app/icon.png và apple-icon.png (biểu tượng trên nền kem).
+// Biểu tượng đã tách nền (ảnh trong suốt, chỉ hai màu đỏ rượu và vàng): public/brand/mark.webp. Favicon: src/app/icon.png và apple-icon.png (biểu tượng trên nền kem).
 // Chữ "ĐẶC SẢN 3 MIỀN" là chữ thật (font chữ có chân Lora, nạp ở src/app/layout.tsx), nên nét sắc ở mọi cỡ
 // và đọc rõ trên điện thoại. Màu lấy từ chính hình logo: đỏ rượu, vàng.
 // Các bản: <Logo /> cho header, <Logo tagline /> cho footer, <Logo size="sm" /> cho thanh bên trang Admin.

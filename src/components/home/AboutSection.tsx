@@ -30,9 +30,6 @@ export default function AboutSection() {
         <Link href="/lien-he" className={`${btnBase} ${btnSecondary}`}>
           Liên hệ cửa hàng
         </Link>
-        <Link href="/ban-do" className={`${btnBase} ${btnSecondary}`}>
-          Xem bản đồ đặc sản
-        </Link>
       </div>
     </section>
   );

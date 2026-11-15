@@ -1,9 +1,10 @@
 // Nơi DUY NHẤT làm việc với localStorage / sessionStorage.
 // Các hàm này phải chạy ở trình duyệt (trong useEffect hoặc trình xử lý sự kiện), không bao giờ chạy khi render trên server.
 import { caMauProducts, initialProducts, initialUsers } from "@/data/initialData";
+import { threeRegionProducts } from "@/data/moreProducts";
 import { renamedImages, seedUpdates } from "@/data/seedUpdates";
 import { INITIAL_STOCK } from "@/lib/cart";
-import type { CartItem, ContactRequest, Order, Product, Review, User } from "@/types";
+import type { CartItem, ContactRequest, Coupon, Order, Product, Review, User } from "@/types";
 
 export const STORAGE_KEYS = {
   products: "tuantustore-products",
@@ -18,11 +19,15 @@ export const STORAGE_KEYS = {
   contactRequests: "tuantustore-contact-requests", // yêu cầu liên hệ lại gửi từ trang /lien-he
   productViews: "tuantustore-product-views", // id sản phẩm -> số lần trang chi tiết được mở (xếp hạng "Sản phẩm bán chạy" khi chưa bán được)
   wishlists: "tuantustore-wishlists", // id người dùng -> id các sản phẩm yêu thích (lưu theo tài khoản)
+  coupons: "tuantustore-coupons", // mã giảm giá chủ cửa hàng tạo ở /admin/ma-giam-gia
 } as const;
 
 // Các nhóm sản phẩm được thêm vào dữ liệu mẫu SAU phiên bản đầu tiên của website.
 // Để thêm sản phẩm về sau: đưa chúng vào initialProducts VÀ thêm một nhóm mới ở đây với id mới.
-const seedBatches: { id: string; products: Product[] }[] = [{ id: "ca-mau", products: caMauProducts }];
+const seedBatches: { id: string; products: Product[] }[] = [
+  { id: "ca-mau", products: caMauProducts },
+  { id: "ba-mien-60", products: threeRegionProducts }, // 47 món, mỗi miền đủ 20 món (tháng 11/2026)
+];
 
 // Đọc một giá trị JSON. Trả về null khi thiếu khóa, văn bản không phải JSON hợp lệ hoặc storage bị chặn.
 export function readJSON<T>(key: string, storage: Storage = window.localStorage): T | null {
@@ -59,6 +64,7 @@ export function initializeStorage() {
   if (typeof readJSON(STORAGE_KEYS.orderSeq) !== "number") writeJSON(STORAGE_KEYS.orderSeq, 0);
   if (!Array.isArray(readJSON(STORAGE_KEYS.reviews))) writeJSON(STORAGE_KEYS.reviews, []); // không có đánh giá mẫu: chỉ đánh giá thật
   if (!Array.isArray(readJSON(STORAGE_KEYS.contactRequests))) writeJSON(STORAGE_KEYS.contactRequests, []);
+  if (!Array.isArray(readJSON(STORAGE_KEYS.coupons))) writeJSON(STORAGE_KEYS.coupons, []); // không có mã mẫu
   addNewSeedBatches();
   applySeedUpdates();
 }
@@ -143,6 +149,7 @@ type StoredData = {
   cart: CartItem[];
   reviews: Review[];
   contactRequests: ContactRequest[];
+  coupons: Coupon[];
   productViews: Record<string, number>;
   wishlists: Record<string, string[]>;
   currentUserId: string | null;
@@ -157,6 +164,7 @@ export function loadStoredData(): StoredData {
     cart: readJSON<CartItem[]>(STORAGE_KEYS.cart) ?? [],
     reviews: readJSON<Review[]>(STORAGE_KEYS.reviews) ?? [],
     contactRequests: readJSON<ContactRequest[]>(STORAGE_KEYS.contactRequests) ?? [],
+    coupons: readJSON<Coupon[]>(STORAGE_KEYS.coupons) ?? [],
     productViews: readViews(),
     wishlists: readWishlists(),
     currentUserId: readCurrentUserId(),

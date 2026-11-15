@@ -13,7 +13,7 @@ import { useStore } from "@/context/StoreContext";
 
 const sections = [
   { id: "profile", label: "Thông tin cá nhân" },
-  { id: "orders", label: "Đơn hàng của tôi" },
+  { id: "orders", label: "Lịch sử mua hàng" },
   { id: "wishlist", label: "Sản phẩm yêu thích" },
   { id: "passport", label: "Hộ chiếu đặc sản" },
   { id: "password", label: "Đổi mật khẩu" },

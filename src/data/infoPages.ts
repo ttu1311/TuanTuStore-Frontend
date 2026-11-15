@@ -1,4 +1,5 @@
 import { DISCOUNT, FREE_SHIPPING_MIN, SHIPPING_FEE } from "@/lib/cart";
+import { PASSPORT_COUPON } from "@/lib/coupons";
 import { formatVND } from "@/lib/format";
 import { orderStatuses, orderStatusLabels } from "@/lib/orders";
 import { storeContact } from "@/data/contact";
@@ -39,7 +40,7 @@ export const infoPages: InfoPage[] = [
       {
         heading: "Đặt hàng trong 5 bước",
         steps: [
-          "Tìm đặc sản: gõ tên món vào ô tìm kiếm, chọn một miền trên menu, hoặc bấm vào bản đồ ba miền ở trang chủ. Ở trang Sản phẩm bạn có thể lọc theo vùng miền, tỉnh thành, thương hiệu và khoảng giá.",
+          "Tìm đặc sản: gõ tên món vào ô tìm kiếm, hoặc chọn một miền trên menu hay các tab ở trang chủ. Ở trang Sản phẩm bạn có thể lọc theo vùng miền, tỉnh thành, thương hiệu và khoảng giá.",
           "Bấm “Thêm vào giỏ” ở sản phẩm bạn muốn mua. Số trên biểu tượng giỏ hàng cho biết giỏ đang có bao nhiêu món.",
           "Mở giỏ hàng để kiểm tra số lượng, xóa món không cần, và xem còn bao nhiêu nữa thì được miễn phí vận chuyển.",
           "Bấm “Tiến hành thanh toán”, điền họ tên, số điện thoại, email và địa chỉ giao hàng, rồi chọn phương thức thanh toán.",
@@ -50,7 +51,7 @@ export const infoPages: InfoPage[] = [
         heading: "Có cần tài khoản không?",
         paragraphs: [
           "Không bắt buộc. Bạn có thể đặt hàng mà không đăng nhập và theo dõi đơn ở trang Tra cứu đơn hàng bằng mã đơn và số điện thoại.",
-          "Nếu đăng nhập, thông tin của bạn được điền sẵn khi thanh toán, và mọi đơn hàng được gom trong mục “Đơn hàng của tôi” ở trang Tài khoản.",
+          "Nếu đăng nhập, thông tin của bạn được điền sẵn khi thanh toán, và mọi đơn hàng được gom trong mục “Lịch sử mua hàng” ở trang Tài khoản.",
         ],
       },
       {
@@ -75,7 +76,7 @@ export const infoPages: InfoPage[] = [
           "Chọn “Chuyển khoản ngân hàng” khi thanh toán và bấm “Đặt hàng”.",
           "Trang xác nhận hiện mã QR có sẵn số tiền và nội dung chuyển khoản là mã đơn (ví dụ TT-000001). Mở ứng dụng ngân hàng và quét mã.",
           "Đơn ở trạng thái “Chờ thanh toán” cho tới khi cửa hàng xác nhận đã nhận tiền, rồi chuyển sang “Đã thanh toán”.",
-          "Chưa kịp chuyển? Mã QR xem lại được ở “Đơn hàng của tôi” (trang Tài khoản) hoặc trang Tra cứu đơn hàng. Hãy giữ nguyên nội dung chuyển khoản để cửa hàng đối chiếu đúng đơn.",
+          "Chưa kịp chuyển? Mã QR xem lại được ở “Lịch sử mua hàng” (trang Tài khoản) hoặc trang Tra cứu đơn hàng. Hãy giữ nguyên nội dung chuyển khoản để cửa hàng đối chiếu đúng đơn.",
         ],
       },
       // Chỉ hiện khi chưa điền tài khoản ngân hàng thật (src/data/payment.ts)
@@ -104,6 +105,20 @@ export const infoPages: InfoPage[] = [
       {
         question: "Giảm giá trong giỏ hàng là gì?",
         answer: `Mỗi đơn hàng được giảm ${discount}, trừ thẳng vào tổng cộng. Một số sản phẩm còn có giá ưu đãi riêng, hiện bằng giá cũ gạch ngang và nhãn phần trăm giảm.`,
+      },
+      {
+        question: "Làm sao để có mã giảm giá?",
+        answer: `Mỗi tỉnh bạn đã nhận được đặc sản được đóng một con dấu trong “Hộ chiếu đặc sản” (trang Tài khoản). Đóng đủ ${PASSPORT_COUPON.stampsNeeded} dấu, bạn nhận mã ${PASSPORT_COUPON.code}: giảm ${PASSPORT_COUPON.percent}% tạm tính, tối đa ${formatVND(PASSPORT_COUPON.maxDiscount)}, dùng một lần. Nhập mã ở ô “Mã giảm giá” khi thanh toán; mã thay cho khoản giảm ${discount} của đơn đó.`,
+      },
+      {
+        question: "Tôi dùng được mấy mã giảm giá cho một đơn?",
+        answer:
+          "Cửa hàng thỉnh thoảng phát thêm mã giảm giá và mã miễn phí vận chuyển. Mỗi đơn dùng được một mã giảm giá và một mã miễn phí vận chuyển; hai mã giảm giá thì không cộng dồn. Bạn cần đăng nhập để dùng mã, và mỗi mã chỉ dùng một lần cho mỗi tài khoản. Đơn bị hủy thì mã được trả lại.",
+      },
+      {
+        question: "Tôi có hủy đơn được không?",
+        answer:
+          "Được, khi đơn còn “Chờ xác nhận”: bấm “Hủy đơn” ở mục “Lịch sử mua hàng” (trang Tài khoản) hoặc ở trang Tra cứu đơn hàng. Khi cửa hàng đã xác nhận đơn thì không tự hủy được nữa; nếu cần thay đổi, hãy liên hệ cửa hàng.",
       },
       {
         question: "Tôi có cần tạo tài khoản để mua hàng không?",

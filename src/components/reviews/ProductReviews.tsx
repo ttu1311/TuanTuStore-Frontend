@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useId, useState } from "react";
 import Stars from "@/components/reviews/Stars";
 import { btnBase, btnPrimary, btnSmall } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
@@ -10,7 +10,7 @@ import { MAX_COMMENT_LENGTH, formatRating, ratingSummary, reviewEligibility } fr
 import type { Review } from "@/types";
 import { loginUrl } from "@/lib/redirect";
 
-const ratingLabels = ["", "Rất tệ", "Chưa hài lòng", "Bình thường", "Hài lòng", "Rất hài lòng"];
+export const ratingLabels = ["", "Rất tệ", "Chưa hài lòng", "Bình thường", "Hài lòng", "Rất hài lòng"];
 
 // Phần "Đánh giá của khách hàng" ở trang chi tiết sản phẩm.
 // Chỉ khách đã NHẬN hàng (có đơn "Hoàn thành" chứa sản phẩm này) mới viết được; StoreContext kiểm tra lại điều này.
@@ -140,8 +140,10 @@ function ReviewItem({ review, canDelete, onDelete }: { review: Review; canDelete
   );
 }
 
-function ReviewForm({ productId, existing }: { productId: string; existing?: Review }) {
+// Dùng ở trang chi tiết sản phẩm và ở "Lịch sử mua hàng" (trang Tài khoản, có thể nhiều form trên một trang)
+export function ReviewForm({ productId, existing }: { productId: string; existing?: Review }) {
   const { submitReview } = useStore();
+  const formId = useId(); // id và tên nhóm sao riêng cho mỗi form
   const [rating, setRating] = useState(existing?.rating ?? 0);
   const [comment, setComment] = useState(existing?.comment ?? "");
   const [error, setError] = useState<{ field?: string; message: string } | null>(null);
@@ -160,7 +162,7 @@ function ReviewForm({ productId, existing }: { productId: string; existing?: Rev
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit} className="rounded-xl border border-line bg-white p-6">
+    <form noValidate onSubmit={handleSubmit} className="rounded-xl border border-line bg-white p-4 sm:p-6">
       <h3 className="font-semibold text-ink">{existing ? "Sửa đánh giá của bạn" : "Viết đánh giá của bạn"}</h3>
 
       <fieldset className="mt-4 border-0 p-0">
@@ -169,11 +171,11 @@ function ReviewForm({ productId, existing }: { productId: string; existing?: Rev
           {[1, 2, 3, 4, 5].map((star) => (
             <label
               key={star}
-              className="cursor-pointer rounded-md p-1.5 has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-primary-soft"
+              className="cursor-pointer rounded-md p-1 sm:p-1.5 has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-primary-soft"
             >
               <input
                 type="radio"
-                name="rating"
+                name={`${formId}-rating`}
                 value={star}
                 checked={rating === star}
                 onChange={() => {
@@ -194,11 +196,11 @@ function ReviewForm({ productId, existing }: { productId: string; existing?: Rev
         </div>
       </fieldset>
 
-      <label htmlFor="review-comment" className="mb-2 mt-4 block text-sm font-medium text-ink">
+      <label htmlFor={`${formId}-comment`} className="mb-2 mt-4 block text-sm font-medium text-ink">
         Nhận xét
       </label>
       <textarea
-        id="review-comment"
+        id={`${formId}-comment`}
         rows={4}
         value={comment}
         maxLength={MAX_COMMENT_LENGTH}

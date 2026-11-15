@@ -27,7 +27,7 @@ export function provinceOf(origin: string) {
 }
 
 // Tỉnh/thành (tên sau sáp nhập) của một sản phẩm. Xuất xứ còn ghi tên tỉnh cũ ("Bến Tre") vẫn ra tỉnh mới ("Vĩnh Long").
-// Dùng chung cho tuyến "Bắc vào Nam", bộ lọc tỉnh, bản đồ và hộ chiếu, để mọi nơi gom sản phẩm giống nhau.
+// Dùng chung cho bộ lọc tỉnh và hộ chiếu, để mọi nơi gom sản phẩm giống nhau.
 export function productProvince(product: Pick<Product, "origin">) {
   return normalizeProvince(provinceOf(product.origin));
 }
