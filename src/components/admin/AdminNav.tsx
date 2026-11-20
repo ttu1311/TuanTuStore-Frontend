@@ -51,12 +51,8 @@ export default function AdminNav() {
             </li>
           );
         })}
+        {/* Không có liên kết nào dẫn về cửa hàng: khu quản trị tách riêng, thoát ra bằng "Đăng xuất" */}
         <li className="shrink-0 lg:mt-4 lg:border-t lg:border-line lg:pt-4">
-          <Link href="/" className={`${itemStyle} font-medium text-ink-muted hover:bg-surface hover:text-ink`}>
-            Về trang cửa hàng
-          </Link>
-        </li>
-        <li className="shrink-0">
           {/* Đăng xuất quản trị: server xóa cookie phiên, rồi về trang đăng nhập quản trị */}
           <button
             type="button"

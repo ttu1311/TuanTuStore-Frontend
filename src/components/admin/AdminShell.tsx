@@ -64,14 +64,6 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         <header className="flex h-16 items-center justify-between gap-4 border-b border-line bg-white px-4 md:px-6">
           <span className="whitespace-nowrap font-semibold text-ink">Quản trị hệ thống</span>
           <span className="flex min-w-0 items-center gap-3 text-sm text-ink-muted">
-            {/* Màn hình nhỏ: menu bên cuộn ngang và mục "Về trang cửa hàng" có thể nằm ngoài tầm nhìn,
-               nên đường quay về cửa hàng cũng đặt ở đây. Từ cỡ lg trở lên thì menu bên đã hiển thị nó. */}
-            <Link
-              href="/"
-              className="inline-flex min-h-10 items-center whitespace-nowrap rounded-full border border-primary px-4 font-semibold text-primary transition-colors duration-200 hover:bg-primary-soft lg:hidden"
-            >
-              Về cửa hàng
-            </Link>
             <span className="hidden truncate sm:inline">Quản trị viên</span>
             <button
               type="button"
