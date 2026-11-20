@@ -1,28 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import AdminNav from "@/components/admin/AdminNav";
 import { useStore } from "@/context/StoreContext";
 import Logo from "@/components/brand/Logo";
+import { ADMIN_LOGIN_PATH } from "@/lib/adminConstants";
 
-// Khung của mọi trang /admin: menu bên + thanh trên + nội dung.
-// Chỉ ADMIN mới thấy: khách chưa đăng nhập bị chuyển tới /dang-nhap, khách hàng (USER) bị chuyển về trang chủ.
-// Cho tới khi localStorage được đọc xong, chỉ hiện thông báo đang tải, nên nội dung Admin không bị nháy lên.
-// LƯU Ý: đây là bản demo front-end. Nó cải thiện trải nghiệm người dùng nhưng KHÔNG phải bảo mật thật.
+// Khung của mọi trang /admin: menu bên + thanh trên + nội dung, và nút "Đăng xuất".
+// Lớp bảo vệ CHÍNH nằm ở server: src/proxy.ts không gửi trang /admin khi không có cookie phiên quản trị hợp lệ.
+// Ở đây chỉ kiểm tra lại (phiên có thể vừa hết hạn trong lúc đang dùng): không hợp lệ thì về trang đăng nhập quản trị.
+// Cho tới khi localStorage được đọc xong và phiên được xác nhận, chỉ hiện "Đang tải…", nên nội dung Admin không bị nháy lên.
+// PHẠM VI: bảo vệ LỐI VÀO giao diện admin. Dữ liệu cửa hàng vẫn ở localStorage của từng trình duyệt và KHÔNG được bảo vệ.
 export default function AdminShell({ children }: { children: React.ReactNode }) {
-  const { isReady, currentUser } = useStore();
+  const { isReady, refreshAdminSession, adminLogout } = useStore();
+  const pathname = usePathname();
   const router = useRouter();
-  const isAdmin = currentUser?.role === "ADMIN";
+  const [sessionOk, setSessionOk] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
-    if (!isReady) return;
-    if (!currentUser) router.replace("/dang-nhap");
-    else if (currentUser.role !== "ADMIN") router.replace("/");
-  }, [isReady, currentUser, router]);
+    let active = true;
+    void refreshAdminSession().then((ok) => {
+      if (!active) return;
+      if (ok) setSessionOk(true);
+      else router.replace(`${ADMIN_LOGIN_PATH}?next=${encodeURIComponent(pathname)}`);
+    });
+    return () => {
+      active = false;
+    };
+  }, [refreshAdminSession, pathname, router]);
 
-  if (!isReady || !isAdmin) {
+  function logout() {
+    setLoggingOut(true);
+    void adminLogout();
+  }
+
+  if (!isReady || !sessionOk) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface">
         <p role="status" className="text-ink-muted">
@@ -57,13 +72,15 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             >
               Về cửa hàng
             </Link>
-            <span className="hidden truncate sm:inline">{currentUser.name}</span>
-            <span
-              aria-hidden="true"
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold uppercase text-white"
+            <span className="hidden truncate sm:inline">Quản trị viên</span>
+            <button
+              type="button"
+              onClick={logout}
+              disabled={loggingOut}
+              className="inline-flex min-h-10 items-center whitespace-nowrap rounded-full px-3 font-semibold text-ink transition-colors duration-200 hover:bg-surface hover:text-sale disabled:opacity-60"
             >
-              {currentUser.name.trim().charAt(0) || "Q"}
-            </span>
+              {loggingOut ? "Đang đăng xuất…" : "Đăng xuất"}
+            </button>
           </span>
         </header>
         <main id="main-content" className="p-4 md:p-6">

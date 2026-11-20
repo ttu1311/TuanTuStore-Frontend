@@ -66,8 +66,7 @@ export default function AccountView({ initialSection = "profile" }: { initialSec
         {active === "profile" && (
           <>
             <ProfileSection key={currentUser.id} user={currentUser} />
-            {/* Địa chỉ giao hàng mặc định chỉ dành cho khách hàng, không hỏi tài khoản ADMIN */}
-            {currentUser.role !== "ADMIN" && <AddressSection key={`address-${currentUser.id}`} user={currentUser} />}
+            <AddressSection key={`address-${currentUser.id}`} user={currentUser} />
           </>
         )}
         {active === "orders" && <OrdersSection userId={currentUser.id} />}

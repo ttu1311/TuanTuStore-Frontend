@@ -19,7 +19,7 @@ const itemStyle = "flex min-h-10 items-center whitespace-nowrap rounded-lg px-3 
 // Menu bên của các trang Admin (thanh ngang có thể cuộn trên màn hình nhỏ)
 export default function AdminNav() {
   const pathname = usePathname();
-  const { logout, contactRequests } = useStore();
+  const { adminLogout, contactRequests } = useStore();
   // Số yêu cầu đang chờ gọi lại, hiện cạnh mục "Yêu cầu liên hệ"
   const waitingCalls = contactRequests.filter((request) => !request.done).length;
 
@@ -57,10 +57,10 @@ export default function AdminNav() {
           </Link>
         </li>
         <li className="shrink-0">
-          {/* Quên Admin đang đăng nhập; AdminShell sẽ mở /dang-nhap */}
+          {/* Đăng xuất quản trị: server xóa cookie phiên, rồi về trang đăng nhập quản trị */}
           <button
             type="button"
-            onClick={logout}
+            onClick={() => void adminLogout()}
             className={`${itemStyle} w-full text-left font-medium text-ink-muted hover:bg-surface hover:text-sale`}
           >
             Đăng xuất

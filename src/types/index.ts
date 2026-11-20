@@ -40,17 +40,17 @@ export interface Brand {
   about: string; // vài câu giới thiệu
 }
 
-export type Role = "USER" | "ADMIN";
-
+// Tài khoản KHÁCH HÀNG (lưu trong localStorage). Không có vai trò: quản trị viên không phải một tài khoản ở đây,
+// mà đăng nhập riêng ở /dang-nhap-quan-tri, mật khẩu kiểm tra ở server (xem src/lib/adminSession.ts).
+// Bản ghi lưu từ phiên bản cũ có trường "role" đã được bỏ đi (removeLegacyAdminAccount trong src/lib/storage.ts).
 export interface User {
   id: string;
   name: string;
   email: string; // luôn lưu bằng chữ thường, duy nhất
   phone: string; // "" khi chưa biết
   // CHỮ THƯỜNG, có chủ đích: đây là bản demo front-end không có server, nên mật khẩu vốn không thể được bảo vệ.
-  // Xem src/lib/password.ts và "Demo accounts" trong README.md. Đừng bao giờ dùng mật khẩu thật ở đây.
+  // Xem src/lib/password.ts và "Demo accounts and passwords" trong README.md. Đừng bao giờ dùng mật khẩu thật ở đây.
   password: string;
-  role: Role;
   address?: SavedAddress; // địa chỉ giao hàng mặc định ("Mua cho bản thân" ở trang thanh toán). Không có = chưa lưu.
   createdAt: string; // ngày ISO
 }

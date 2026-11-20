@@ -37,7 +37,8 @@ Open the address printed in the terminal (usually http://localhost:3000).
 | Variable | Used for | When empty |
 | --- | --- | --- |
 | `NEXT_PUBLIC_BANK_BIN`, `NEXT_PUBLIC_BANK_NAME`, `NEXT_PUBLIC_BANK_ACCOUNT_NO`, `NEXT_PUBLIC_BANK_ACCOUNT_NAME` | the account printed in the bank-transfer QR code | a **sample** account (`0000000000`) with a "do not transfer" warning |
-| `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | the Cloudflare Turnstile CAPTCHA on `/dang-ky` | dev: Cloudflare's **test keys** (always pass). Production: registration is refused until real keys are set |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | the Cloudflare Turnstile CAPTCHA on `/dang-ky` and `/dang-nhap-quan-tri` | dev: Cloudflare's **test keys** (always pass). Production: registration and admin login are refused until real keys are set |
+| `ADMIN_PASSWORD_HASH`, `ADMIN_SESSION_SECRET` | the admin login (see "Admin login" below); create both with `npm run admin:hash` | admin login is refused **in every environment** and `/dang-nhap-quan-tri` names the missing variables |
 
 `.env.local` is ignored by git; never commit real keys.
 
@@ -48,30 +49,82 @@ Open the address printed in the terminal (usually http://localhost:3000).
 | `npm run start` | runs the production build |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | TypeScript check |
+| `npm run admin:hash` | asks for an admin password in a hidden prompt and prints `ADMIN_PASSWORD_HASH` and `ADMIN_SESSION_SECRET` |
 
 > `npm run dev` uses the webpack bundler (`next dev --webpack`) because the Turbopack dev server of
 > Next.js 16.3 fails to load `next/font/google` fonts. The production build uses the default (Turbopack).
 
 ## Demo accounts and passwords
 
-| Email | Password |
-| --- | --- |
-| `admin@tuantustore.vn` | `Admin@123` |
+**Customers** create their own accounts on **/dang-ky**. There is no sample customer account.
 
-This ADMIN account is created automatically on the first visit (see "How the data works" below).
-Customers create their own accounts on **/dang-ky** (always with the role USER).
+**Admin:** the admin password is provided in the project report. It is not in this repository. The admin is not an account in
+`localStorage`: open **`/dang-nhap-quan-tri`** (no link points to it from the shop) and type the admin password.
 
-> ⚠️ **The login is a front-end simulation. It is NOT secure and it is NOT real authentication.**
-> Credentials are stored **only for front-end demonstration purposes**:
+> ⚠️ **Customer login is a front-end simulation. It is NOT secure and it is NOT real authentication.**
+> Customer credentials are stored **only for front-end demonstration purposes**:
 >
-> - There is no server. Every account is a record in the browser's `localStorage`, and its **password is saved there as
+> - Every customer account is a record in the browser's `localStorage`, and its **password is saved there as
 >   plain text** (field `password`). "Logging in" only compares what you typed with that saved text (`src/lib/password.ts`).
-> - Anyone who opens the browser developer tools can read every password and change any account or role.
+> - Anyone who opens the browser developer tools can read every customer password and change any customer account.
 > - It needs no special browser feature (no Web Crypto), so it works the same on `http://localhost`, on a plain
 >   `http://192.168.x.x` address (a phone on the same Wi-Fi) and on `https://`.
-> - The page guards (customer pages, Admin pages) only improve the user experience of the demo — they protect nothing.
+> - The customer page guards only improve the user experience of the demo — they protect nothing.
 > - **Never type a real password into this website.** A real store needs a server, a database and proper
 >   authentication (hashed passwords, sessions).
+
+## Admin login (protects the admin pages only)
+
+**What it protects:** the **entrance to the admin interface** (every page under `/admin`).
+**What it does NOT protect:** the shop data (products, orders, customer accounts, discount codes, reviews). That data still
+lives in the `localStorage` of each browser, so anyone using that browser can read and change it with the developer tools,
+admin login or not. Customer passwords are still plain text (see above).
+
+How it works:
+
+1. `/dang-nhap-quan-tri` sends the password and a Turnstile token to `POST /api/admin/login` (a Next.js Route Handler, runs on the
+   server). The server checks the CAPTCHA, then compares the password with the **scrypt hash** in `ADMIN_PASSWORD_HASH`. The
+   password itself is never stored anywhere; the hash is only in the server's environment variables, never in the code.
+2. If it matches, the server sets a cookie `tt_admin`: a session that expires after **2 hours**, signed with HMAC-SHA256 using
+   `ADMIN_SESSION_SECRET`, `httpOnly` (page JavaScript cannot read it), `SameSite=Strict`, and `Secure` when the request came over
+   https (Vercel). Over plain `http://` (for example `npm run start` opened at `http://192.168.x.x` on the same Wi-Fi) it is sent
+   without `Secure`, otherwise the browser would drop it. A second, readable cookie `tt_admin_hint` only tells the page to show
+   the "Quản trị" link in the menu; it gives no permission.
+3. `src/proxy.ts` runs on the server before every `/admin` page. Without a valid `tt_admin` cookie it redirects to
+   `/dang-nhap-quan-tri` and the admin page is not sent. Editing `localStorage` no longer opens `/admin`.
+4. "Đăng xuất" in the admin header calls `POST /api/admin/logout`, which deletes both cookies in that browser. Sessions are not
+   stored on the server, so a session cookie copied elsewhere stays valid until it expires (at most 2 hours), unless
+   `ADMIN_SESSION_SECRET` is changed (that ends every session).
+5. **Guessing passwords:** besides Turnstile, every wrong password makes **that IP address** wait longer before the next try:
+   1, 2, 4, 8 … seconds, at most 5 minutes; a correct password resets it. ⚠️ The counter lives in the **memory of one server
+   instance**: on Vercel requests can reach different instances, which also stop when idle, so it slows guessing down but is not a
+   hard limit. With the Cloudflare **test** keys the CAPTCHA always passes, so set real keys for it to count.
+6. Missing `ADMIN_PASSWORD_HASH` or `ADMIN_SESSION_SECRET`: admin login is refused everywhere (there is no default password), and
+   the login page lists the variables to set.
+
+### Set it up on your computer
+
+1. `cp .env.example .env.local`
+2. `npm run admin:hash`, type the admin password twice (nothing is shown while typing; at least 12 characters). The script never
+   accepts the password as a command-line argument or through a pipe.
+3. Paste the two printed lines (`ADMIN_PASSWORD_HASH=…`, `ADMIN_SESSION_SECRET=…`) into `.env.local`, restart `npm run dev`
+   (or `npm run build` + `npm run start`), then open `/dang-nhap-quan-tri`.
+
+### Set it up on Vercel (before pushing this version)
+
+1. On your computer run `npm run admin:hash` (step 2 above) and keep the two printed lines.
+2. Vercel → your project → **Settings → Environment Variables** → add `ADMIN_PASSWORD_HASH` and `ADMIN_SESSION_SECRET` with those
+   values. Tick **both Production and Preview** (Preview deployments of other branches need them too).
+3. **Redeploy** (Deployments → … → Redeploy), because environment variables are read when a deployment starts.
+4. Open `https://<your-site>/dang-nhap-quan-tri` to check. Changing `ADMIN_SESSION_SECRET` later logs every admin out.
+
+### Real Turnstile keys (so the CAPTCHA really checks)
+
+1. Sign in to the Cloudflare dashboard (free plan) → **Turnstile** → **Add widget**.
+2. Name it, add your domains (for example `dac-san-3-mien.vercel.app`, and `localhost` if you want it locally), widget mode
+   **Managed**, then create it.
+3. Copy the **Site Key** to `NEXT_PUBLIC_TURNSTILE_SITE_KEY` and the **Secret Key** to `TURNSTILE_SECRET_KEY` (Vercel:
+   Production and Preview; locally: `.env.local`), then redeploy. The site key is public by design; never commit the secret key.
 
 ## Show the demo on phones (same Wi-Fi)
 
@@ -80,7 +133,8 @@ Customers create their own accounts on **/dang-ky** (always with the role USER).
 3. In the phone's browser, open the **Network** address printed in the terminal, for example `http://192.168.1.20:3000`.
    (If the Wi-Fi changed after the server started, restart the server so the printed address is the current one.)
 
-Login, registration and "change password" work over this plain `http://` address.
+Login, registration and "change password" work over this plain `http://` address. The admin login works there too when the
+admin variables are set (the session cookie is sent without `Secure` over `http://`).
 
 Remember that **every browser keeps its own data** (see below): an account registered, or an order placed, on a phone
 exists only in that phone's browser. It does not appear in the Admin pages opened on the computer.
@@ -94,7 +148,8 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 | `/san-pham/[id]` | Product detail: price, stock left ("Hết hàng" disables buying), stars, description, information, quantity, "Thêm vào giỏ hàng", "Mua ngay", ♡ wishlist, related products |
 | `/gio-hang` | Cart with a **tick box per product** and "Chọn tất cả": only ticked products are priced and bought, the others stay in the cart. Change quantity (never above the stock), remove, clear all, progress towards free shipping; checkout is blocked while a *ticked* line exceeds the stock |
 | `/thanh-toan` | Checkout (only the ticked cart products; after the order only those leave the cart; "Mua ngay" on a product page ticks only that product): logged-in customers choose "Mua cho bản thân" (default address from the account, nothing to retype) or "Mua tặng người thân" (recipient form). 2-level address: province (34, after the 2025 merger) → ward typed by hand. COD or bank transfer with a **VietQR code** (amount and order code filled in). Optional free gift wrap. **Mã giảm giá** field (the passport coupon, see below) |
-| `/dang-nhap` | Login (customers and Admin use the same page). `?next=/path` returns to that page afterwards (only paths inside the site) |
+| `/dang-nhap` | Customer login. `?next=/path` returns to that page afterwards (only paths inside the site) |
+| `/dang-nhap-quan-tri` | Admin login (see "Admin login"): password checked on the server, Turnstile, increasing wait after wrong passwords. No link points to it from the shop. `?next=` only accepts paths under `/admin` |
 | `/dang-ky` | Registration with a Cloudflare Turnstile CAPTCHA, verified on the server (`/api/captcha/verify`). Also reads `?next=` |
 | `/tai-khoan` | My account: profile and **default delivery address**, purchase history ("Lịch sử mua hàng": QR code again for unpaid transfers, star rating and comment for each product of a completed order), **Sản phẩm yêu thích**, "Hộ chiếu đặc sản", change password, logout. `?tab=orders` / `?tab=wishlist` / `?tab=passport` open those tabs |
 | `/hop-qua` | "Hộp quà Ba Miền": ask occasion and budget (optional; `?dip=` and `?ngan-sach=` pre-select them), the box is filled with **one in-stock product per region** (best match first, then best seller; if a region has nothing matching it says "món gần nhất"), change any slot, then add the whole box to the cart and go straight to it. Logic in `src/lib/giftBox.ts` |
@@ -107,10 +162,11 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 | `/admin/san-pham/[id]/sua` | Admin: edit a product |
 | `/admin/don-hang` | Admin: orders — details, change status ("Đã hủy" returns the goods to stock), "Xác nhận đã nhận tiền" for bank transfers, delete |
 | `/admin/thong-ke` | Admin: purchases per product — sold, orders, revenue, views, stock; click a column to sort |
-| `/admin/nguoi-dung` | Admin: users — change role (USER / ADMIN), delete |
+| `/admin/nguoi-dung` | Admin: customer accounts — view, delete (there are no roles any more) |
 | `/admin/lien-he` | Admin: "call me back" requests — filter waiting / called, mark as called, delete |
 | `/admin/ma-giam-gia` | Admin: discount codes — create a code (percent with optional cap, fixed amount, or free shipping; optional minimum subtotal and total number of uses), see how many orders used it, turn off, delete |
 | `/api/captcha/verify` | Route Handler (server): verifies a Turnstile token with Cloudflare `siteverify` using the secret key |
+| `/api/admin/login`, `/api/admin/logout`, `/api/admin/session` | Route Handlers (server): admin login, logout, and "is this browser's admin session valid?" |
 
 Unknown pages and unknown products show a Vietnamese "Lỗi 404" message.
 
@@ -119,7 +175,7 @@ Unknown pages and unknown products show a Vietnamese "Lỗi 404" message.
 | Key | Content | First visit |
 | --- | --- | --- |
 | `tuantustore-products` | all products | the 60 specialties (20 per region) of `src/data/initialData.ts` and `src/data/moreProducts.ts` |
-| `tuantustore-users` | all accounts | the demo ADMIN account |
+| `tuantustore-users` | customer accounts (no admin, no roles) | `[]` |
 | `tuantustore-current-user` | id of the logged-in user | — (guest) |
 | `tuantustore-cart` | cart: product id + quantity | `[]` |
 | `tuantustore-orders` | all orders | `[]` |
@@ -130,6 +186,7 @@ Unknown pages and unknown products show a Vietnamese "Lỗi 404" message.
 | `tuantustore-wishlists` | wishlist per account: `{ userId: [productId, …] }` | — (created at the first ♡) |
 | `tuantustore-product-views` | `{ productId: number of detail-page views }` in this browser (breaks ties in "Sản phẩm bán chạy" while nothing has been sold) | — (created at the first product view) |
 | `tuantustore-recently-viewed` | ids of the products this browser opened last (shown in "Đã xem gần đây") | — (not created until a product is opened) |
+| `tuantustore-migrations` | ids of the one-time clean-ups this browser already ran, e.g. `remove-legacy-admin` (removes the old sample admin account `admin@tuantustore.vn` and every `role` field; see `runMigrations` in `src/lib/storage.ts`) | written on the first visit |
 | `tuantustore-music` | background music: `{ trackId, currentTime, volume, muted }` (track saved by id, see `src/data/playlist.ts`) | — (created when the player is first used) |
 
 - **First visit:** a key that does not exist yet is filled with its default value. A key that already has data is
@@ -157,7 +214,7 @@ src/
 ├── context/
 │   └── StoreContext.tsx the ONE place that holds the data and saves it to localStorage
 ├── data/
-│   ├── initialData.ts   the first 13 products and the demo ADMIN of the first visit
+│   ├── initialData.ts   the first 13 products (no sample accounts)
 │   ├── moreProducts.ts  the 47 products added in November 2026 (seed batch "ba-mien-60"), so each region has 20
 │   ├── brands.ts        what each brand is (kind, place, short introduction)
 │   ├── provinces.ts     the 34 provinces after the 2025 merger, old names → new names
@@ -247,8 +304,8 @@ read from `localStorage`. This avoids hydration errors, because the server has n
 
 ## Name and logo
 
-The shop is called **"Đặc sản 3 Miền"** (the repository, the npm package, the `tuantustore-…` localStorage keys and the demo
-admin e-mail keep the old internal name, so saved data and logins keep working).
+The shop is called **"Đặc sản 3 Miền"** (the repository, the npm package and the `tuantustore-…` localStorage keys
+keep the old internal name, so saved data and logins keep working).
 
 Logo (design supplied by the shop owner): a wine-red bowl whose steam curls into the number 3, a pair of chopsticks and a gold
 conical hat. The symbol, with the background removed (a transparent picture in two colours, wine red and gold), is

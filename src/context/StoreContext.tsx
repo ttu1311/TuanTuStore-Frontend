@@ -13,6 +13,7 @@
 // Đây là mô phỏng front-end: không có server, và các kiểm tra "bảo mật" chỉ dành cho bản demo.
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import CartToast, { type Toast } from "@/components/ui/CartToast";
+import { ADMIN_LOGIN_PATH, hasAdminHint } from "@/lib/adminConstants";
 import { MAX_QUANTITY, cleanQuantity, getCartLines, maxOrderable, selectedLines } from "@/lib/cart";
 import { applyCodes, type AppliedCodes } from "@/lib/coupons";
 import { customerCanCancel, formatOrderCode, isNotShipped, orderNumberFromCode, samePhone, type CheckoutFields } from "@/lib/orders";
@@ -32,7 +33,7 @@ import { normalizeEmail, normalizePhone, type RegisterValues } from "@/lib/valid
 import { MAX_COMMENT_LENGTH, reviewEligibility } from "@/lib/reviews";
 import { validateContact, type ContactValues } from "@/lib/contact";
 import { cleanAddress, validateAddress } from "@/lib/address";
-import type { CartItem, ContactRequest, Coupon, SavedAddress, Order, OrderItem, OrderStatus, PaymentMethod, Product, Review, Role, User } from "@/types";
+import type { CartItem, ContactRequest, Coupon, SavedAddress, Order, OrderItem, OrderStatus, PaymentMethod, Product, Review, User } from "@/types";
 
 // Kết quả mà mọi thao tác trả về. `field` cho biết thông báo thuộc về ô nhập nào (nếu có).
 export type ActionResult = { ok: true } | { ok: false; message: string; field?: string };
@@ -63,6 +64,16 @@ type StoreValue = {
   productViews: Record<string, number>; // id sản phẩm -> số lần trang chi tiết được mở (trên trình duyệt này)
   wishlist: string[]; // id các sản phẩm yêu thích của người đang đăng nhập (rỗng khi chưa đăng nhập)
   currentUser: User | null;
+
+  // Quản trị viên KHÔNG phải một tài khoản trong localStorage: "là admin" nghĩa là trình duyệt có cookie phiên quản trị hợp lệ,
+  // do server cấp ở /dang-nhap-quan-tri và kiểm tra qua /api/admin/session (xem src/lib/adminSession.ts).
+  // isAdmin chỉ để giao diện và các lớp chặn trong file này; quyền vào /admin do src/proxy.ts kiểm tra ở server.
+  // Dữ liệu cửa hàng vẫn ở localStorage nên KHÔNG được bảo vệ: các lớp chặn !isAdmin bên dưới chỉ là lớp phụ cho giao diện.
+  isAdmin: boolean;
+  adminChecked: boolean; // đã biết chắc có phải admin chưa (false trong lúc đang hỏi server)
+  refreshAdminSession: () => Promise<boolean>; // hỏi lại server; trả về true nếu phiên quản trị còn hợp lệ
+  // Đăng xuất QUẢN TRỊ: server xóa cookie phiên, rồi tải lại trang đăng nhập quản trị. Không đụng tới tài khoản khách (logout).
+  adminLogout: () => Promise<void>;
 
   // Thêm / bỏ một sản phẩm khỏi danh sách yêu thích. Cần đăng nhập: chưa đăng nhập thì trả về lỗi với field "login".
   toggleWishlist: (productId: string) => ActionResult;
@@ -123,8 +134,7 @@ type StoreValue = {
   setCouponActive: (code: string, active: boolean) => ActionResult;
   deleteCoupon: (code: string) => ActionResult;
 
-  // Người dùng (Admin)
-  changeUserRole: (userId: string, role: Role) => ActionResult;
+  // Người dùng (Admin): chỉ còn xem và xóa tài khoản khách hàng (không còn vai trò để đổi)
   deleteUser: (userId: string) => ActionResult;
 };
 
@@ -150,8 +160,34 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [productViews, setProductViews] = useState<Record<string, number>>({});
   const [wishlists, setWishlists] = useState<Record<string, string[]>>({});
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminChecked, setAdminChecked] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
   const closeToast = useCallback(() => setToast(null), []);
+
+  // Hỏi server phiên quản trị của trình duyệt này còn hợp lệ không (cookie httpOnly, JavaScript không đọc được trực tiếp)
+  const refreshAdminSession = useCallback(async () => {
+    let admin = false;
+    try {
+      const response = await fetch("/api/admin/session", { cache: "no-store" });
+      admin = response.ok && Boolean(((await response.json()) as { admin?: unknown }).admin);
+    } catch {
+      admin = false; // mất mạng: coi như không phải admin (không mở thêm quyền gì)
+    }
+    setIsAdmin(admin);
+    setAdminChecked(true);
+    return admin;
+  }, []);
+
+  const adminLogout = useCallback(async () => {
+    try {
+      await fetch("/api/admin/logout", { method: "POST" });
+    } finally {
+      setIsAdmin(false);
+      // Tải lại hẳn: cookie đã bị xóa nên proxy không cho vào /admin nữa
+      window.location.assign(ADMIN_LOGIN_PATH);
+    }
+  }, []);
 
   // Chạy một lần, chỉ ở trình duyệt (server không có localStorage)
   useEffect(() => {
@@ -169,8 +205,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setCurrentUserId(data.currentUserId);
     }
 
+    // Chỉ hỏi server khi có cờ gợi ý (đặt lúc đăng nhập quản trị), để khách thường không phải gọi API này ở mỗi trang
+    function checkAdmin() {
+      if (hasAdminHint()) void refreshAdminSession();
+      else setAdminChecked(true);
+    }
+
     initializeStorage();
     loadFromStorage();
+    checkAdmin();
     // Lần render thứ hai ở đây là có chủ đích: lần render đầu phải khớp HTML từ server (ở đó không có localStorage),
     // và chỉ sau đó ta mới hiển thị dữ liệu đã lưu. Đây là cách chuẩn để tránh lỗi hydration.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -179,11 +222,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     // Một tab khác đã đổi localStorage (ví dụ Admin sửa sản phẩm ở đó): đọc lại
     window.addEventListener("storage", loadFromStorage);
     return () => window.removeEventListener("storage", loadFromStorage);
-  }, []);
+  }, [refreshAdminSession]);
 
   // Người đang đăng nhập được tra trong danh sách người dùng, nên tên hoặc vai trò mới có hiệu lực ngay
   const currentUser = users.find((user) => user.id === currentUserId) ?? null;
-  const isAdmin = currentUser?.role === "ADMIN";
   const wishlist = currentUser ? (wishlists[currentUser.id] ?? []) : [];
 
   // ---------- Lưu: localStorage trước, rồi đến state React ----------
@@ -333,7 +375,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // ---------- Tài khoản ----------
 
-  // Tạo tài khoản khách hàng và đăng nhập luôn. Vai trò LUÔN là "USER".
+  // Tạo tài khoản khách hàng và đăng nhập luôn. Mọi tài khoản trong localStorage đều là khách hàng (không có vai trò quản trị).
   function register(values: RegisterValues): ActionResult {
     const email = normalizeEmail(values.email);
     if (users.some((user) => user.email === email)) return fail("Email này đã được đăng ký", "email");
@@ -344,7 +386,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       email,
       phone: normalizePhone(values.phone),
       password: values.password, // chữ thường: chỉ dành cho demo front-end (xem src/lib/password.ts)
-      role: "USER",
       createdAt: new Date().toISOString(),
     };
     if (!saveUsers([...users, user])) return fail(SAVE_ERROR);
@@ -609,7 +650,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   function deleteReview(reviewId: string): ActionResult {
     const review = reviews.find((r) => r.id === reviewId);
     if (!review) return fail("Đánh giá này không còn tồn tại.");
-    if (!currentUser || (review.userId !== currentUser.id && !isAdmin)) return fail(NO_PERMISSION);
+    if (!isAdmin && (!currentUser || review.userId !== currentUser.id)) return fail(NO_PERMISSION);
     return saveReviews(reviews.filter((r) => r.id !== reviewId)) ? OK : fail(SAVE_ERROR);
   }
 
@@ -670,37 +711,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // ---------- Người dùng (Admin) ----------
 
-  function adminCount() {
-    return users.filter((user) => user.role === "ADMIN").length;
-  }
-
-  function changeUserRole(userId: string, role: Role): ActionResult {
-    if (!isAdmin || !currentUser) return fail(NO_PERMISSION);
-    // Quy tắc 1: tài khoản bạn đang đăng nhập không được tự đổi vai trò của mình
-    if (userId === currentUser.id) return fail("Bạn không thể tự thay đổi vai trò của tài khoản đang đăng nhập.");
-
-    const target = users.find((user) => user.id === userId);
-    if (!target) return fail("Người dùng này không còn tồn tại.");
-    if (target.role === role) return OK;
-
-    // Quy tắc 2: website luôn phải còn ít nhất một ADMIN
-    if (target.role === "ADMIN" && adminCount() <= 1) {
-      return fail("Không thể hạ quyền: hệ thống phải có ít nhất một quản trị viên.");
-    }
-
-    const next = users.map((user) => (user.id === userId ? { ...user, role } : user));
-    return saveUsers(next) ? OK : fail(SAVE_ERROR);
-  }
-
   function deleteUser(userId: string): ActionResult {
-    if (!isAdmin || !currentUser) return fail(NO_PERMISSION);
-    if (userId === currentUser.id) return fail("Bạn không thể xóa tài khoản đang đăng nhập.");
-
-    const target = users.find((user) => user.id === userId);
-    if (!target) return fail("Người dùng này không còn tồn tại.");
-    if (target.role === "ADMIN" && adminCount() <= 1) {
-      return fail("Không thể xóa: hệ thống phải có ít nhất một quản trị viên.");
-    }
+    if (!isAdmin) return fail(NO_PERMISSION);
+    if (!users.some((user) => user.id === userId)) return fail("Người dùng này không còn tồn tại.");
 
     if (!saveUsers(users.filter((user) => user.id !== userId))) return fail(SAVE_ERROR);
     // Danh sách yêu thích thuộc về tài khoản: xóa tài khoản thì xóa luôn
@@ -714,6 +727,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (orders.some((order) => order.userId === userId)) {
       saveOrders(orders.map((order) => (order.userId === userId ? { ...order, userId: null } : order)));
     }
+    // Trình duyệt này đang đăng nhập đúng tài khoản khách vừa bị xóa: đăng xuất tài khoản khách đó
+    if (userId === currentUserId) logout();
     return OK;
   }
 
@@ -731,6 +746,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         productViews,
         wishlist,
         currentUser,
+        isAdmin,
+        adminChecked,
+        refreshAdminSession,
+        adminLogout,
         recordView,
         toggleWishlist,
         addProduct,
@@ -763,7 +782,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         addCoupon,
         setCouponActive,
         deleteCoupon,
-        changeUserRole,
         deleteUser,
       }}
     >

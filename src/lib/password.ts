@@ -1,4 +1,5 @@
-// Mật khẩu của BẢN DEMO FRONT-END.
+// Mật khẩu TÀI KHOẢN KHÁCH HÀNG của BẢN DEMO FRONT-END.
+// (Mật khẩu QUẢN TRỊ thì khác: không nằm ở đây mà được kiểm tra ở server bằng mã băm scrypt, xem src/lib/adminSession.ts.)
 //
 // QUAN TRỌNG: đây KHÔNG phải bảo mật thật, và cũng không có ý định như vậy.
 // Mật khẩu được lưu dạng chữ thường trong bản ghi người dùng ở localStorage của trình duyệt, và việc "kiểm tra" đăng nhập

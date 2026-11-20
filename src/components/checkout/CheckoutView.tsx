@@ -85,7 +85,6 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
 
   // Mua cho bản thân với hồ sơ đầy đủ: không có ô nào để nhập, chỉ hiện địa chỉ đã lưu
   const useSavedAddress = recipient === "self" && hasDeliveryProfile(user);
-  const isAdminUser = user?.role === "ADMIN";
   const values = forms[recipient];
 
   // Giá lấy từ danh sách sản phẩm hiện tại trong localStorage
@@ -178,7 +177,7 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
       return;
     }
     // Lần đầu mua cho bản thân: lưu họ tên, số điện thoại và địa chỉ vào hồ sơ cho những lần sau
-    if (user && !isAdminUser && recipient === "self" && !useSavedAddress && saveAsDefault) {
+    if (user && recipient === "self" && !useSavedAddress && saveAsDefault) {
       updateProfile(customer.fullName, customer.phone, customer.address);
     }
     onPlaced(result.order);
@@ -405,8 +404,7 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
               </div>
             ) : (
               <>
-                {/* Tài khoản ADMIN không có địa chỉ mặc định, nên không nhắc lưu */}
-                {user && !isAdminUser && recipient === "self" && (
+                {user && recipient === "self" && (
                   <p className="mt-5 rounded-lg bg-gold-soft px-4 py-3 text-sm text-gold-ink">
                     Tài khoản của bạn chưa có địa chỉ giao hàng mặc định. Nhập một lần, lần sau không phải nhập lại.
                   </p>
@@ -422,7 +420,7 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
                   {!user && <div className="sm:col-span-2">{renderField("email", "Email", { type: "email", autoComplete: "email" })}</div>}
                   <AddressFields idPrefix="" value={values.address} errors={errors} onChange={handleAddressChange} />
                 </div>
-                {user && !isAdminUser && recipient === "self" && (
+                {user && recipient === "self" && (
                   <label className="mt-4 flex min-h-11 cursor-pointer items-center gap-3 text-ink">
                     <input
                       type="checkbox"

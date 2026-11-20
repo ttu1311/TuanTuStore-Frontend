@@ -25,7 +25,7 @@ declare global {
 export type TurnstileHandle = { reset: () => void };
 
 // Ô "Tôi không phải robot" của Cloudflare Turnstile. Khi khách vượt qua, onToken nhận token;
-// token chỉ dùng được MỘT lần và được xác minh ở server (/api/captcha/verify).
+// token chỉ dùng được MỘT lần và được xác minh ở server (/api/captcha/verify khi đăng ký, /api/admin/login khi đăng nhập quản trị).
 // Hết hạn hoặc lỗi thì onToken("") để form biết phải làm lại. ref.reset() lấy token mới sau mỗi lần gửi.
 export default function TurnstileWidget({
   action,
@@ -78,7 +78,7 @@ export default function TurnstileWidget({
   if (!turnstileSiteKey) {
     return (
       <p role="alert" className="text-sm text-sale">
-        Website chưa cấu hình CAPTCHA (NEXT_PUBLIC_TURNSTILE_SITE_KEY), nên tạm thời chưa đăng ký được.
+        Website chưa cấu hình CAPTCHA (NEXT_PUBLIC_TURNSTILE_SITE_KEY), nên tạm thời chưa gửi được form này.
       </p>
     );
   }

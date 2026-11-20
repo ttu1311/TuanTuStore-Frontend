@@ -34,7 +34,7 @@ export default function RegisterForm({ next }: { next?: string }) {
 
   // Đã đăng nhập (hoặc vừa đăng ký xong): chuyển tới đúng trang
   useEffect(() => {
-    if (isReady && currentUser) router.replace(next ?? (currentUser.role === "ADMIN" ? "/admin" : "/tai-khoan"));
+    if (isReady && currentUser) router.replace(next ?? "/tai-khoan");
   }, [isReady, currentUser, router, next]);
 
   if (!isReady || currentUser) return <LoadingState />;

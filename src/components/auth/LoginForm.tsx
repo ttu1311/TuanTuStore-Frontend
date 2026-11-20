@@ -15,8 +15,8 @@ const fieldStyle =
 const fieldOk = "border-line focus:border-primary focus:ring-primary-soft";
 const fieldBad = "border-sale focus:border-sale focus:ring-sale/20";
 
-// Một form đăng nhập cho khách hàng VÀ Admin.
-// Sau khi đăng nhập: về trang `next` nếu có (trang khách đang xem trước đó), không thì ADMIN -> /admin, USER -> /tai-khoan
+// Form đăng nhập của KHÁCH HÀNG (tài khoản trong localStorage). Quản trị viên đăng nhập riêng ở /dang-nhap-quan-tri.
+// Sau khi đăng nhập: về trang `next` nếu có (trang khách đang xem trước đó), không thì về /tai-khoan
 // (effect bên dưới thực hiện việc chuyển trang). `next` đã được kiểm tra bằng safeNextPath.
 export default function LoginForm({ next }: { next?: string }) {
   const { isReady, currentUser, login } = useStore();
@@ -29,7 +29,7 @@ export default function LoginForm({ next }: { next?: string }) {
 
   // Đã đăng nhập (hoặc vừa đăng nhập xong): chuyển tới đúng trang
   useEffect(() => {
-    if (isReady && currentUser) router.replace(next ?? (currentUser.role === "ADMIN" ? "/admin" : "/tai-khoan"));
+    if (isReady && currentUser) router.replace(next ?? "/tai-khoan");
   }, [isReady, currentUser, router, next]);
 
   if (!isReady || currentUser) return <LoadingState />;

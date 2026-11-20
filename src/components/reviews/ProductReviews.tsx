@@ -15,7 +15,7 @@ export const ratingLabels = ["", "Rất tệ", "Chưa hài lòng", "Bình thư�
 // Phần "Đánh giá của khách hàng" ở trang chi tiết sản phẩm.
 // Chỉ khách đã NHẬN hàng (có đơn "Hoàn thành" chứa sản phẩm này) mới viết được; StoreContext kiểm tra lại điều này.
 export default function ProductReviews({ productId }: { productId: string }) {
-  const { reviews, orders, currentUser, deleteReview } = useStore();
+  const { reviews, orders, currentUser, isAdmin, deleteReview } = useStore();
   const productReviews = reviews
     .filter((review) => review.productId === productId)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -89,7 +89,7 @@ export default function ProductReviews({ productId }: { productId: string }) {
             <ReviewItem
               key={review.id}
               review={review}
-              canDelete={Boolean(currentUser && (currentUser.id === review.userId || currentUser.role === "ADMIN"))}
+              canDelete={isAdmin || Boolean(currentUser && currentUser.id === review.userId)}
               onDelete={() => deleteReview(review.id)}
             />
           ))}

@@ -21,6 +21,7 @@ export const STORAGE_KEYS = {
   wishlists: "tuantustore-wishlists", // id người dùng -> id các sản phẩm yêu thích (lưu theo tài khoản)
   coupons: "tuantustore-coupons", // mã giảm giá chủ cửa hàng tạo ở /admin/ma-giam-gia
   music: "tuantustore-music", // nhạc nền: { trackId, currentTime, volume, muted } (src/context/MusicContext.tsx)
+  migrations: "tuantustore-migrations", // id các bước dọn dữ liệu MỘT LẦN đã chạy trên trình duyệt này (xem runMigrations)
 } as const;
 
 // Các nhóm sản phẩm được thêm vào dữ liệu mẫu SAU phiên bản đầu tiên của website.
@@ -68,6 +69,69 @@ export function initializeStorage() {
   if (!Array.isArray(readJSON(STORAGE_KEYS.coupons))) writeJSON(STORAGE_KEYS.coupons, []); // không có mã mẫu
   addNewSeedBatches();
   applySeedUpdates();
+  runMigrations();
+}
+
+// ---------- Các bước dọn dữ liệu chạy MỘT LẦN trên mỗi trình duyệt ----------
+// Mỗi bước có một id; id được ghi vào STORAGE_KEYS.migrations SAU KHI bước đó lưu xong, nên:
+// lần ghi thất bại (storage đầy / bị chặn) sẽ được thử lại ở lần truy cập sau, còn bước đã xong thì không bao giờ chạy lại
+// (ví dụ: sau này một khách đăng ký đúng email admin@tuantustore.vn thì tài khoản đó không bị xóa nhầm).
+const migrations: { id: string; run: () => boolean }[] = [{ id: "remove-legacy-admin", run: removeLegacyAdminAccount }];
+
+function runMigrations() {
+  const saved = readJSON<string[]>(STORAGE_KEYS.migrations);
+  const done = Array.isArray(saved) ? saved : [];
+  for (const migration of migrations) {
+    if (done.includes(migration.id) || !migration.run()) continue;
+    done.push(migration.id);
+    writeJSON(STORAGE_KEYS.migrations, done);
+  }
+}
+
+const LEGACY_ADMIN_ID = "u-admin";
+const LEGACY_ADMIN_EMAIL = "admin@tuantustore.vn";
+
+// Phiên bản cũ tạo sẵn tài khoản quản trị mẫu (admin@tuantustore.vn, mật khẩu chữ thường) trong localStorage và cấp quyền
+// bằng trường "role". Nay quản trị viên đăng nhập riêng ở /dang-nhap-quan-tri (mật khẩu kiểm tra ở server), nên:
+// - xóa bản ghi tài khoản quản trị mẫu đó; đơn hàng của nó được giữ lại như đơn của khách chưa đăng nhập (giống deleteUser),
+//   danh sách yêu thích của nó bị xóa, và nếu trình duyệt đang đăng nhập bằng nó thì đăng xuất;
+// - bỏ trường "role" ở MỌI tài khoản còn lại (hạ quyền những tài khoản từng được nâng lên ADMIN ở giao diện cũ).
+// Ghi đơn hàng / yêu thích / phiên TRƯỚC, danh sách người dùng SAU CÙNG: lỗi giữa chừng thì lần sau vẫn tìm thấy tài khoản cũ để làm lại.
+// Trả về false nếu chưa lưu được (sẽ thử lại lần sau).
+function removeLegacyAdminAccount() {
+  const users = readJSON<unknown[]>(STORAGE_KEYS.users);
+  if (!Array.isArray(users)) return false;
+
+  const isLegacyAdmin = (user: unknown) => {
+    if (!user || typeof user !== "object") return false;
+    const record = user as { id?: unknown; email?: unknown };
+    return record.id === LEGACY_ADMIN_ID || (typeof record.email === "string" && record.email.trim().toLowerCase() === LEGACY_ADMIN_EMAIL);
+  };
+  const removedIds = users.filter(isLegacyAdmin).map((user) => (user as { id?: unknown }).id).filter((id): id is string => typeof id === "string");
+  const hasRole = users.some((user) => user !== null && typeof user === "object" && "role" in user);
+  if (removedIds.length === 0 && !hasRole) return true; // trình duyệt mới hoặc đã sạch
+
+  if (removedIds.length > 0) {
+    const orders = readJSON<Order[]>(STORAGE_KEYS.orders);
+    if (Array.isArray(orders) && orders.some((order) => removedIds.includes(order.userId ?? ""))) {
+      const detached = orders.map((order) => (removedIds.includes(order.userId ?? "") ? { ...order, userId: null } : order));
+      if (!writeJSON(STORAGE_KEYS.orders, detached)) return false;
+    }
+    const wishlists = readJSON<Record<string, unknown>>(STORAGE_KEYS.wishlists);
+    if (wishlists && typeof wishlists === "object" && !Array.isArray(wishlists) && removedIds.some((id) => id in wishlists)) {
+      const rest = Object.fromEntries(Object.entries(wishlists).filter(([userId]) => !removedIds.includes(userId)));
+      if (!writeJSON(STORAGE_KEYS.wishlists, rest)) return false;
+    }
+    const current = readCurrentUserId();
+    if (current && removedIds.includes(current)) clearCurrentUserId();
+  }
+
+  const cleaned = users.filter((user) => !isLegacyAdmin(user)).map((user) => {
+    if (!user || typeof user !== "object" || !("role" in user)) return user;
+    const { role: _role, ...rest } = user as Record<string, unknown>; // eslint-disable-line @typescript-eslint/no-unused-vars
+    return rest;
+  });
+  return writeJSON(STORAGE_KEYS.users, cleaned);
 }
 
 // Trình duyệt đã lưu danh sách sản phẩm TRƯỚC khi một nhóm tồn tại sẽ nhận nhóm đó ở đây, MỘT LẦN:

@@ -24,13 +24,12 @@ const linkActive = "border-primary font-semibold text-primary";
 
 // Menu chính. Nó tự đọc địa chỉ của trang hiện tại (usePathname),
 // nên không trang nào phải báo cho Header biết nó đang ở đâu.
-// Với tài khoản ADMIN, nó còn hiện "Quản trị", đường quay lại /admin.
+// Trình duyệt có phiên quản trị hợp lệ (isAdmin, hỏi server khi có cờ gợi ý tt_admin_hint) thì hiện thêm "Quản trị".
+// Liên kết này chỉ để tiện: nó không cấp quyền gì, /admin vẫn do src/proxy.ts kiểm tra cookie phiên ở server.
 export default function MainNav() {
   const pathname = usePathname();
-  const { isReady, currentUser } = useStore();
-  // Cùng quy tắc với AdminShell: vai trò của người đang đăng nhập, đọc từ danh sách người dùng trong StoreContext.
-  // Ẩn liên kết chỉ để tiện cho người dùng; /admin tự kiểm tra lại vai trò (xem AdminShell).
-  const showAdminLink = isReady && currentUser?.role === "ADMIN";
+  const { isAdmin } = useStore();
+  const showAdminLink = isAdmin;
 
   return (
     <nav aria-label="Điều hướng chính" className="border-t border-line">

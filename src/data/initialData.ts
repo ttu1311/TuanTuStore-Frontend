@@ -299,18 +299,8 @@ export const initialProducts: Product[] = [
     createdAt: "2026-01-01T00:00:00.000Z",
   },
 ];
-//   Email:    admin@tuantustore.vn
-//   Password: Admin@123
-// Mật khẩu được lưu dạng chữ thường, như mọi mật khẩu của bản demo này (xem src/lib/password.ts).
-// Đây là mô phỏng front-end, KHÔNG phải bảo mật thật.
-export const initialUsers: User[] = [
-  {
-    id: "u-admin",
-    name: "Quản trị viên",
-    email: "admin@tuantustore.vn",
-    phone: "",
-    password: "Admin@123",
-    role: "ADMIN",
-    createdAt: "2026-01-01T00:00:00.000Z",
-  },
-];
+
+// Không có tài khoản mẫu nào: mọi tài khoản đều do khách tự đăng ký ở /dang-ky.
+// Tài khoản quản trị mẫu cũ (admin@tuantustore.vn) đã bị bỏ: quản trị viên đăng nhập riêng ở /dang-nhap-quan-tri,
+// mật khẩu kiểm tra ở server. Trình duyệt còn lưu tài khoản cũ đó được dọn bởi removeLegacyAdminAccount (src/lib/storage.ts).
+export const initialUsers: User[] = [];
