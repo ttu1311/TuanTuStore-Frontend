@@ -13,7 +13,6 @@ const linkColumns: { title: string; links: FooterItem[] }[] = [
     title: "Liên kết nhanh",
     links: [
       { label: "Trang chủ", href: "/" },
-      { label: "Giới thiệu", href: "/#gioi-thieu" },
       { label: "Sản phẩm", href: "/san-pham" },
       { label: "Sản phẩm theo miền", href: "/#san-pham" },
       { label: "Hộp quà Ba Miền", href: "/hop-qua" },
