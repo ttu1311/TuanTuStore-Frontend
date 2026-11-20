@@ -17,6 +17,16 @@ const SHOWN = 8; // 2 hàng × 4 thẻ
 
 type TabId = "ban-chay" | "tat-ca" | Region;
 
+// Tab đang chọn mang màu của miền đó (xanh chè, nâu cà phê, hổ phách); "Bán chạy" và "Tất cả" dùng màu chủ đạo.
+// Miền Nam: chữ đậm trên nền hổ phách vì chữ trắng trên màu này khó đọc.
+const selectedClass: Record<TabId, string> = {
+  "ban-chay": "border-primary bg-primary text-white shadow-md shadow-primary/25",
+  "tat-ca": "border-primary bg-primary text-white shadow-md shadow-primary/25",
+  bac: "border-che bg-che text-white shadow-md shadow-che/25",
+  trung: "border-brown bg-brown text-white shadow-md shadow-brown/25",
+  nam: "border-gold bg-gold text-ink shadow-md shadow-gold/30",
+};
+
 const tabs: { id: TabId; label: string; dotClass?: string }[] = [
   { id: "ban-chay", label: "Bán chạy" },
   { id: "tat-ca", label: "Tất cả" },
@@ -58,6 +68,10 @@ export default function ProductTabs() {
 
   return (
     <section id="san-pham" aria-labelledby="products-title">
+      <p className="mb-3 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-gold-ink">
+        <span className="h-0.5 w-10 rounded-full bg-gold" aria-hidden="true" />
+        Tinh hoa ẩm thực Việt
+      </p>
       <SectionHeader id="products-title" title="Tất cả sản phẩm" description="Chọn theo bán chạy hoặc theo miền. Món nào cũng ghi rõ nơi làm ra." />
 
       {/* Tab: cuộn ngang được trên điện thoại */}
@@ -79,8 +93,8 @@ export default function ProductTabs() {
               aria-controls="products-panel"
               tabIndex={selected ? 0 : -1}
               onClick={() => setTab(item.id)}
-              className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-5 text-sm font-semibold transition-colors duration-200 ${
-                selected ? "border-primary bg-primary text-white" : "border-line bg-white text-ink hover:border-primary hover:text-primary"
+              className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-5 text-sm font-semibold transition-all duration-300 ${
+                selected ? selectedClass[item.id] : "border-line bg-white text-ink hover:-translate-y-0.5 hover:border-primary hover:text-primary hover:shadow-md"
               }`}
             >
               {item.dotClass && <span className={`h-2.5 w-2.5 rounded-full ring-2 ring-white ${item.dotClass}`} aria-hidden="true" />}
@@ -94,11 +108,15 @@ export default function ProductTabs() {
         {isReady && items.length === 0 ? (
           <p className="rounded-xl bg-surface px-6 py-10 text-center text-ink-muted">Chưa có sản phẩm trong mục này.</p>
         ) : (
-          // key: đổi tab thì lưới hiện lại nhẹ nhàng
-          <ul key={tab} className="grid animate-fade-up grid-cols-2 gap-x-3 gap-y-8 min-[480px]:gap-x-6 min-[480px]:gap-y-10 lg:grid-cols-3 xl:grid-cols-4">
+          // key: đổi tab thì các thẻ hiện lại lần lượt (mỗi thẻ trễ hơn thẻ trước 60ms)
+          <ul key={tab} className="grid grid-cols-2 gap-x-3 gap-y-8 min-[480px]:gap-x-6 min-[480px]:gap-y-10 lg:grid-cols-3 xl:grid-cols-4">
             {isReady
-              ? items.map((product) => (
-                  <li key={product.id} className="flex">
+              ? items.map((product, index) => (
+                  <li
+                    key={product.id}
+                    style={{ animationDelay: `${index * 60}ms` }}
+                    className="flex animate-fade-up transition-transform duration-300 ease-out hover:-translate-y-1.5"
+                  >
                     <ProductCard product={product} />
                   </li>
                 ))

@@ -12,6 +12,11 @@ export function discountPercent(product: Product) {
   return product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
 }
 
+// Số tiền tiết kiệm được khi mua giá hiện tại thay vì giá cũ: 185000 với giá cũ 220000 -> 35000 (không giảm giá thì 0)
+export function savingAmount(product: Product) {
+  return product.oldPrice && product.oldPrice > product.price ? product.oldPrice - product.price : 0;
+}
+
 // Mô tả được lưu thành một đoạn văn bản, giữa các đoạn có một dòng trống
 export function descriptionParagraphs(product: Product) {
   return product.description

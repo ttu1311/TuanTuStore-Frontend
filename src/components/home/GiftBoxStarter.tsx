@@ -13,7 +13,7 @@ const steps = [
 ] as const;
 
 const optionStyle =
-  "flex min-h-[5.5rem] w-full flex-col items-start justify-center gap-1 rounded-xl border bg-white p-4 text-left transition-colors duration-200 hover:border-primary hover:bg-primary-soft";
+  "flex min-h-[5.5rem] w-full flex-col items-start justify-center gap-1 rounded-xl border bg-white p-4 text-left transition-all duration-200 hover:-translate-y-1 hover:border-primary hover:bg-primary-soft hover:shadow-card";
 
 // "Ghép hộp quà ba miền" ở trang chủ: 2 câu hỏi (dịp, ngân sách) rồi chuyển sang /hop-qua với hộp đã ghép sẵn
 // (mỗi miền một món hợp nhất, khách đổi từng ô được). Toàn bộ phần chọn món nằm ở trang Hộp quà.
@@ -41,8 +41,16 @@ export default function GiftBoxStarter() {
   }
 
   return (
-    <section id="ghep-hop-qua" aria-labelledby="gift-box-title" className="rounded-2xl bg-surface p-5 sm:p-8 lg:p-10">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <section
+      id="ghep-hop-qua"
+      aria-labelledby="gift-box-title"
+      className="relative overflow-clip rounded-2xl border border-gold-light/50 bg-gradient-to-br from-gold-soft via-white to-primary-soft p-5 sm:p-8 lg:p-10"
+    >
+      {/* Hai vòng sáng trang trí (không mang nội dung) */}
+      <span aria-hidden="true" className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gold-light/40 blur-3xl" />
+      <span aria-hidden="true" className="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+
+      <div className="relative flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 id="gift-box-title" className="font-display text-3xl/[1.1] font-bold text-ink md:text-4xl/[1.1]">
             Ghép hộp quà ba miền
@@ -73,7 +81,7 @@ export default function GiftBoxStarter() {
         </ol>
       </div>
 
-      <div key={step} className="mt-8 animate-fade-up">
+      <div key={step} className="relative mt-8 animate-fade-up">
         <h3 ref={headingRef} tabIndex={-1} className="font-display text-2xl font-semibold text-ink outline-none">
           {steps[step].title}
         </h3>
@@ -127,7 +135,7 @@ export default function GiftBoxStarter() {
         )}
       </div>
 
-      <p className="mt-6 text-sm text-ink-muted">
+      <p className="relative mt-6 text-sm text-ink-muted">
         Muốn tự ghép từ đầu?{" "}
         <Link href="/hop-qua" className="font-semibold text-primary underline underline-offset-4">
           Mở trang Hộp quà

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro, Lora, Phudu } from "next/font/google";
 import "./globals.css";
+import { MusicProvider } from "@/context/MusicContext";
 import { StoreProvider } from "@/context/StoreContext";
 
 // Phudu: kiểu chữ tiêu đề hẹp do người Việt thiết kế, gần với biển hiệu quán vẽ tay. Đủ dấu tiếng Việt.
@@ -18,10 +19,11 @@ const sansFont = Be_Vietnam_Pro({
   display: "swap",
 });
 
-// Lora: chữ có chân, dùng RIÊNG cho tên cửa hàng trong logo (src/components/brand/Logo.tsx). Đủ dấu tiếng Việt.
+// Lora: chữ có chân, dùng cho tên cửa hàng trong logo (src/components/brand/Logo.tsx) và dòng chữ nghiêng ở banner trang chủ. Đủ dấu tiếng Việt.
 const brandFont = Lora({
   subsets: ["latin", "vietnamese"],
   weight: ["600", "700"],
+  style: ["normal", "italic"],
   variable: "--font-brand",
   display: "swap",
 });
@@ -38,7 +40,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="vi" data-scroll-behavior="smooth" className={`${displayFont.variable} ${sansFont.variable} ${brandFont.variable}`}>
       <body>
         {/* Toàn bộ dữ liệu website (sản phẩm, người dùng, đơn hàng, giỏ hàng) nằm trong trình duyệt: xem src/context/StoreContext.tsx */}
-        <StoreProvider>{children}</StoreProvider>
+        <StoreProvider>
+          {/* Nhạc nền: <audio> nằm ở đây (layout gốc không bị dựng lại khi chuyển trang), nên nhạc không ngắt. Xem src/context/MusicContext.tsx */}
+          <MusicProvider>{children}</MusicProvider>
+        </StoreProvider>
       </body>
     </html>
   );

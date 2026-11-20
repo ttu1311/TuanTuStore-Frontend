@@ -89,7 +89,7 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 
 | Route | Page |
 | --- | --- |
-| `/` | Homepage, top to bottom: banner (3 slides: pick a gift, gift box, free shipping), **"Tất cả sản phẩm"** (tabs: Bán chạy · Tất cả · Miền Bắc · Miền Trung · Miền Nam; up to 8 products per tab, and a "Xem tất cả sản phẩm" button at the bottom that opens `/san-pham`, filtered by region on a region tab; **Bán chạy** = top 8 in-stock products by quantity sold, cancelled orders excluded, ties: views then newest; only customers' purchases decide the order, Admin cannot rank or pin a product; the "Top 1/2/3" badge on product cards is computed the same way and only products that have sold get one), **"Ghép hộp quà ba miền"** (2 questions: occasion, budget per item; then it opens `/hop-qua` with the box already filled), "Về Đặc sản 3 Miền" |
+| `/` | Homepage, top to bottom: banner (4 photo slides: ba miền, Miền Bắc, Miền Trung, Miền Nam; photos in `public/images/banner`), **"Ưu đãi hôm nay"** (every in-stock product that has an old price higher than its price, biggest discount first, up to 5 in ONE row that shows 4 at a time on a computer (2 on a tablet) with arrow buttons to see the rest, swipe on a phone; the block disappears when there is none: the Admin puts a product in or out by filling or clearing "Giá cũ" in the product form), **"Tất cả sản phẩm"** (tabs: Bán chạy · Tất cả · Miền Bắc · Miền Trung · Miền Nam; up to 8 products per tab, and a "Xem tất cả sản phẩm" button at the bottom that opens `/san-pham`, filtered by region on a region tab; **Bán chạy** = top 8 in-stock products by quantity sold, cancelled orders excluded, ties: views then newest; only customers' purchases decide the order, Admin cannot rank or pin a product; the "Top 1/2/3" badge on product cards is computed the same way and only products that have sold get one), **"Ghép hộp quà ba miền"** (2 questions: occasion, budget per item; then it opens `/hop-qua` with the box already filled), "Về Đặc sản 3 Miền" |
 | `/san-pham` | Product list: search, filter by region / province / occasion / price, sort. Reads `?q=`, `?region=`, `?province=` and `?dip=` (occasion) |
 | `/san-pham/[id]` | Product detail: price, stock left ("Hết hàng" disables buying), stars, description, information, quantity, "Thêm vào giỏ hàng", "Mua ngay", ♡ wishlist, related products |
 | `/gio-hang` | Cart with a **tick box per product** and "Chọn tất cả": only ticked products are priced and bought, the others stay in the cart. Change quantity (never above the stock), remove, clear all, progress towards free shipping; checkout is blocked while a *ticked* line exceeds the stock |
@@ -130,6 +130,7 @@ Unknown pages and unknown products show a Vietnamese "Lỗi 404" message.
 | `tuantustore-wishlists` | wishlist per account: `{ userId: [productId, …] }` | — (created at the first ♡) |
 | `tuantustore-product-views` | `{ productId: number of detail-page views }` in this browser (breaks ties in "Sản phẩm bán chạy" while nothing has been sold) | — (created at the first product view) |
 | `tuantustore-recently-viewed` | ids of the products this browser opened last (shown in "Đã xem gần đây") | — (not created until a product is opened) |
+| `tuantustore-music` | background music: `{ trackId, currentTime, volume, muted }` (track saved by id, see `src/data/playlist.ts`) | — (created when the player is first used) |
 
 - **First visit:** a key that does not exist yet is filled with its default value. A key that already has data is
   **never overwritten**, so refreshing the page keeps every change (new products, accounts, orders…).
@@ -231,6 +232,11 @@ read from `localStorage`. This avoids hydration errors, because the server has n
 - **Discount codes from the shop** (`/admin/ma-giam-gia`, stored under `tuantustore-coupons`, none by default) follow the same
   rules: the customer must be logged in, each customer uses each code once, a cancelled order gives it back. One order takes at
   most one discount code (the passport code counts as one) plus one free-shipping code (`Order.shippingCoupon`).
+- **Background music** (round button at the bottom left of every shop page, not on `/admin`): it never starts by itself. One
+  `<audio>` element lives in `MusicProvider` (`src/context/MusicContext.tsx`) inside the root layout, so the music keeps playing
+  while the customer moves between pages. After a reload the track and position come back, paused ("Nghe tiếp «…»"). A file
+  that cannot load is skipped with a short message; if every file fails the player stops and says "Chưa phát được nhạc nền".
+  Two open tabs never play at the same time. The music files go in `public/audio` (see Credits).
 - The help and policy pages are sample policies for this student project, and each page says so.
 
 ## Troubleshooting
@@ -251,13 +257,24 @@ conical hat. The symbol, with the background removed (a transparent picture in t
 real text in the serif font Lora (loaded in `src/app/layout.tsx`), in the colours of the logo (wine red and gold), so they stay
 sharp at any size. The footer adds the line "TINH HOA ẨM THỰC VIỆT". The site uses the `Logo` component
 (`src/components/brand/Logo.tsx`). The pictures are bitmaps (not vectors): sharp up to about 3× the size shown on the site; for
-print, ask the designer for a vector or a larger file. The homepage banner tints its photos with the same wine red and puts the
-symbol on its small label.
+print, ask the designer for a vector or a larger file.
 
 ## Credits
 
 Photos: Wikimedia Commons. Some photos of the November 2026 products show the same kind of product but not necessarily from the
-same place. Fonts: Phudu and Be Vietnam Pro (Google Fonts)
+same place. Fonts: Phudu, Be Vietnam Pro and Lora (Google Fonts)
+
+Homepage banner photos (`public/images/banner`): supplied by the shop owner (illustrations; the dishes are not all products sold in the shop).
+
+Background music (`public/audio`, listed in `src/data/playlist.ts`):
+
+- `satie-gymnopedie-1.mp3`: "Gymnopédie No. 1" by Erik Satie, played by Robin Alciatore, **public domain** (MP3 version made by
+  Wikimedia Commons from the original Ogg file) —
+  https://commons.wikimedia.org/wiki/File:Erik_Satie_-_gymnopedies_-_la_1_ere._lent_et_douloureux.ogg
+- `noi-nay-co-anh.mp3`: "Nơi này có anh" by Sơn Tùng M-TP. **Copyrighted**: used with the permission the project owner obtained
+  for this site. Remove it if that permission ends.
+- `thanh-do.mp3`: "Thành Đô" by GUrbane (label: ZuongZero Entertainment, from the file's own tags). **Copyrighted**: used with the
+  permission the project owner obtained for this site. Remove it if that permission ends.
 
 Photos of the Cà Mau products (cropped and resized):
 

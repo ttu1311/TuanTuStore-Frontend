@@ -16,6 +16,9 @@ const nextConfig: NextConfig = {
   // Riêng trang sản phẩm tự hiển thị <title> mang tên sản phẩm: xem src/app/(shop)/san-pham/[id]/page.tsx.
   htmlLimitedBots: /.*/,
   allowedDevOrigins: privateNetworkAddresses,
+  // Ẩn nút tròn "N" (công cụ dev của Next.js) ở góc dưới bên trái khi chạy `npm run dev`: chỗ đó là nút nhạc nền.
+  // Bảng báo lỗi của Next.js vẫn hiện khi có lỗi. Bản build / Vercel không có nút này.
+  devIndicators: false,
 };
 
 export default nextConfig;

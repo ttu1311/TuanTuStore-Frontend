@@ -3,8 +3,10 @@ import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import BackToTop from "@/components/layout/BackToTop";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
+import MusicPlayer from "@/components/music/MusicPlayer";
 
-// Khung của mọi trang cửa hàng: dải thông báo và Header ở trên, trang ở giữa, Footer ở dưới, nút "Lên đầu trang" ở góc.
+// Khung của mọi trang cửa hàng: dải thông báo và Header ở trên, trang ở giữa, Footer ở dưới,
+// trình phát nhạc nền ở góc dưới bên trái và nút "Lên đầu trang" ở góc dưới bên phải.
 // Chỉ dùng MỘT LẦN, bởi src/app/(shop)/layout.tsx (và bởi trang 404, nằm ngoài nhóm đó).
 // Các trang Admin có khung riêng (src/components/admin/AdminShell.tsx).
 export default function SiteShell({ children }: { children: ReactNode }) {
@@ -17,6 +19,7 @@ export default function SiteShell({ children }: { children: ReactNode }) {
         {children}
       </main>
       <Footer />
+      <MusicPlayer />
       <BackToTop />
     </div>
   );

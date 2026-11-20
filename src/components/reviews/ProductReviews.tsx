@@ -73,7 +73,7 @@ export default function ProductReviews({ productId }: { productId: string }) {
                 >
                   Đăng nhập
                 </Link>{" "}
-                để viết đánh giá. Chỉ khách đã nhận hàng mới đánh giá được, để mọi đánh giá đều là của người đã dùng sản phẩm.
+                để viết đánh giá.
               </>
             )}
             {eligibility === "not-bought" && "Chỉ khách đã mua và nhận sản phẩm này mới viết được đánh giá."}

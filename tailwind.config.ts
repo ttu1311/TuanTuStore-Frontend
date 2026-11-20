@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 // Các design token của Đặc sản 3 Miền. Đổi một giá trị ở đây thì cả website thay đổi theo.
-// Màu chủ đạo là đỏ tươi (primary, sáng hơn đỏ rượu của logo), cộng một màu cho mỗi vùng:
+// Màu chủ đạo là cam nghệ (primary), cộng một màu cho mỗi vùng:
 // chè (xanh lá trà) cho Bắc, cà phê (rang đậm) cho Trung, nước mắm (hổ phách) cho Nam.
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
@@ -55,11 +55,23 @@ const config: Config = {
           "0%, 100%": { transform: "scale(1)" },
           "40%": { transform: "scale(1.35)" },
         },
+        // Vệt sáng lướt qua nhãn "-X%" của thẻ ưu đãi: lướt trong nửa đầu chu kỳ, nửa sau nghỉ (vệt nằm ngoài nhãn nên không thấy)
+        shimmer: {
+          "0%": { transform: "translateX(-150%)" },
+          "50%, 100%": { transform: "translateX(350%)" },
+        },
+        // Ba vạch sóng âm trên nút nhạc nền khi đang phát (tắt khi người dùng bật "giảm chuyển động")
+        equalizer: {
+          "0%, 100%": { transform: "scaleY(0.35)" },
+          "50%": { transform: "scaleY(1)" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.6s ease-out both",
-        progress: "progress 6s linear both", // một ảnh của banner trang chủ (SLIDE_SECONDS trong HeroBanner)
+        progress: "progress 3s linear both", // một ảnh của banner trang chủ (SLIDE_SECONDS trong HeroBanner)
         "cart-pop": "cart-pop 0.4s ease-out",
+        equalizer: "equalizer 0.9s ease-in-out infinite",
+        shimmer: "shimmer 3.6s ease-in-out infinite",
       },
     },
   },

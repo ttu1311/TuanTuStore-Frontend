@@ -11,10 +11,11 @@
     --c-ink-muted: 87 83 78; /* #57534E — chữ phụ (7,6:1 trên nền, 7,1:1 trên surface) */
     --c-line: 236 231 225; /* #ECE7E1 — đường kẻ, viền */
     --c-surface: 250 247 243; /* #FAF7F3 — vùng xen kẽ: trắng ấm rất nhạt */
-    --c-primary: 196 34 56; /* #C42238 — MÀU CHỦ ĐẠO: đỏ tươi, cùng sắc với đỏ rượu của logo nhưng sáng hơn (chữ trắng trên nút 5,8:1).
-                               Logo và banner giữ đỏ rượu #830E20 (mã màu viết thẳng trong Logo.tsx, HeroBanner.tsx). */
-    --c-primary-dark: 163 22 43; /* #A3162B — nút khi rê chuột */
-    --c-primary-soft: 252 242 240; /* #FCF2F0 — nền nhạt của mục đang chọn (chữ đỏ trên nền này 5,3:1) */
+    --c-primary: 194 65 12; /* #C2410C — MÀU CHỦ ĐẠO: cam nghệ / cam đất (màu nghệ, ớt, gạch nung), ấm và tươi.
+                               Chữ trắng trên nút 5,18:1; chữ cam trên nền trắng 5,18:1, trên nền surface 4,85:1.
+                               Logo giữ đỏ rượu #830E20 (mã màu viết thẳng trong Logo.tsx). */
+    --c-primary-dark: 154 52 18; /* #9A3412 — nút khi rê chuột (chữ trắng 7,31:1) */
+    --c-primary-soft: 255 243 234; /* #FFF3EA — nền nhạt của mục đang chọn (chữ cam primary trên nền này 4,75:1, chữ primary-dark 6,70:1) */
     --c-che: 63 106 59; /* #3F6A3B — Miền Bắc: xanh lá trà */
     --c-che-soft: 228 237 225; /* #E4EDE1 */
     --c-brown: 91 59 42; /* #5B3B2A — Miền Trung: cà phê rang */

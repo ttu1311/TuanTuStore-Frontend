@@ -3,7 +3,7 @@ import Link from "next/link";
 import AddToCartButton from "@/components/product/AddToCartButton";
 import TopBadge from "@/components/product/TopBadge";
 import WishlistButton from "@/components/product/WishlistButton";
-import ProductRatingLine from "@/components/reviews/ProductRatingLine";
+import ProductRatingLine, { ProductSoldCount } from "@/components/reviews/ProductRatingLine";
 import { formatVND } from "@/lib/format";
 import { discountPercent } from "@/lib/products";
 import { regions } from "@/lib/regions";
@@ -61,24 +61,28 @@ export default function ProductCard({ product, eager = false }: { product: Produ
             {product.name}
           </Link>
         </h3>
-        {/* Sao đánh giá và số đã bán (chỉ hiện khi đã có) */}
-        <div className="mt-1">
-          <ProductRatingLine productId={product.id} />
+        {/* Giá, và "Đã bán" cùng hàng (xuống dòng khi thẻ hẹp) */}
+        <div className="mt-2 flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
+          <p className="flex flex-wrap items-baseline gap-x-2">
+            <span className="whitespace-nowrap text-lg font-bold text-ink">{formatVND(product.price)}</span>
+            {product.oldPrice && (
+              <span className="whitespace-nowrap text-sm text-ink-muted line-through">
+                <span className="sr-only">Giá cũ </span>
+                {formatVND(product.oldPrice)}
+              </span>
+            )}
+          </p>
+          <ProductSoldCount productId={product.id} />
         </div>
-
-        <div className="mb-4 mt-2 flex flex-wrap items-baseline gap-x-2">
-          <span className="whitespace-nowrap text-lg font-bold text-ink">{formatVND(product.price)}</span>
-          {product.oldPrice && (
-            <span className="whitespace-nowrap text-sm text-ink-muted line-through">
-              <span className="sr-only">Giá cũ </span>
-              {formatVND(product.oldPrice)}
-            </span>
-          )}
-          <span className="text-sm text-ink-muted">{product.pack}</span>
+        {/* Sao đánh giá nằm dưới giá */}
+        <div className="mt-1.5">
+          <ProductRatingLine productId={product.id} showSold={false} />
         </div>
-        {product.stock > 0 && <p className="-mt-3 mb-3 text-sm text-ink-muted">Còn {product.stock} sản phẩm</p>}
+        {product.stock > 0 && <p className="mt-1.5 text-sm text-ink-muted">Còn {product.stock} sản phẩm</p>}
 
-        <AddToCartButton productId={product.id} productName={product.name} />
+        <div className="mt-auto pt-4">
+          <AddToCartButton productId={product.id} productName={product.name} />
+        </div>
       </div>
     </article>
   );

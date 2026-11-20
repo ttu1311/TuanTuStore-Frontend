@@ -76,6 +76,46 @@ const paths = {
     </>
   ),
   chat: <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />,
+  // Trình phát nhạc nền
+  music: (
+    <>
+      <path d="M9 18V5l12-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="18" cy="16" r="3" />
+    </>
+  ),
+  "skip-back": (
+    <>
+      <path d="M19 20 9 12l10-8v16Z" />
+      <path d="M5 19V5" />
+    </>
+  ),
+  "skip-forward": (
+    <>
+      <path d="m5 4 10 8-10 8V4Z" />
+      <path d="M19 5v14" />
+    </>
+  ),
+  volume: (
+    <>
+      <path d="M11 5 6 9H2v6h4l5 4V5Z" />
+      <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+      <path d="M19 5a10 10 0 0 1 0 14" />
+    </>
+  ),
+  "volume-x": (
+    <>
+      <path d="M11 5 6 9H2v6h4l5 4V5Z" />
+      <path d="m22 9-6 6" />
+      <path d="m16 9 6 6" />
+    </>
+  ),
+  x: (
+    <>
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </>
+  ),
   heart: (
     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
   ),
