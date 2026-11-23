@@ -170,18 +170,17 @@ export default function ProductDetailView({ id }: { id: string }) {
               </div>
             </dl>
 
-            {/* Dịp tặng phù hợp: bấm để xem các món khác cùng dịp */}
+            {/* Dịp tặng phù hợp (chỉ để đọc: danh sách sản phẩm không còn lọc theo dịp) */}
             {productOccasions.length > 0 && (
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <span className="text-sm text-ink-muted">Hợp làm:</span>
                 {productOccasions.map((occasion) => (
-                  <Link
+                  <span
                     key={occasion.id}
-                    href={`/san-pham?dip=${occasion.id}`}
-                    className="inline-flex min-h-8 items-center rounded-full bg-gold-soft px-3 text-sm font-medium text-gold-ink transition-colors duration-200 hover:bg-gold-light/40"
+                    className="inline-flex min-h-8 items-center rounded-full bg-gold-soft px-3 text-sm font-medium text-gold-ink"
                   >
                     {occasion.label}
-                  </Link>
+                  </span>
                 ))}
               </div>
             )}

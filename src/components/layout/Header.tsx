@@ -1,7 +1,6 @@
-import Form from "next/form";
 import HeaderActions from "@/components/layout/HeaderActions";
+import HeaderSearch from "@/components/layout/HeaderSearch";
 import SameRouteLink from "@/components/layout/SameRouteLink";
-import Icon from "@/components/ui/Icon";
 import MainNav from "@/components/layout/MainNav";
 import Logo from "@/components/brand/Logo";
 
@@ -19,27 +18,8 @@ export default function Header() {
           <Logo />
         </SameRouteLink>
 
-        {/* next/form: nhấn Enter mở /san-pham?q=<từ khóa> mà không tải lại trang.
-           Trang danh sách đọc "q" và bắt đầu với từ khóa đó trong ô tìm kiếm của nó. */}
-        <Form
-          role="search"
-          action="/san-pham"
-          className="relative order-3 mx-auto w-full basis-full lg:order-none lg:max-w-[560px] lg:flex-1 lg:basis-0"
-        >
-          <label htmlFor="search-input" className="sr-only">
-            Tìm kiếm đặc sản
-          </label>
-          <Icon name="search" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-muted" />
-          <input
-            id="search-input"
-            name="q"
-            type="search"
-            maxLength={100}
-            placeholder="Tìm chè, ô mai, nước mắm…"
-            autoComplete="off"
-            className="h-12 w-full rounded-md border border-line bg-white pl-12 pr-4 text-ink transition-colors duration-200 placeholder:text-[#686D69] focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-soft"
-          />
-        </Form>
+        {/* Ô tìm kiếm có gợi ý tức thì; Enter hoặc "Xem tất cả" mở /san-pham?q=<từ khóa> */}
+        <HeaderSearch />
 
         <HeaderActions />
       </div>

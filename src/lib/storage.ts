@@ -20,6 +20,7 @@ export const STORAGE_KEYS = {
   productViews: "tuantustore-product-views", // id sản phẩm -> số lần trang chi tiết được mở (xếp hạng "Sản phẩm bán chạy" khi chưa bán được)
   wishlists: "tuantustore-wishlists", // id người dùng -> id các sản phẩm yêu thích (lưu theo tài khoản)
   coupons: "tuantustore-coupons", // mã giảm giá chủ cửa hàng tạo ở /admin/ma-giam-gia
+  recentSearches: "tuantustore-recent-searches", // tối đa 5 từ khóa vừa tìm ở ô tìm kiếm trên header, mới nhất đứng đầu (src/lib/search.ts)
   music: "tuantustore-music", // nhạc nền: { trackId, currentTime, volume, muted } (src/context/MusicContext.tsx)
   migrations: "tuantustore-migrations", // id các bước dọn dữ liệu MỘT LẦN đã chạy trên trình duyệt này (xem runMigrations)
 } as const;

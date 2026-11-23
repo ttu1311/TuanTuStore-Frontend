@@ -1,16 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ProductCard from "@/components/product/ProductCard";
 import ProductCardSkeleton from "@/components/product/ProductCardSkeleton";
 import ContentSidebar from "@/components/layout/PageLayout";
-import ProductFilters from "@/components/products/ProductFilters";
-import ProductToolbar from "@/components/products/ProductToolbar";
+import ProductFilters, { priceRanges } from "@/components/products/ProductFilters";
+import ProductToolbar, { type FilterChip } from "@/components/products/ProductToolbar";
+import { btnBase, btnSecondary, btnSmall } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
-import { occasions } from "@/data/occasions";
+import { normalizeProvince } from "@/data/provinces";
 import { groupProducts, productProvince, sortNewestFirst } from "@/lib/products";
-import { simplifyText } from "@/lib/text";
-import type { Product, Region } from "@/types";
+import { isRegion, regions as allRegions } from "@/lib/regions";
+import { matchesSearch } from "@/lib/search";
+import type { Region } from "@/types";
 
 // Thêm giá trị nếu chưa có trong danh sách, bỏ đi nếu đã có
 function toggle<T>(list: T[], value: T) {
@@ -24,69 +26,45 @@ function matchesPrice(price: number, range: string) {
   return true; // "tất cả"
 }
 
-// Chữ thường, và cùng một dạng Unicode cho mọi chữ cái tiếng Việt
-function lowerText(text: string) {
-  return text.toLowerCase().normalize("NFC");
+const PRICE_VALUES = priceRanges.map((range) => range.value);
+const SORT_VALUES = ["newest", "price-asc", "price-desc"];
+
+// Trạng thái tìm kiếm / lọc / sắp xếp, đọc từ và ghi lên địa chỉ trang (?q=…&region=…&province=…&price=…&sort=…)
+type ListingQuery = { q: string; regions: Region[]; provinces: string[]; price: string; sort: string };
+
+function unique<T>(list: T[]) {
+  return [...new Set(list)];
 }
 
-// Tách thành từng từ (bỏ dấu câu)
-function splitWords(text: string) {
-  return text.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+// Địa chỉ ứng với một trạng thái; giá trị mặc định (không từ khóa, mọi mức giá, mới nhất) không ghi lên địa chỉ
+function toUrl(pathname: string, query: ListingQuery) {
+  const params = new URLSearchParams();
+  if (query.q) params.set("q", query.q);
+  query.regions.forEach((region) => params.append("region", region));
+  query.provinces.forEach((province) => params.append("province", province));
+  if (query.price !== "all") params.set("price", query.price);
+  if (query.sort !== "newest") params.set("sort", query.sort);
+  const text = params.toString();
+  return text ? `${pathname}?${text}` : pathname;
 }
 
-// Các từ liền nhau của `words` có khớp từ khóa không? Từ cuối của từ khóa được phép chưa gõ xong.
-function matchesWords(words: string[], termWords: string[]) {
-  return words.some((_, start) =>
-    termWords.every((termWord, i) => {
-      const word = words[start + i];
-      if (word === undefined) return false;
-      return i === termWords.length - 1 ? word.startsWith(termWord) : word === termWord;
-    })
-  );
-}
-
-// Tìm theo TỪ NGUYÊN VẸN (không phải chuỗi con), từ khóa nhiều từ phải khớp các từ liền nhau.
-// - Tên, xuất xứ, thương hiệu: bỏ qua dấu, nên "o mai" tìm ra "Ô mai", "ca mau" tìm ra "Cà Mau".
-// - Mô tả ngắn: dấu phải khớp. Nếu bỏ dấu thì "cua" khớp nhầm "của" và "cửa" ("vùng cửa biển"),
-//   nên gõ không dấu sẽ không tìm trong mô tả. Gõ có dấu ("trà", "cửa") thì có.
-function matchesSearch(product: Product, search: string) {
-  const term = lowerText(search.trim());
-  if (!term) return true;
-
-  const typedWithAccents = simplifyText(term) !== term;
-
-  const plainTerm = splitWords(simplifyText(term));
-  if (plainTerm.length === 0) return true;
-  const plainFields = [product.name, product.origin, product.brand];
-  if (plainFields.some((text) => matchesWords(splitWords(simplifyText(text)), plainTerm))) return true;
-
-  return typedWithAccents && matchesWords(splitWords(lowerText(product.shortDescription)), splitWords(term));
-}
-
-type ProductListingProps = {
-  initialSearch?: string; // từ ô tìm kiếm ở header: /san-pham?q=...
-  initialRegion?: Region; // từ menu "3 Miền" và các tab miền ở trang chủ: /san-pham?region=bac
-  initialProvince?: string; // từ hộ chiếu đặc sản: /san-pham?province=Cà Mau
-  initialOccasion?: string; // từ các thẻ dịp tặng ở trang chi tiết: /san-pham?dip=qua-tet
-};
-
-// Giữ state tìm kiếm / lọc / sắp xếp và hiển thị các sản phẩm đã lọc từ localStorage.
-export default function ProductListing({
-  initialSearch = "",
-  initialRegion,
-  initialProvince = "",
-  initialOccasion = "",
-}: ProductListingProps) {
+// Giữ tìm kiếm / lọc / sắp xếp (nằm trên địa chỉ trang, nên F5, Back và chia sẻ link giữ nguyên) và hiển thị các sản phẩm
+// đã lọc từ localStorage. Từ khóa đến từ ô tìm kiếm ở header (?q=): ở đây không có ô nhập từ khóa.
+export default function ProductListing() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { isReady, products } = useStore();
-  const [search, setSearch] = useState(initialSearch);
-  const [regions, setRegions] = useState<Region[]>(initialRegion ? [initialRegion] : []);
-  const [provinces, setProvinces] = useState<string[]>(initialProvince ? [initialProvince] : []);
-  // Dịp tặng lạ trên địa chỉ thì bỏ qua ngay (danh sách dịp cố định, không phụ thuộc localStorage)
-  const [occasionIds, setOccasionIds] = useState<string[]>(
-    occasions.some((occasion) => occasion.id === initialOccasion) ? [initialOccasion] : []
-  );
-  const [price, setPrice] = useState("all");
-  const [sort, setSort] = useState("newest");
+
+  // Đọc địa chỉ. Giá trị lạ thì bỏ qua; tên tỉnh trước sáp nhập (?province=Sóc Trăng) đổi sang tên tỉnh mới (Cần Thơ).
+  const query: ListingQuery = {
+    q: (searchParams.get("q") ?? "").trim().slice(0, 100),
+    regions: unique(searchParams.getAll("region").filter(isRegion)),
+    provinces: unique(searchParams.getAll("province").map((name) => normalizeProvince(name.slice(0, 100))).filter(Boolean)),
+    price: PRICE_VALUES.includes(searchParams.get("price") ?? "") ? (searchParams.get("price") as string) : "all",
+    sort: SORT_VALUES.includes(searchParams.get("sort") ?? "") ? (searchParams.get("sort") as string) : "newest",
+  };
+  const { q: search, regions, price, sort } = query;
 
   // Các ô chọn tỉnh kèm số sản phẩm của tỉnh đó, xếp A đến Z
   const provinceOptions = groupProducts(products, productProvince).map(({ name, items }) => ({
@@ -95,36 +73,51 @@ export default function ProductListing({
   }));
 
   // Tên tỉnh trên địa chỉ không có trong dữ liệu (gõ sai, hoặc sản phẩm đã bị xóa) thì bỏ qua, để không lọc ra rỗng mà không thấy ô nào được tích
-  const activeProvinces = isReady ? provinces.filter((province) => provinceOptions.some((option) => option.name === province)) : provinces;
+  const activeProvinces = isReady
+    ? query.provinces.filter((province) => provinceOptions.some((option) => option.name === province))
+    : query.provinces;
 
-  // Các ô chọn dịp tặng, kèm số sản phẩm của mỗi dịp
-  const occasionOptions = occasions.map((occasion) => ({
-    id: occasion.id,
-    label: occasion.label,
-    count: products.filter((product) => product.occasions?.includes(occasion.id)).length,
-  }));
+  // Đổi một phần trạng thái: ghi lên địa chỉ bằng replace (không thêm mục lịch sử, không cuộn lên đầu)
+  function update(patch: Partial<ListingQuery>) {
+    router.replace(toUrl(pathname, { ...query, provinces: activeProvinces, ...patch }), { scroll: false });
+  }
 
-  // 1. Lọc. Danh sách vùng/tỉnh/dịp tặng rỗng nghĩa là "không lọc".
+  // 1. Lọc. Danh sách vùng/tỉnh rỗng nghĩa là "không lọc".
   const filtered = products.filter(
     (product) =>
       matchesSearch(product, search) &&
       (regions.length === 0 || regions.includes(product.region)) &&
-      (occasionIds.length === 0 || occasionIds.some((id) => product.occasions?.includes(id))) &&
       (activeProvinces.length === 0 || activeProvinces.includes(productProvince(product))) &&
       matchesPrice(product.price, price)
   );
 
-  // 2. Sắp xếp
+  // 2. Sắp xếp. Chỉ sắp xếp theo giá khi khách chọn; mặc định "Mới nhất".
+  // (Từ khóa không đổi thứ tự: món khớp tốt nhất đã có ở bảng gợi ý của header.)
   let visible = sortNewestFirst(filtered);
   if (sort === "price-asc") visible = [...filtered].sort((a, b) => a.price - b.price);
   if (sort === "price-desc") visible = [...filtered].sort((a, b) => b.price - a.price);
 
+  // Các điều kiện đang áp dụng, mỗi cái một chip để bỏ riêng
+  const chips: FilterChip[] = [
+    ...(search ? [{ key: "q", label: `Từ khóa: «${search}»`, onRemove: () => update({ q: "" }) }] : []),
+    ...regions.map((region) => ({
+      key: `region-${region}`,
+      label: allRegions[region].label,
+      onRemove: () => update({ regions: regions.filter((item) => item !== region) }),
+    })),
+    ...activeProvinces.map((province) => ({
+      key: `province-${province}`,
+      label: province,
+      onRemove: () => update({ provinces: activeProvinces.filter((item) => item !== province) }),
+    })),
+    ...(price !== "all"
+      ? [{ key: "price", label: priceRanges.find((range) => range.value === price)?.label ?? price, onRemove: () => update({ price: "all" }) }]
+      : []),
+  ];
+  const hasFilters = regions.length > 0 || activeProvinces.length > 0 || price !== "all";
+
   function resetFilters() {
-    setSearch("");
-    setRegions([]);
-    setProvinces([]);
-    setOccasionIds([]);
-    setPrice("all");
+    update({ regions: [], provinces: [], price: "all" });
   }
 
   return (
@@ -137,15 +130,12 @@ export default function ProductListing({
       sidebar={
         <ProductFilters
           regions={regions}
-          occasionOptions={occasionOptions}
-          occasions={occasionIds}
-          onToggleOccasion={(id) => setOccasionIds(toggle(occasionIds, id))}
           provinceOptions={provinceOptions}
           provinces={activeProvinces}
           price={price}
-          onToggleRegion={(region) => setRegions(toggle(regions, region))}
-          onToggleProvince={(province) => setProvinces(toggle(provinces, province))}
-          onPriceChange={setPrice}
+          onToggleRegion={(region) => update({ regions: toggle(regions, region) })}
+          onToggleProvince={(province) => update({ provinces: toggle(activeProvinces, province) })}
+          onPriceChange={(value) => update({ price: value })}
           onReset={resetFilters}
         />
       }
@@ -154,9 +144,10 @@ export default function ProductListing({
         <ProductToolbar
           total={isReady ? visible.length : 0}
           search={search}
-          onSearchChange={setSearch}
+          chips={chips}
+          onClearAll={() => update({ q: "", regions: [], provinces: [], price: "all" })}
           sort={sort}
-          onSortChange={setSort}
+          onSortChange={(value) => update({ sort: value })}
         />
 
         {!isReady ? (
@@ -166,9 +157,29 @@ export default function ProductListing({
             ))}
           </div>
         ) : visible.length === 0 ? (
-          <p className="rounded-xl border border-line bg-surface px-6 py-16 text-center text-ink-muted">
-            Không tìm thấy sản phẩm phù hợp. Hãy thử đổi từ khóa hoặc bỏ bớt bộ lọc.
-          </p>
+          <div className="rounded-xl border border-line bg-surface px-6 py-14 text-center">
+            <p className="font-semibold text-ink">Không tìm thấy sản phẩm phù hợp{search ? ` cho «${search}»` : ""}.</p>
+            {(search || hasFilters) && (
+              <>
+                <p className="mt-2 text-ink-muted">
+                  {hasFilters ? "Thử bỏ bớt bộ lọc" : "Thử một từ khác"}
+                  {search ? ", hoặc gõ từ khóa không dấu (ví dụ “nuoc mam”)." : "."}
+                </p>
+                <div className="mt-6 flex flex-wrap justify-center gap-3">
+                  {search && (
+                    <button type="button" onClick={() => update({ q: "" })} className={`${btnBase} ${btnSecondary} ${btnSmall}`}>
+                      Bỏ từ khóa «{search}»
+                    </button>
+                  )}
+                  {hasFilters && (
+                    <button type="button" onClick={resetFilters} className={`${btnBase} ${btnSecondary} ${btnSmall}`}>
+                      Bỏ bộ lọc
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 min-[480px]:grid-cols-2 xl:grid-cols-3">
             {visible.map((product, index) => (
