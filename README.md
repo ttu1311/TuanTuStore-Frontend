@@ -159,15 +159,13 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 | `/hop-qua` | "Hộp quà Ba Miền": ask occasion and budget (optional; `?dip=` and `?ngan-sach=` pre-select them), the box is filled with **one in-stock product per region** (best match first, then best seller; if a region has nothing matching it says "món gần nhất"), change any slot, then add the whole box to the cart and go straight to it. Logic in `src/lib/giftBox.ts` |
 | `/tra-cuu-don-hang` | Order lookup without login: order code + phone number. Reads `?ma=` (the "Đặt hàng thành công" screen links here) |
 | `/thong-tin/[slug]` | Help and policy pages (content in `src/data/infoPages.ts`): buying guide, payment, FAQ, shipping, returns, privacy, terms |
-| `/lien-he` | Contact: call, Zalo and email links, and a "call me back" form (name, phone, topic, preferred time, message). Reads `?chu-de=` to pre-select the topic. Contact details live in `src/data/contact.ts` |
-| `/admin` | Admin dashboard: orders, revenue, unpaid transfers, products, users, waiting call-backs; **revenue chart** by day (30 days) / week (12) / quarter (8) / year (completed orders, by order date); orders by status; low-stock list; top 5 sellers; **top 10 by stock** (ties: slower sellers first); recent orders |
+| `/admin` | Admin dashboard: orders, revenue, unpaid transfers, products, users (5 stat tiles); **revenue chart** by day (30 days) / week (12) / quarter (8) / year (completed orders, by order date); orders by status; low-stock list; top 5 sellers; **top 10 by stock** (ties: slower sellers first); recent orders |
 | `/admin/san-pham` | Admin: product list with stock, delete |
 | `/admin/san-pham/them` | Admin: add a product |
 | `/admin/san-pham/[id]/sua` | Admin: edit a product |
 | `/admin/don-hang` | Admin: orders — details, change status ("Đã hủy" returns the goods to stock), "Xác nhận đã nhận tiền" for bank transfers, delete |
 | `/admin/thong-ke` | Admin: purchases per product — sold, orders, revenue, views, stock; click a column to sort |
 | `/admin/nguoi-dung` | Admin: customer accounts — view, delete (there are no roles any more) |
-| `/admin/lien-he` | Admin: "call me back" requests — filter waiting / called, mark as called, delete |
 | `/admin/ma-giam-gia` | Admin: discount codes — create a code (percent with optional cap, fixed amount, or free shipping; optional minimum subtotal and total number of uses), see how many orders used it, turn off, delete |
 | `/api/captcha/verify` | Route Handler (server): verifies a Turnstile token with Cloudflare `siteverify` using the secret key |
 | `/api/admin/login`, `/api/admin/logout`, `/api/admin/session` | Route Handlers (server): admin login, logout, and "is this browser's admin session valid?" |
@@ -186,11 +184,10 @@ Unknown pages and unknown products show a Vietnamese "Lỗi 404" message.
 | `tuantustore-order-seq` | last order number used | `0` |
 | `tuantustore-seed-batches` | groups of products added after the first version that this browser already received | `["ca-mau", "ba-mien-60"]` |
 | `tuantustore-reviews` | product reviews (stars + comment) | `[]` (no sample reviews) |
-| `tuantustore-contact-requests` | "call me back" requests sent from `/lien-he` | `[]` |
 | `tuantustore-wishlists` | wishlist per account: `{ userId: [productId, …] }` | — (created at the first ♡) |
 | `tuantustore-product-views` | `{ productId: number of detail-page views }` in this browser (breaks ties in "Sản phẩm bán chạy" while nothing has been sold) | — (created at the first product view) |
 | `tuantustore-recently-viewed` | ids of the products this browser opened last (shown in "Đã xem gần đây") | — (not created until a product is opened) |
-| `tuantustore-migrations` | ids of the one-time clean-ups this browser already ran, e.g. `remove-legacy-admin` (removes the old sample admin account `admin@tuantustore.vn` and every `role` field; see `runMigrations` in `src/lib/storage.ts`) | written on the first visit |
+| `tuantustore-migrations` | ids of the one-time clean-ups this browser already ran, e.g. `remove-legacy-admin` (removes the old sample admin account `admin@tuantustore.vn` and every `role` field) and `remove-contact-requests` (deletes the old key `tuantustore-contact-requests` left by the removed Liên hệ page); see `runMigrations` in `src/lib/storage.ts` | written on the first visit |
 | `tuantustore-recent-searches` | the last 5 keywords searched in the header search box, newest first (shown as "Tìm gần đây") | — (created at the first search) |
 | `tuantustore-music` | background music: `{ trackId, currentTime, volume, muted }` (track saved by id, see `src/data/playlist.ts`) | — (created when the player is first used) |
 
@@ -223,7 +220,7 @@ src/
 │   ├── moreProducts.ts  the 47 products added in November 2026 (seed batch "ba-mien-60"), so each region has 20
 │   ├── brands.ts        what each brand is (kind, place, short introduction)
 │   ├── provinces.ts     the 34 provinces after the 2025 merger, old names → new names
-│   ├── contact.ts       the shop's phone, Zalo, email and opening hours
+│   ├── contact.ts       the shop's phone, Zalo, email and opening hours (shown in the footer, `id="lien-he"`, and on the order lookup and help pages). There is no contact page: `/lien-he` redirects to `/#lien-he`
 │   ├── payment.ts       the bank account of the QR code (read from environment variables)
 │   └── seedUpdates.ts   changes to sample products that were already saved in a browser
 ├── lib/                 small helper functions without React (validation, prices, order codes, storage…)

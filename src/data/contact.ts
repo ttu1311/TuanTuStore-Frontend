@@ -1,4 +1,4 @@
-// Thông tin liên hệ của cửa hàng: NƠI DUY NHẤT để sửa. Footer, trang /lien-he và các trang hỗ trợ đều đọc từ đây.
+// Thông tin liên hệ của cửa hàng: NƠI DUY NHẤT để sửa. Footer, trang tra cứu đơn hàng và các trang hỗ trợ đều đọc từ đây.
 import type { IconName } from "@/components/ui/Icon";
 
 export const storeContact = {
@@ -13,7 +13,6 @@ export const storeContact = {
 export type ContactChannel = {
   icon: IconName;
   label: string; // ví dụ "Gọi điện"
-  value: string; // ví dụ "0969 087 677"
   footerText: string; // chữ ngắn hiện ở footer
   href: string;
   external?: boolean; // mở ở tab mới (Zalo, Facebook)
@@ -24,14 +23,12 @@ const allChannels: ContactChannel[] = [
   {
     icon: "phone",
     label: "Gọi điện",
-    value: storeContact.phoneDisplay,
     footerText: storeContact.phoneDisplay,
     href: `tel:${storeContact.phone}`,
   },
   {
     icon: "chat",
     label: "Nhắn Zalo",
-    value: storeContact.phoneDisplay,
     footerText: `Zalo: ${storeContact.phoneDisplay}`,
     href: storeContact.zalo,
     external: true,
@@ -39,14 +36,12 @@ const allChannels: ContactChannel[] = [
   {
     icon: "mail",
     label: "Gửi email",
-    value: storeContact.email,
     footerText: storeContact.email,
     href: `mailto:${storeContact.email}`,
   },
   {
     icon: "user",
     label: "Facebook",
-    value: "Nhắn tin qua Facebook",
     footerText: "Facebook",
     href: storeContact.facebook,
     external: true,

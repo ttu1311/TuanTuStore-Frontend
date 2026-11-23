@@ -4,7 +4,7 @@ import { caMauProducts, initialProducts, initialUsers } from "@/data/initialData
 import { threeRegionProducts } from "@/data/moreProducts";
 import { renamedImages, seedUpdates } from "@/data/seedUpdates";
 import { INITIAL_STOCK } from "@/lib/cart";
-import type { CartItem, ContactRequest, Coupon, Order, Product, Review, User } from "@/types";
+import type { CartItem, Coupon, Order, Product, Review, User } from "@/types";
 
 export const STORAGE_KEYS = {
   products: "tuantustore-products",
@@ -16,7 +16,6 @@ export const STORAGE_KEYS = {
   seedBatches: "tuantustore-seed-batches", // các seedBatches bên dưới mà trình duyệt này đã nhận
   recentlyViewed: "tuantustore-recently-viewed", // id các sản phẩm vừa xem, mới nhất đứng đầu
   reviews: "tuantustore-reviews", // đánh giá sản phẩm của khách đã nhận hàng
-  contactRequests: "tuantustore-contact-requests", // yêu cầu liên hệ lại gửi từ trang /lien-he
   productViews: "tuantustore-product-views", // id sản phẩm -> số lần trang chi tiết được mở (xếp hạng "Sản phẩm bán chạy" khi chưa bán được)
   wishlists: "tuantustore-wishlists", // id người dùng -> id các sản phẩm yêu thích (lưu theo tài khoản)
   coupons: "tuantustore-coupons", // mã giảm giá chủ cửa hàng tạo ở /admin/ma-giam-gia
@@ -66,7 +65,6 @@ export function initializeStorage() {
   if (!Array.isArray(readJSON(STORAGE_KEYS.orders))) writeJSON(STORAGE_KEYS.orders, []);
   if (typeof readJSON(STORAGE_KEYS.orderSeq) !== "number") writeJSON(STORAGE_KEYS.orderSeq, 0);
   if (!Array.isArray(readJSON(STORAGE_KEYS.reviews))) writeJSON(STORAGE_KEYS.reviews, []); // không có đánh giá mẫu: chỉ đánh giá thật
-  if (!Array.isArray(readJSON(STORAGE_KEYS.contactRequests))) writeJSON(STORAGE_KEYS.contactRequests, []);
   if (!Array.isArray(readJSON(STORAGE_KEYS.coupons))) writeJSON(STORAGE_KEYS.coupons, []); // không có mã mẫu
   addNewSeedBatches();
   applySeedUpdates();
@@ -77,7 +75,10 @@ export function initializeStorage() {
 // Mỗi bước có một id; id được ghi vào STORAGE_KEYS.migrations SAU KHI bước đó lưu xong, nên:
 // lần ghi thất bại (storage đầy / bị chặn) sẽ được thử lại ở lần truy cập sau, còn bước đã xong thì không bao giờ chạy lại
 // (ví dụ: sau này một khách đăng ký đúng email admin@tuantustore.vn thì tài khoản đó không bị xóa nhầm).
-const migrations: { id: string; run: () => boolean }[] = [{ id: "remove-legacy-admin", run: removeLegacyAdminAccount }];
+const migrations: { id: string; run: () => boolean }[] = [
+  { id: "remove-legacy-admin", run: removeLegacyAdminAccount },
+  { id: "remove-contact-requests", run: removeContactRequests },
+];
 
 function runMigrations() {
   const saved = readJSON<string[]>(STORAGE_KEYS.migrations);
@@ -86,6 +87,20 @@ function runMigrations() {
     if (done.includes(migration.id) || !migration.run()) continue;
     done.push(migration.id);
     writeJSON(STORAGE_KEYS.migrations, done);
+  }
+}
+
+// Trang Liên hệ (form "Yêu cầu gọi lại") đã bị bỏ, nên khóa lưu các yêu cầu đó không còn ai đọc: xóa khỏi trình duyệt.
+// Khóa này không còn trong STORAGE_KEYS, tên cũ chỉ còn ở đây. Trả về true khi khóa đã hết (kể cả khi chưa từng có),
+// false nếu storage bị chặn (sẽ thử lại lần sau).
+const LEGACY_CONTACT_REQUESTS_KEY = "tuantustore-contact-requests";
+
+function removeContactRequests() {
+  try {
+    window.localStorage.removeItem(LEGACY_CONTACT_REQUESTS_KEY);
+    return window.localStorage.getItem(LEGACY_CONTACT_REQUESTS_KEY) === null;
+  } catch {
+    return false;
   }
 }
 
@@ -214,7 +229,6 @@ type StoredData = {
   orders: Order[];
   cart: CartItem[];
   reviews: Review[];
-  contactRequests: ContactRequest[];
   coupons: Coupon[];
   productViews: Record<string, number>;
   wishlists: Record<string, string[]>;
@@ -229,7 +243,6 @@ export function loadStoredData(): StoredData {
     orders: readJSON<Order[]>(STORAGE_KEYS.orders) ?? [],
     cart: readJSON<CartItem[]>(STORAGE_KEYS.cart) ?? [],
     reviews: readJSON<Review[]>(STORAGE_KEYS.reviews) ?? [],
-    contactRequests: readJSON<ContactRequest[]>(STORAGE_KEYS.contactRequests) ?? [],
     coupons: readJSON<Coupon[]>(STORAGE_KEYS.coupons) ?? [],
     productViews: readViews(),
     wishlists: readWishlists(),

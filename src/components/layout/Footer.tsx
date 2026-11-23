@@ -105,12 +105,6 @@ export default function Footer() {
                 <span>{storeContact.hours}</span>
               </li>
             </ul>
-            <SameRouteLink
-              href="/lien-he"
-              className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary transition-colors duration-200 hover:underline"
-            >
-              Gửi yêu cầu gọi lại →
-            </SameRouteLink>
           </div>
         </div>
 

@@ -8,6 +8,7 @@ import BankTransferQR from "@/components/payment/BankTransferQR";
 import PaymentStatusBadge from "@/components/payment/PaymentStatusBadge";
 import { btnBase, btnPrimary } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
+import { storeContact } from "@/data/contact";
 import { formatAddress } from "@/lib/address";
 import { formatDate, formatVND } from "@/lib/format";
 import {
@@ -132,12 +133,22 @@ export default function OrderLookup({ initialCode = "" }: { initialCode?: string
               Hãy kiểm tra lại mã đơn và số điện thoại. Lưu ý: bản demo không có máy chủ, nên chỉ tra cứu được đơn đã đặt trên
               chính trình duyệt này.
             </p>
-            <Link
-              href="/lien-he?chu-de=don-hang"
-              className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4"
-            >
-              Cần hỗ trợ? Liên hệ cửa hàng
-            </Link>
+            <p className="mt-4 text-ink-muted">
+              Cần hỗ trợ?{" "}
+              <a href={`tel:${storeContact.phone}`} className="font-semibold text-primary underline underline-offset-4">
+                Gọi {storeContact.phoneDisplay}
+              </a>{" "}
+              hoặc{" "}
+              <a
+                href={storeContact.zalo}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary underline underline-offset-4"
+              >
+                nhắn Zalo
+              </a>
+              .
+            </p>
           </div>
         )}
         {order && <OrderDetails order={order} phone={foundPhone} />}

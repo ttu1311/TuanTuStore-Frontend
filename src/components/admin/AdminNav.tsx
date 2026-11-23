@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useStore } from "@/context/StoreContext";
 
 const items = [
   { label: "Tổng quan", href: "/admin" },
@@ -11,7 +10,6 @@ const items = [
   { label: "Mã giảm giá", href: "/admin/ma-giam-gia" },
   { label: "Thống kê", href: "/admin/thong-ke" },
   { label: "Người dùng", href: "/admin/nguoi-dung" },
-  { label: "Yêu cầu liên hệ", href: "/admin/lien-he" },
 ];
 
 const itemStyle = "flex min-h-10 items-center whitespace-nowrap rounded-lg px-3 text-sm transition-colors duration-200";
@@ -19,9 +17,6 @@ const itemStyle = "flex min-h-10 items-center whitespace-nowrap rounded-lg px-3 
 // Menu bên của các trang Admin (thanh ngang có thể cuộn trên màn hình nhỏ)
 export default function AdminNav() {
   const pathname = usePathname();
-  const { contactRequests } = useStore();
-  // Số yêu cầu đang chờ gọi lại, hiện cạnh mục "Yêu cầu liên hệ"
-  const waitingCalls = contactRequests.filter((request) => !request.done).length;
 
   return (
     <nav aria-label="Quản trị" className="px-3 pb-3 lg:pb-0">
@@ -42,12 +37,6 @@ export default function AdminNav() {
                 }`}
               >
                 {item.label}
-                {item.href === "/admin/lien-he" && waitingCalls > 0 && (
-                  <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-sale px-1.5 text-xs font-semibold text-white">
-                    {waitingCalls}
-                    <span className="sr-only"> đang chờ</span>
-                  </span>
-                )}
               </Link>
             </li>
           );
