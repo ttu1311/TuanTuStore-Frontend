@@ -6,8 +6,8 @@ import { btnBase, btnGhost, btnSmall } from "@/components/ui/buttons";
 import { regions as allRegions } from "@/lib/regions";
 import type { Region } from "@/types";
 
-// Các mức giá (quy tắc khớp nằm trong ProductListing)
-const priceRanges = [
+// Các mức giá (quy tắc khớp nằm trong ProductListing; cũng dùng cho nhãn chip lọc ở ProductToolbar)
+export const priceRanges = [
   { value: "all", label: "Tất cả mức giá" },
   { value: "under-100", label: "Dưới 100.000₫" },
   { value: "100-200", label: "100.000₫ – 200.000₫" },
@@ -20,9 +20,6 @@ const optionInput = "h-5 w-5 shrink-0 cursor-pointer accent-primary";
 type ProductFiltersProps = {
   regions: Region[]; // các vùng đã tích
   provinceOptions: { name: string; count: number }[]; // mọi tỉnh có sản phẩm, kèm số sản phẩm
-  occasionOptions: { id: string; label: string; count: number }[]; // mọi dịp tặng, kèm số sản phẩm
-  occasions: string[]; // id các dịp tặng đã tích
-  onToggleOccasion: (id: string) => void;
   provinces: string[]; // các tỉnh đã tích
   price: string; // giá trị mức giá đang chọn
   onToggleRegion: (region: Region) => void;
@@ -37,9 +34,6 @@ export default function ProductFilters({
   regions,
   provinceOptions,
   provinces,
-  occasionOptions,
-  occasions,
-  onToggleOccasion,
   price,
   onToggleRegion,
   onToggleProvince,
@@ -49,7 +43,7 @@ export default function ProductFilters({
   // Trên điện thoại, các bộ lọc được gập lại sau nút "Bộ lọc", để sản phẩm không bị đẩy xuống quá xa.
   // Từ cỡ lg trở lên các bộ lọc luôn mở (xem các class lg: bên dưới).
   const [isOpen, setIsOpen] = useState(false);
-  const activeCount = regions.length + provinces.length + occasions.length + (price === "all" ? 0 : 1);
+  const activeCount = regions.length + provinces.length + (price === "all" ? 0 : 1);
 
   return (
     <div>
@@ -86,24 +80,6 @@ export default function ProductFilters({
                 className={optionInput}
               />
               {region.label}
-            </label>
-          ))}
-        </FilterGroup>
-
-        <FilterGroup title="Dịp tặng">
-          {occasionOptions.map((occasion) => (
-            <label key={occasion.id} className={optionLabel}>
-              <input
-                type="checkbox"
-                name="occasion"
-                value={occasion.id}
-                checked={occasions.includes(occasion.id)}
-                onChange={() => onToggleOccasion(occasion.id)}
-                className={optionInput}
-              />
-              <span>
-                {occasion.label} <span className="text-ink-muted">({occasion.count})</span>
-              </span>
             </label>
           ))}
         </FilterGroup>

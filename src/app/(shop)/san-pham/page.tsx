@@ -1,36 +1,19 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { PageContainer } from "@/components/layout/PageLayout";
+import ProductCardSkeleton from "@/components/product/ProductCardSkeleton";
 import ProductListing from "@/components/products/ProductListing";
-import { isRegion } from "@/lib/regions";
-import { normalizeProvince } from "@/data/provinces";
 
 export const metadata: Metadata = {
   title: "Sản phẩm — Đặc sản 3 Miền",
   description: "Tất cả sản phẩm của Đặc sản 3 Miền: quà quê Bắc, Trung, Nam.",
 };
 
-type ProductListingPageProps = {
-  searchParams: Promise<{ q?: string | string[]; region?: string | string[]; province?: string | string[]; dip?: string | string[] }>;
-};
-
-// Giá trị đầu tiên khi một tham số truy vấn xuất hiện nhiều lần
-function firstValue(value: string | string[] | undefined) {
-  return (Array.isArray(value) ? value[0] : value) ?? "";
-}
-
-export default async function ProductListingPage({ searchParams }: ProductListingPageProps) {
-  const params = await searchParams;
-  // Ô tìm kiếm ở header mở /san-pham?q=<từ khóa>; menu "3 Miền" và các tab miền ở trang chủ mở /san-pham?region=bac
-  const initialSearch = firstValue(params.q).trim().slice(0, 100);
-  const regionValue = firstValue(params.region);
-  const initialRegion = isRegion(regionValue) ? regionValue : undefined;
-  // Hộ chiếu đặc sản mở /san-pham?province=Cà Mau
-  // Liên kết cũ còn ghi tên tỉnh trước sáp nhập (?province=Sóc Trăng) vẫn mở đúng tỉnh mới (Cần Thơ)
-  const provinceParam = firstValue(params.province).trim().slice(0, 100);
-  const initialProvince = provinceParam && normalizeProvince(provinceParam);
-  // Các thẻ dịp tặng ở trang chi tiết sản phẩm mở /san-pham?dip=qua-tet
-  const initialOccasion = firstValue(params.dip).trim().slice(0, 50);
-
+// Từ khóa và bộ lọc nằm trên địa chỉ trang và do ProductListing đọc (useSearchParams), nên trang không cần đọc searchParams
+// và KHÔNG đặt key theo từ khóa: tìm từ khóa mới ở header không làm mất các bộ lọc đang chọn.
+// Địa chỉ: ?q=<từ khóa> (ô tìm kiếm ở header), ?region=bac (lặp được: menu "3 Miền", tab miền ở trang chủ),
+// ?province=Cà Mau (lặp được: hộ chiếu đặc sản), ?price=under-100|100-200|over-200, ?sort=price-asc|price-desc.
+export default function ProductListingPage() {
   return (
     <PageContainer>
       <div className="mb-10">
@@ -38,14 +21,17 @@ export default async function ProductListingPage({ searchParams }: ProductListin
         <span className="mt-3 block max-w-[560px] text-ink-muted">Đặc sản chọn lọc từ ba miền Bắc, Trung, Nam.</span>
       </div>
 
-      {/* key: tìm kiếm mới từ header (một ?q= khác) làm danh sách bắt đầu lại với từ khóa mới */}
-      <ProductListing
-        key={`${initialSearch}|${initialRegion ?? ""}|${initialProvince}|${initialOccasion}`}
-        initialSearch={initialSearch}
-        initialRegion={initialRegion}
-        initialProvince={initialProvince}
-        initialOccasion={initialOccasion}
-      />
+      <Suspense
+        fallback={
+          <div className="grid grid-cols-1 gap-6 min-[480px]:grid-cols-2 xl:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((n) => (
+              <ProductCardSkeleton key={n} />
+            ))}
+          </div>
+        }
+      >
+        <ProductListing />
+      </Suspense>
     </PageContainer>
   );
 }
