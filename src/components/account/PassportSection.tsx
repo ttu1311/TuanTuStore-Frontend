@@ -33,9 +33,9 @@ export default function PassportSection({ userId }: { userId: string }) {
   );
 
   return (
+    // Tiêu đề "Hộ chiếu đặc sản" là tiêu đề của cả trang (AccountShell), không lặp lại ở đây
     <div>
-      <h2 className="font-display text-2xl font-semibold text-ink">Hộ chiếu đặc sản</h2>
-      <p className="mt-2 text-ink-muted">
+      <p className="text-ink-muted">
         Mỗi tỉnh bạn đã nhận được đặc sản (đơn hàng hoàn thành) sẽ được đóng một con dấu. Đóng đủ{" "}
         <strong className="font-semibold text-ink">{PASSPORT_COUPON.stampsNeeded} dấu</strong> để nhận{" "}
         <strong className="font-semibold text-ink">mã giảm {PASSPORT_COUPON.percent}%</strong> (tối đa{" "}

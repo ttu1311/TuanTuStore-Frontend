@@ -47,8 +47,8 @@ export default function PasswordSection() {
   }
 
   return (
+    // Tiêu đề "Đổi mật khẩu" là tiêu đề của cả trang (AccountShell), không lặp lại ở đây
     <form noValidate onSubmit={handleSubmit} className="space-y-5">
-      <h2 className="font-display text-2xl font-semibold text-ink">Đổi mật khẩu</h2>
       <Field
         id="currentPassword"
         label="Mật khẩu hiện tại"

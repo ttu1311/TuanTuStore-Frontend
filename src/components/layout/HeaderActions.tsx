@@ -1,9 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import AccountMenu from "@/components/layout/AccountMenu";
 import Icon from "@/components/ui/Icon";
 import { useStore } from "@/context/StoreContext";
 import { getCartLines } from "@/lib/cart";
+import { endSignOut } from "@/lib/signOut";
 
 const iconButton =
   "relative inline-flex h-11 w-11 items-center justify-center rounded-full text-ink transition-colors duration-200 hover:bg-surface";
@@ -12,6 +16,13 @@ const iconButton =
 // Chúng cần người dùng đang đăng nhập và giỏ hàng, vốn nằm trong trình duyệt, nên đây là client component.
 export default function HeaderActions() {
   const { isReady, currentUser, cart, products } = useStore();
+  const pathname = usePathname();
+
+  // Đăng xuất chủ động xong khi đường dẫn đã thực sự là "/": tắt cờ để RequireLogin lại làm việc bình thường (src/lib/signOut.ts).
+  // Header luôn có mặt ở mọi trang cửa hàng nên đây là chỗ theo dõi đường dẫn.
+  useEffect(() => {
+    if (pathname === "/") endSignOut();
+  }, [pathname]);
 
   // Chỉ đếm các sản phẩm vẫn còn tồn tại
   const cartCount = getCartLines(cart, products).reduce((sum, line) => sum + line.quantity, 0);
@@ -20,21 +31,10 @@ export default function HeaderActions() {
 
   return (
     <div className="ml-auto flex items-center gap-2 lg:ml-0">
-      {/* Đã đăng nhập: biểu tượng tài khoản kèm TÊN, để khách và Admin biết mình đang đăng nhập; bấm vào mở trang tài khoản.
-          Chưa đăng nhập: chỉ có biểu tượng, bấm vào mở trang đăng nhập. */}
+      {/* Đã đăng nhập: biểu tượng tài khoản kèm TÊN, để khách và Admin biết mình đang đăng nhập; bấm vào xổ xuống menu tài khoản
+          (AccountMenu). Chưa đăng nhập: chỉ có biểu tượng, bấm vào mở trang đăng nhập. */}
       {isReady && currentUser ? (
-        <Link
-          href="/tai-khoan"
-          aria-label={`Tài khoản của tôi, đang đăng nhập: ${currentUser.name}`}
-          title={currentUser.name}
-          className="inline-flex h-11 items-center gap-1.5 rounded-full px-2 text-ink transition-colors duration-200 hover:bg-surface sm:gap-2 sm:px-3"
-        >
-          <Icon name="user" size={24} />
-          {/* Tên dài thì cắt bớt bằng "…" (tên đầy đủ hiện khi rê chuột) */}
-          <span aria-hidden="true" className="max-w-[6rem] truncate text-sm font-semibold sm:max-w-[9rem] lg:max-w-[11rem]">
-            {currentUser.name}
-          </span>
-        </Link>
+        <AccountMenu name={currentUser.name} />
       ) : (
         <Link href="/dang-nhap" aria-label="Đăng nhập" className={iconButton}>
           <Icon name="user" size={24} />

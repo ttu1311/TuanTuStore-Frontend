@@ -34,7 +34,6 @@ export default function ProfileSection({ user }: { user: User }) {
 
   return (
     <form noValidate onSubmit={handleSubmit} className="space-y-5">
-      <h2 className="font-display text-2xl font-semibold text-ink">Thông tin cá nhân</h2>
       <Field
         id="fullName"
         label="Họ và tên"

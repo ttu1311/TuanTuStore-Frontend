@@ -1,28 +1,26 @@
 import type { Metadata } from "next";
-import AccountView from "@/components/account/AccountView";
-import RequireLogin from "@/components/auth/RequireLogin";
-import { PageContainer } from "@/components/layout/PageLayout";
+import { redirect } from "next/navigation";
+import { ProfilePanel } from "@/components/account/AccountPanels";
 
 export const metadata: Metadata = {
-  title: "Tài khoản — Đặc sản 3 Miền",
-  description: "Quản lý thông tin tài khoản và đơn hàng của bạn tại Đặc sản 3 Miền.",
+  title: "Thông tin cá nhân — Đặc sản 3 Miền",
+  description: "Xem và sửa thông tin cá nhân, địa chỉ giao hàng mặc định của bạn tại Đặc sản 3 Miền.",
 };
 
-type AccountPageProps = {
+// Địa chỉ cũ của các mục (khi chúng còn là tab): đường dẫn đã lưu, đã chia sẻ hay còn nằm trong ?next= vẫn mở đúng trang mới
+const oldTabs: Record<string, string> = {
+  orders: "/tai-khoan/lich-su-mua-hang",
+  wishlist: "/tai-khoan/yeu-thich",
+  passport: "/tai-khoan/ho-chieu",
+};
+
+type ProfilePageProps = {
   searchParams: Promise<{ tab?: string }>;
 };
 
-export default async function AccountPage({ searchParams }: AccountPageProps) {
+export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const { tab } = await searchParams;
+  if (tab && Object.hasOwn(oldTabs, tab)) redirect(oldTabs[tab]);
 
-  return (
-    <PageContainer>
-      <h1 className="mb-8 font-display text-3xl font-semibold leading-tight text-ink md:text-title">Tài khoản của tôi</h1>
-      {/* Chỉ dành cho người đã đăng nhập: khách chưa đăng nhập bị chuyển tới /dang-nhap */}
-      <RequireLogin>
-        {/* /tai-khoan?tab=orders mở "Lịch sử mua hàng" trước, ?tab=wishlist "Sản phẩm yêu thích", ?tab=passport "Hộ chiếu đặc sản" */}
-        <AccountView initialSection={tab === "orders" || tab === "wishlist" || tab === "passport" ? tab : "profile"} />
-      </RequireLogin>
-    </PageContainer>
-  );
+  return <ProfilePanel />;
 }

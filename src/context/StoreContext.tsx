@@ -607,7 +607,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setToast({
       id: Date.now(),
       message: isSaved ? `Đã bỏ ${name} khỏi yêu thích` : `Đã thêm ${name} vào yêu thích`,
-      link: { href: "/tai-khoan?tab=wishlist", label: "Xem yêu thích" },
+      link: { href: "/tai-khoan/yeu-thich", label: "Xem yêu thích" },
     });
     return OK;
   }
