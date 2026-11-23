@@ -19,3 +19,11 @@ next-env.d.ts
 
 # Vercel CLI link (project id)
 .vercel
+
+# Trang xem ảnh cũ/mới khi rà soát ảnh sản phẩm (không commit)
+review-images.html
+review-alt/
+incoming-images/
+
+# Ghi chú tiến độ rà soát ảnh (không commit)
+TIEN-DO-ANH.md
