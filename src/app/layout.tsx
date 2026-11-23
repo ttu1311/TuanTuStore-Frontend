@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Lora } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { MusicProvider } from "@/context/MusicContext";
 import { StoreProvider } from "@/context/StoreContext";
+import { SCROLL_WATCHER_SCRIPT } from "@/lib/scrollWatcher";
 
 // Chữ của cả website là Arial (font có sẵn trong máy, không tải font web): xem fontFamily trong tailwind.config.ts.
 // Font web DUY NHẤT còn lại là Lora: chữ có chân, dùng cho tên cửa hàng trong logo (src/components/brand/Logo.tsx)
@@ -26,6 +28,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     // nhưng Next.js tắt nó khi chuyển trang, nên mỗi trang mới luôn mở ở đầu trang
     <html lang="vi" data-scroll-behavior="smooth" className={brandFont.variable}>
       <body>
+        {/* Ghi nhận người dùng tự cuộn từ lúc trình duyệt đọc trang, trước React: xem src/lib/scrollWatcher.ts */}
+        <Script id="scroll-watcher" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: SCROLL_WATCHER_SCRIPT }} />
         {/* Toàn bộ dữ liệu website (sản phẩm, người dùng, đơn hàng, giỏ hàng) nằm trong trình duyệt: xem src/context/StoreContext.tsx */}
         <StoreProvider>
           {/* Nhạc nền: <audio> nằm ở đây (layout gốc không bị dựng lại khi chuyển trang), nên nhạc không ngắt. Xem src/context/MusicContext.tsx */}
