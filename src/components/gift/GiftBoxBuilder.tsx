@@ -128,7 +128,6 @@ export default function GiftBoxBuilder({ initial }: { initial: BoxCriteria }) {
                         height={160}
                         className="block aspect-square h-auto w-full animate-pop-in object-cover"
                       />
-                      <span className={`absolute left-1.5 top-1.5 h-2.5 w-2.5 rounded-full ring-2 ring-white ${regions[region].dotClass}`} />
                       <button
                         type="button"
                         onClick={() => removePick(region)}
@@ -145,7 +144,6 @@ export default function GiftBoxBuilder({ initial }: { initial: BoxCriteria }) {
                       aria-label={`Chọn món ${regions[region].label}`}
                       className="relative flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-line bg-surface text-ink-muted transition-colors duration-200 hover:border-primary hover:text-primary focus-visible:ring-[3px] focus-visible:ring-primary-soft"
                     >
-                    <span className={`absolute left-1.5 top-1.5 h-2.5 w-2.5 rounded-full ring-2 ring-white ${regions[region].dotClass}`} />
                         <Icon name="plus" size={20} />
                       <span className="text-xs">Chọn món</span>
                     </button>
@@ -236,7 +234,6 @@ export default function GiftBoxBuilder({ initial }: { initial: BoxCriteria }) {
           {picks.map(({ region, product: picked }) => (
             <fieldset key={region} id={`gift-${region}`} className="m-0 min-w-0 scroll-mt-14 border-0 p-0 lg:scroll-mt-0">
               <legend className="mb-1 flex items-center gap-2 font-display text-2xl font-semibold text-ink">
-                <span className={`h-3 w-3 rounded-full ${regions[region].dotClass}`} aria-hidden="true" />
                 {regions[region].label}
               </legend>
               {/* Vì sao món này được ghép sẵn (chỉ khi khách chưa đổi món) */}

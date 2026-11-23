@@ -123,7 +123,6 @@ function Row({ row, index, scale, shown, reduced, active, onActive }: {
 
       <div className="min-w-0">
         <span className="flex min-w-0 items-start gap-2 text-sm">
-          <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${regions[product.region].dotClass}`} aria-hidden="true" />
           <Link
             href={`/admin/san-pham/${product.id}/sua`}
             className="min-w-0 break-words font-medium text-ink outline-none hover:text-primary hover:underline focus-visible:text-primary focus-visible:underline"

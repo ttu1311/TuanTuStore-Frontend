@@ -115,7 +115,6 @@ export default function AdminProductStats() {
         valueText: String(sold),
         tooltipValue: `${sold} đã bán`,
         details: [`${own.length} sản phẩm`, `Doanh thu ${formatVND(revenue)}`],
-        dotClass: regions[key].dotClass,
       };
     })
     .sort((a, b) => b.value - a.value);
