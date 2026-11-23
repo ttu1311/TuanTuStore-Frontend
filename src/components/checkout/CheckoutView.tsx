@@ -313,7 +313,7 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
               ) : (
                 <p id="coupon-hint" className="mt-1.5 text-sm text-ink-muted">
                   Mỗi đơn dùng được một mã giảm giá và một mã miễn phí vận chuyển. Đóng đủ {PASSPORT_COUPON.stampsNeeded} dấu trong{" "}
-                  <Link href="/tai-khoan?tab=passport" className="font-medium text-primary underline underline-offset-4">
+                  <Link href="/tai-khoan/ho-chieu" className="font-medium text-primary underline underline-offset-4">
                     Hộ chiếu đặc sản
                   </Link>{" "}
                   để nhận mã giảm {PASSPORT_COUPON.percent}%.
@@ -544,7 +544,7 @@ export default function CheckoutView() {
           <Link href="/san-pham" className={`${btnBase} ${btnPrimary}`}>
             Tiếp tục mua sắm
           </Link>
-          <Link href="/tai-khoan?tab=orders" className={`${btnBase} ${btnSecondary}`}>
+          <Link href="/tai-khoan/lich-su-mua-hang" className={`${btnBase} ${btnSecondary}`}>
             Xem lịch sử mua hàng
           </Link>
         </div>

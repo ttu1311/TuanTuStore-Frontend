@@ -117,7 +117,7 @@ export default function OrderLookup({ initialCode = "" }: { initialCode?: string
         </button>
         <p className="mt-4 text-sm text-ink-muted">
           Mã đơn hàng hiện trên màn hình sau khi đặt hàng thành công. Đã đăng nhập thì xem mọi đơn ở{" "}
-          <Link href="/tai-khoan?tab=orders" className="font-medium text-primary underline underline-offset-4">
+          <Link href="/tai-khoan/lich-su-mua-hang" className="font-medium text-primary underline underline-offset-4">
             Tài khoản
           </Link>
           .

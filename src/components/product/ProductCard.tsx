@@ -9,8 +9,20 @@ import { discountPercent } from "@/lib/products";
 import { regions } from "@/lib/regions";
 import type { Product } from "@/types";
 
+// Gợi ý cho trình duyệt chọn kích thước ảnh theo bề rộng thẻ trong lưới danh sách sản phẩm / trang chủ
+const defaultSizes = "(min-width: 1280px) 290px, (min-width: 1024px) 23vw, (min-width: 480px) 45vw, 100vw";
+
 // eager: tải ảnh ngay (cho các thẻ đầu tiên ở đầu trang)
-export default function ProductCard({ product, eager = false }: { product: Product; eager?: boolean }) {
+// sizes: nơi nào xếp thẻ theo lưới khác (ví dụ trang Sản phẩm yêu thích) thì truyền bề rộng thẻ ở đó
+export default function ProductCard({
+  product,
+  eager = false,
+  sizes = defaultSizes,
+}: {
+  product: Product;
+  eager?: boolean;
+  sizes?: string;
+}) {
   const discount = discountPercent(product);
   const detailUrl = `/san-pham/${product.id}`;
   const region = regions[product.region];
@@ -27,7 +39,7 @@ export default function ProductCard({ product, eager = false }: { product: Produ
             height={720}
             alt={product.name}
             loading={eager ? "eager" : undefined}
-            sizes="(min-width: 1280px) 290px, (min-width: 1024px) 23vw, (min-width: 480px) 45vw, 100vw"
+            sizes={sizes}
             className="block aspect-square h-auto w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           />
         </Link>

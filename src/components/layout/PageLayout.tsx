@@ -10,7 +10,7 @@ type ContentSidebarProps = {
   sidebar: ReactNode;
   sidebarLabel?: string; // tên truy cập (accessible name) của <aside>
   // Điện thoại và máy tính bảng hiển thị một cột. Mặc định sidebar nằm DƯỚI nội dung;
-  // `sidebarFirst` đưa nó lên TRÊN nội dung (bộ lọc, menu tài khoản).
+  // `sidebarFirst` đưa nó lên TRÊN nội dung (bộ lọc).
   sidebarFirst?: boolean;
   // Sidebar luôn nằm trong tầm nhìn khi nội dung cuộn (chỉ trên máy tính). Nếu nó cao hơn màn hình
   // thì nó tự cuộn bên trong, nên không có nội dung nào nằm ngoài tầm với. Chỉ dùng cho sidebar ngắn.

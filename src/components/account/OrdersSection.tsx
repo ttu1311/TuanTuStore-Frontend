@@ -24,18 +24,17 @@ export default function OrdersSection({ userId }: { userId: string }) {
   const [openCode, setOpenCode] = useState<string | null>(null);
 
   return (
+    // Tiêu đề "Lịch sử mua hàng" là tiêu đề của cả trang (AccountShell), không lặp lại ở đây
     <div>
-      <h2 className="font-display text-2xl font-semibold text-ink">Lịch sử mua hàng</h2>
-
       {myOrders.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-line bg-surface px-6 py-12 text-center">
+        <div className="rounded-xl border border-line bg-surface px-6 py-12 text-center">
           <p className="text-ink-muted">Bạn chưa có đơn hàng nào.</p>
           <Link href="/san-pham" className={`${btnBase} ${btnPrimary} mt-4`}>
             Tiếp tục mua sắm
           </Link>
         </div>
       ) : (
-        <ul className="mt-6 space-y-4">
+        <ul className="space-y-4">
           {myOrders.map((order) => {
             const isOpen = openCode === order.code;
             return (
