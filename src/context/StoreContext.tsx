@@ -444,8 +444,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // ---------- Đơn hàng ----------
 
-  // Tạo đơn hàng từ giỏ hàng, dùng giá HIỆN TẠI trong localStorage.
+  // Tạo đơn hàng từ giỏ hàng, dùng giá HIỆN TẠI trong localStorage. BẮT BUỘC ĐĂNG NHẬP: không có khách vãng lai mua hàng.
   function placeOrder(customer: CheckoutFields, paymentMethod: PaymentMethod, options: PlaceOrderOptions = {}): PlaceOrderResult {
+    if (!currentUser) return { ok: false, message: "Vui lòng đăng nhập để đặt hàng." };
     const { gift, forOther, codes = {} } = options;
     // Chỉ các món khách đã tick ở giỏ hàng; món chưa tick ở lại trong giỏ
     const allLines = getCartLines(cart, products);
@@ -486,7 +487,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
     const order: Order = {
       code: formatOrderCode(lastNumber + 1),
-      userId: currentUser?.id ?? null, // khách chưa đăng nhập: không có người dùng
+      userId: currentUser.id,
       customerName: customer.fullName.trim(),
       phone: normalizePhone(customer.phone),
       email: normalizeEmail(customer.email),
@@ -505,7 +506,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       ...(codes.shippingCoupon ? { shippingCoupon: codes.shippingCoupon } : {}),
       total: totals.total,
       ...(gift ? { gift: { message: gift.message.trim().slice(0, 200) } } : {}),
-      ...(forOther && currentUser ? { forOther: true } : {}),
+      ...(forOther ? { forOther: true } : {}),
       createdAt: new Date().toISOString(),
     };
 

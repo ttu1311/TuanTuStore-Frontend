@@ -91,7 +91,7 @@ export interface OrderItem {
 
 export interface Order {
   code: string; // "TT-000001": duy nhất, hiển thị cho khách hàng
-  userId: string | null; // null = khách chưa đăng nhập
+  userId: string | null; // null = đơn đặt trước khi bắt buộc đăng nhập (khách vãng lai), hoặc tài khoản đặt đơn đã bị xóa
   customerName: string;
   phone: string;
   email: string;

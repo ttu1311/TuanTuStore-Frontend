@@ -19,7 +19,7 @@ const itemStyle = "flex min-h-10 items-center whitespace-nowrap rounded-lg px-3 
 // Menu bên của các trang Admin (thanh ngang có thể cuộn trên màn hình nhỏ)
 export default function AdminNav() {
   const pathname = usePathname();
-  const { adminLogout, contactRequests } = useStore();
+  const { contactRequests } = useStore();
   // Số yêu cầu đang chờ gọi lại, hiện cạnh mục "Yêu cầu liên hệ"
   const waitingCalls = contactRequests.filter((request) => !request.done).length;
 
@@ -51,17 +51,8 @@ export default function AdminNav() {
             </li>
           );
         })}
-        {/* Không có liên kết nào dẫn về cửa hàng: khu quản trị tách riêng, thoát ra bằng "Đăng xuất" */}
-        <li className="shrink-0 lg:mt-4 lg:border-t lg:border-line lg:pt-4">
-          {/* Đăng xuất quản trị: server xóa cookie phiên, rồi về trang đăng nhập quản trị */}
-          <button
-            type="button"
-            onClick={() => void adminLogout()}
-            className={`${itemStyle} w-full text-left font-medium text-ink-muted hover:bg-surface hover:text-sale`}
-          >
-            Đăng xuất
-          </button>
-        </li>
+        {/* Không có liên kết về cửa hàng và không có nút "Đăng xuất" ở đây: khu quản trị tách riêng,
+           thoát ra bằng MỘT nút "Đăng xuất" duy nhất ở thanh trên (AdminShell). */}
       </ul>
     </nav>
   );

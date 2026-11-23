@@ -9,7 +9,7 @@ export default function AdminOrderTable() {
   const { orders, users } = useStore();
   const sorted = [...orders].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
-  // Email tài khoản của đơn hàng, hoặc "Khách vãng lai" với đơn của khách chưa đăng nhập
+  // Email tài khoản của đơn hàng. "Khách vãng lai" chỉ còn với đơn cũ (đặt trước khi bắt buộc đăng nhập) hoặc đơn của tài khoản đã bị xóa
   function accountText(userId: string | null) {
     const user = users.find((u) => u.id === userId);
     return user ? user.email : "Khách vãng lai";

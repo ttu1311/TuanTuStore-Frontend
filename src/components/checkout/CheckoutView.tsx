@@ -43,31 +43,31 @@ type Recipient = "self" | "other";
 type CheckoutFormProps = {
   lines: CartLine[]; // chỉ các món khách đã tick ở giỏ hàng
   leftInCart: number; // số món chưa tick, vẫn ở lại trong giỏ sau khi đặt hàng
-  user: User | null; // null = khách chưa đăng nhập
+  user: User; // người đang đăng nhập (trang thanh toán bắt buộc đăng nhập)
   onPlaced: (order: Order) => void;
 };
 
 // Hồ sơ đã đủ để giao hàng cho chính khách: có số điện thoại và địa chỉ mặc định hợp lệ
-function hasDeliveryProfile(user: User | null): user is User & { address: SavedAddress } {
-  return Boolean(user && isValidPhone(user.phone) && user.address && Object.keys(validateAddress(user.address)).length === 0);
+function hasDeliveryProfile(user: User): user is User & { address: SavedAddress } {
+  return Boolean(isValidPhone(user.phone) && user.address && Object.keys(validateAddress(user.address)).length === 0);
 }
 
 // Form giao hàng + tóm tắt đơn hàng. Chỉ hiển thị khi giỏ hàng có sản phẩm.
-// Khách đã đăng nhập chọn "Mua cho bản thân" (dùng địa chỉ mặc định trong tài khoản, không nhập lại)
-// hoặc "Mua tặng người thân" (nhập người nhận). Khách chưa đăng nhập luôn điền form.
+// Khách chọn "Mua cho bản thân" (dùng địa chỉ mặc định trong tài khoản, không nhập lại)
+// hoặc "Mua tặng người thân" (nhập người nhận).
 function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) {
   const { placeOrder, updateProfile, products, orders, coupons } = useStore();
   const [recipient, setRecipient] = useState<Recipient>("self");
   // Mỗi lựa chọn giữ form riêng, nên chuyển qua lại không làm mất chữ đã gõ
   const [forms, setForms] = useState<Record<Recipient, CheckoutFields>>({
     self: {
-      fullName: user?.name ?? "",
-      phone: user?.phone ?? "",
-      email: user?.email ?? "",
-      address: user?.address ?? emptyAddress,
+      fullName: user.name,
+      phone: user.phone,
+      email: user.email,
+      address: user.address ?? emptyAddress,
       note: "",
     },
-    other: { fullName: "", phone: "", email: user?.email ?? "", address: emptyAddress, note: "" },
+    other: { fullName: "", phone: "", email: user.email, address: emptyAddress, note: "" },
   });
   const [note, setNote] = useState("");
   const [errors, setErrors] = useState<CheckoutErrors>({});
@@ -152,11 +152,11 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
     event.preventDefault();
     setSaveError("");
 
-    // Khách đã đăng nhập: email luôn là email tài khoản (không có ô email)
+    // Email luôn là email tài khoản (không có ô email)
     const customer: CheckoutFields =
-      useSavedAddress && user?.address
+      useSavedAddress && user.address
         ? { fullName: user.name, phone: user.phone, email: user.email, address: user.address, note }
-        : { ...values, email: user ? user.email : values.email, note };
+        : { ...values, email: user.email, note };
 
     const newErrors = validateCheckout(customer);
     setErrors(newErrors);
@@ -169,7 +169,7 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
     // Lưu đơn hàng vào localStorage. Giỏ hàng chỉ được làm trống nếu đơn đã lưu thành công.
     const result = placeOrder(customer, payment, {
       gift: giftWrap ? { message: giftMessage } : undefined,
-      forOther: Boolean(user) && recipient === "other",
+      forOther: recipient === "other",
       codes,
     });
     if (!result.ok) {
@@ -177,7 +177,7 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
       return;
     }
     // Lần đầu mua cho bản thân: lưu họ tên, số điện thoại và địa chỉ vào hồ sơ cho những lần sau
-    if (user && recipient === "self" && !useSavedAddress && saveAsDefault) {
+    if (recipient === "self" && !useSavedAddress && saveAsDefault) {
       updateProfile(customer.fullName, customer.phone, customer.address);
     }
     onPlaced(result.order);
@@ -363,34 +363,32 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
               Thông tin giao hàng
             </h2>
 
-            {user && (
-              <fieldset className="mt-5">
-                <legend className="sr-only">Bạn mua cho ai?</legend>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {recipientOptions.map((option) => (
-                    <label
-                      key={option.value}
-                      className="flex cursor-pointer gap-3 rounded-lg border border-line p-4 transition-colors duration-200 hover:border-primary has-[:checked]:border-primary has-[:checked]:bg-primary-soft has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-primary-soft"
-                    >
-                      <input
-                        type="radio"
-                        name="recipient"
-                        value={option.value}
-                        checked={recipient === option.value}
-                        onChange={() => chooseRecipient(option.value)}
-                        className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-primary"
-                      />
-                      <span>
-                        <span className="block font-semibold text-ink">{option.label}</span>
-                        <span className="block text-sm text-ink-muted">{option.hint}</span>
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-            )}
+            <fieldset className="mt-5">
+              <legend className="sr-only">Bạn mua cho ai?</legend>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {recipientOptions.map((option) => (
+                  <label
+                    key={option.value}
+                    className="flex cursor-pointer gap-3 rounded-lg border border-line p-4 transition-colors duration-200 hover:border-primary has-[:checked]:border-primary has-[:checked]:bg-primary-soft has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-primary-soft"
+                  >
+                    <input
+                      type="radio"
+                      name="recipient"
+                      value={option.value}
+                      checked={recipient === option.value}
+                      onChange={() => chooseRecipient(option.value)}
+                      className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-primary"
+                    />
+                    <span>
+                      <span className="block font-semibold text-ink">{option.label}</span>
+                      <span className="block text-sm text-ink-muted">{option.hint}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
 
-            {useSavedAddress && user?.address ? (
+            {useSavedAddress && user.address ? (
               // Mua cho bản thân: dùng địa chỉ mặc định trong tài khoản, không bắt nhập lại
               <div className="mt-5 rounded-lg bg-surface p-4">
                 <p className="text-sm font-medium text-ink-muted">Giao tới địa chỉ mặc định</p>
@@ -404,12 +402,12 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
               </div>
             ) : (
               <>
-                {user && recipient === "self" && (
+                {recipient === "self" && (
                   <p className="mt-5 rounded-lg bg-gold-soft px-4 py-3 text-sm text-gold-ink">
                     Tài khoản của bạn chưa có địa chỉ giao hàng mặc định. Nhập một lần, lần sau không phải nhập lại.
                   </p>
                 )}
-                {user && recipient === "other" && (
+                {recipient === "other" && (
                   <p className="mt-5 text-sm text-ink-muted">
                     Nhập thông tin của người nhận.
                   </p>
@@ -417,10 +415,9 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
                 <div className="mt-5 grid gap-5 sm:grid-cols-2">
                   {renderField("fullName", recipient === "other" ? "Họ và tên người nhận" : "Họ và tên", { autoComplete: recipient === "other" ? "off" : "name" })}
                   {renderField("phone", recipient === "other" ? "Số điện thoại người nhận" : "Số điện thoại", { type: "tel", autoComplete: recipient === "other" ? "off" : "tel" })}
-                  {!user && <div className="sm:col-span-2">{renderField("email", "Email", { type: "email", autoComplete: "email" })}</div>}
                   <AddressFields idPrefix="" value={values.address} errors={errors} onChange={handleAddressChange} />
                 </div>
-                {user && recipient === "self" && (
+                {recipient === "self" && (
                   <label className="mt-4 flex min-h-11 cursor-pointer items-center gap-3 text-ink">
                     <input
                       type="checkbox"
@@ -522,8 +519,9 @@ export default function CheckoutView() {
   const { isReady, cart, products, currentUser } = useStore();
   const [placedOrder, setPlacedOrder] = useState<Order | null>(null);
 
-  // Chờ localStorage, nếu không thông báo giỏ trống sẽ nháy lên mỗi lần tải trang
-  if (!isReady) return <LoadingState text="Đang tải giỏ hàng…" />;
+  // Chờ localStorage, nếu không thông báo giỏ trống sẽ nháy lên mỗi lần tải trang.
+  // Chưa đăng nhập: RequireLogin (ở trang) đang chuyển khách tới /dang-nhap, nên cũng chỉ hiện thông báo chờ.
+  if (!isReady || !currentUser) return <LoadingState text="Đang tải giỏ hàng…" />;
 
   // Đơn đã lưu và giỏ đã trống: hiện mã đơn hàng thay vì "Giỏ hàng của bạn đang trống"
   if (placedOrder) {
@@ -546,16 +544,9 @@ export default function CheckoutView() {
           <Link href="/san-pham" className={`${btnBase} ${btnPrimary}`}>
             Tiếp tục mua sắm
           </Link>
-          {placedOrder.userId ? (
-            <Link href="/tai-khoan?tab=orders" className={`${btnBase} ${btnSecondary}`}>
-              Xem lịch sử mua hàng
-            </Link>
-          ) : (
-            // Khách chưa đăng nhập: theo dõi đơn bằng mã đơn + số điện thoại
-            <Link href={`/tra-cuu-don-hang?ma=${placedOrder.code}`} className={`${btnBase} ${btnSecondary}`}>
-              Tra cứu đơn hàng
-            </Link>
-          )}
+          <Link href="/tai-khoan?tab=orders" className={`${btnBase} ${btnSecondary}`}>
+            Xem lịch sử mua hàng
+          </Link>
         </div>
       </div>
     );
