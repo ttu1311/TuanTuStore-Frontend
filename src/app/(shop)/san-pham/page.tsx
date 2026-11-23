@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 // Từ khóa và bộ lọc nằm trên địa chỉ trang và do ProductListing đọc (useSearchParams), nên trang không cần đọc searchParams
 // và KHÔNG đặt key theo từ khóa: tìm từ khóa mới ở header không làm mất các bộ lọc đang chọn.
-// Địa chỉ: ?q=<từ khóa> (ô tìm kiếm ở header), ?region=bac (lặp được: menu "3 Miền", tab miền ở trang chủ),
+// Địa chỉ: ?q=<từ khóa> (ô tìm kiếm ở header), ?region=bac (lặp được: tab miền ở trang chủ),
 // ?province=Cà Mau (lặp được: hộ chiếu đặc sản), ?price=under-100|100-200|over-200, ?sort=price-asc|price-desc.
 export default function ProductListingPage() {
   return (

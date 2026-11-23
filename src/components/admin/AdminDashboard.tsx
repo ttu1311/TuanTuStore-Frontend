@@ -26,7 +26,7 @@ const linkStyle = "text-sm font-semibold text-primary underline-offset-4 hover:u
 
 // "Tổng quan": mọi con số đều được đếm từ dữ liệu trong localStorage
 export default function AdminDashboard() {
-  const { products, orders, users, contactRequests, productViews } = useStore();
+  const { products, orders, users, productViews } = useStore();
 
   const completed = orders.filter((order) => order.status === "COMPLETED");
   // Doanh thu = tổng của các đơn đã HOÀN THÀNH (COMPLETED)
@@ -34,7 +34,6 @@ export default function AdminDashboard() {
   const cancelled = orders.filter((order) => order.status === "CANCELLED").length;
   // Đơn chuyển khoản chưa nhận tiền (đơn đã hủy thì thôi)
   const unpaid = orders.filter((order) => order.status !== "CANCELLED" && paymentStatusOf(order) === "UNPAID");
-  const waitingCalls = contactRequests.filter((request) => !request.done).length;
   const soldOut = products.filter((product) => product.stock <= 0).length;
 
   const byStatus = ordersByStatus(orders);
@@ -60,14 +59,14 @@ export default function AdminDashboard() {
     },
     { label: "Tổng sản phẩm", value: String(products.length), note: soldOut > 0 ? `${soldOut} sản phẩm hết hàng` : undefined, href: "/admin/san-pham" },
     { label: "Tổng người dùng", value: String(users.length), href: "/admin/nguoi-dung" },
-    { label: "Yêu cầu liên hệ chờ gọi", value: String(waitingCalls), href: "/admin/lien-he", alert: waitingCalls > 0 },
   ];
 
   return (
     <>
-      {/* 6 ô số liệu: 1 cột (dưới 480px), 2 cột × 3 hàng, từ 1280px 3 cột × 2 hàng. Luôn đủ hàng, không lẻ ô. Thêm hoặc bớt ô thì đổi số cột cho khớp. */}
-      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 xl:grid-cols-3">
-        {stats.map((stat) => {
+      {/* 5 ô số liệu, luôn đủ hàng, không lẻ ô: 1 cột (dưới 768px); từ 768px lưới 6 phần, hai ô đầu mỗi ô 3 phần rồi ba ô sau mỗi ô
+          2 phần (hàng 2 ô + hàng 3 ô); từ 1280px cả 5 ô một hàng. Thêm hoặc bớt ô thì đổi lại các lớp col-span và số cột. */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-6 xl:grid-cols-5">
+        {stats.map((stat, index) => {
           const body = (
             <>
               <p className="text-sm text-ink-muted">{stat.label}</p>
@@ -75,7 +74,7 @@ export default function AdminDashboard() {
               {stat.note && <p className="mt-1 text-xs text-ink-muted">{stat.note}</p>}
             </>
           );
-          const box = "block h-full rounded-xl border border-line bg-white p-5";
+          const box = `block h-full rounded-xl border border-line bg-white p-5 xl:col-span-1 ${index < 2 ? "md:col-span-3" : "md:col-span-2"}`;
           return stat.href ? (
             <Link key={stat.label} href={stat.href} className={`${box} transition-colors duration-200 hover:border-primary`}>
               {body}

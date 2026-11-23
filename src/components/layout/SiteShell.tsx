@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import BackToTop from "@/components/layout/BackToTop";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
+import ScrollToHash from "@/components/layout/ScrollToHash";
 import MusicPlayer from "@/components/music/MusicPlayer";
 
 // Khung của mọi trang cửa hàng: Header ở trên, trang ở giữa, Footer ở dưới,
@@ -19,6 +20,7 @@ export default function SiteShell({ children }: { children: ReactNode }) {
       <Footer />
       <MusicPlayer />
       <BackToTop />
+      <ScrollToHash />
     </div>
   );
 }

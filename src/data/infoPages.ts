@@ -142,7 +142,7 @@ export const infoPages: InfoPage[] = [
       },
       {
         question: "Tôi muốn hỏi thêm thì liên hệ cửa hàng bằng cách nào?",
-        answer: `Gọi hoặc nhắn Zalo số ${storeContact.phoneDisplay}, gửi email tới ${storeContact.email}, hoặc để lại số điện thoại ở trang Liên hệ để cửa hàng gọi lại. Giờ làm việc: ${storeContact.hours}.`,
+        answer: `Gọi hoặc nhắn Zalo số ${storeContact.phoneDisplay}, hoặc gửi email tới ${storeContact.email}. Giờ làm việc: ${storeContact.hours}.`,
       },
     ],
   },

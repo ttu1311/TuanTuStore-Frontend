@@ -31,9 +31,8 @@ import {
 } from "@/lib/storage";
 import { normalizeEmail, normalizePhone, type RegisterValues } from "@/lib/validation";
 import { MAX_COMMENT_LENGTH, reviewEligibility } from "@/lib/reviews";
-import { validateContact, type ContactValues } from "@/lib/contact";
 import { cleanAddress, validateAddress } from "@/lib/address";
-import type { CartItem, ContactRequest, Coupon, SavedAddress, Order, OrderItem, OrderStatus, PaymentMethod, Product, Review, User } from "@/types";
+import type { CartItem, Coupon, SavedAddress, Order, OrderItem, OrderStatus, PaymentMethod, Product, Review, User } from "@/types";
 
 // Kết quả mà mọi thao tác trả về. `field` cho biết thông báo thuộc về ô nhập nào (nếu có).
 export type ActionResult = { ok: true } | { ok: false; message: string; field?: string };
@@ -59,7 +58,6 @@ type StoreValue = {
   orders: Order[];
   cart: CartItem[];
   reviews: Review[];
-  contactRequests: ContactRequest[];
   coupons: Coupon[]; // mã giảm giá chủ cửa hàng đã tạo
   productViews: Record<string, number>; // id sản phẩm -> số lần trang chi tiết được mở (trên trình duyệt này)
   wishlist: string[]; // id các sản phẩm yêu thích của người đang đăng nhập (rỗng khi chưa đăng nhập)
@@ -125,9 +123,6 @@ type StoreValue = {
   deleteReview: (reviewId: string) => ActionResult; // người viết hoặc ADMIN
 
   // Yêu cầu liên hệ lại: ai cũng gửi được; chỉ ADMIN đánh dấu và xóa
-  submitContactRequest: (values: ContactValues) => ActionResult;
-  setContactRequestDone: (id: string, done: boolean) => ActionResult;
-  deleteContactRequest: (id: string) => ActionResult;
 
   // Mã giảm giá (Admin). Mã đã kiểm tra bằng validateCouponForm (src/lib/coupons.ts).
   addCoupon: (coupon: Coupon) => ActionResult;
@@ -155,7 +150,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [contactRequests, setContactRequests] = useState<ContactRequest[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [productViews, setProductViews] = useState<Record<string, number>>({});
   const [wishlists, setWishlists] = useState<Record<string, string[]>>({});
@@ -198,7 +192,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setOrders(data.orders);
       setCart(data.cart);
       setReviews(data.reviews);
-      setContactRequests(data.contactRequests);
       setCoupons(data.coupons);
       setProductViews(data.productViews);
       setWishlists(data.wishlists);
@@ -241,7 +234,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const saveUsers = (next: User[]) => persist(STORAGE_KEYS.users, next, setUsers);
   const saveOrders = (next: Order[]) => persist(STORAGE_KEYS.orders, next, setOrders);
   const saveReviews = (next: Review[]) => persist(STORAGE_KEYS.reviews, next, setReviews);
-  const saveContactRequests = (next: ContactRequest[]) => persist(STORAGE_KEYS.contactRequests, next, setContactRequests);
   const saveCart = (next: CartItem[]) => persist(STORAGE_KEYS.cart, next, setCart);
   const saveWishlists = (next: Record<string, string[]>) => persist(STORAGE_KEYS.wishlists, next, setWishlists);
   const saveCoupons = (next: Coupon[]) => persist(STORAGE_KEYS.coupons, next, setCoupons);
@@ -655,41 +647,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     return saveReviews(reviews.filter((r) => r.id !== reviewId)) ? OK : fail(SAVE_ERROR);
   }
 
-  // ---------- Yêu cầu liên hệ lại ----------
-
-  function submitContactRequest(values: ContactValues): ActionResult {
-    // Kiểm tra lại ở đây (không chỉ ở giao diện)
-    const errors = validateContact(values);
-    const firstField = Object.keys(errors)[0] as keyof ContactValues | undefined;
-    if (firstField) return fail(errors[firstField] ?? "Thông tin chưa hợp lệ", firstField);
-
-    const request: ContactRequest = {
-      id: createId("c"),
-      name: values.name.trim(),
-      phone: normalizePhone(values.phone),
-      email: values.email.trim() === "" ? "" : normalizeEmail(values.email),
-      topic: values.topic,
-      callTime: values.callTime,
-      message: values.message.trim(),
-      userId: currentUser?.id ?? null,
-      done: false,
-      createdAt: new Date().toISOString(),
-    };
-    return saveContactRequests([...contactRequests, request]) ? OK : fail(SAVE_ERROR);
-  }
-
-  function setContactRequestDone(id: string, done: boolean): ActionResult {
-    if (!isAdmin) return fail(NO_PERMISSION);
-    if (!contactRequests.some((request) => request.id === id)) return fail("Yêu cầu này không còn tồn tại.");
-    const next = contactRequests.map((request) => (request.id === id ? { ...request, done } : request));
-    return saveContactRequests(next) ? OK : fail(SAVE_ERROR);
-  }
-
-  function deleteContactRequest(id: string): ActionResult {
-    if (!isAdmin) return fail(NO_PERMISSION);
-    return saveContactRequests(contactRequests.filter((request) => request.id !== id)) ? OK : fail(SAVE_ERROR);
-  }
-
   // ---------- Mã giảm giá (Admin) ----------
 
   function addCoupon(coupon: Coupon): ActionResult {
@@ -742,7 +699,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         orders,
         cart,
         reviews,
-        contactRequests,
         coupons,
         productViews,
         wishlist,
@@ -777,9 +733,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         deleteOrder,
         submitReview,
         deleteReview,
-        submitContactRequest,
-        setContactRequestDone,
-        deleteContactRequest,
         addCoupon,
         setCouponActive,
         deleteCoupon,
