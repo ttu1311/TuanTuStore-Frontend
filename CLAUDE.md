@@ -40,6 +40,7 @@ Env vars (see `.env.example`, copy to `.env.local`): bank details for the VietQR
 
 - UI text, code comments and error messages are in **Vietnamese**; keep that. Identifiers are English.
 - Styling: Tailwind with colour tokens as CSS variables `--c-*` in `src/app/globals.css` (mapped in `tailwind.config.ts`). The UI's primary colour is a turmeric orange (`--c-primary`); the logo and shop name keep the original wine red (hard-coded in `Logo.tsx`). Keep white text on `primary` at 4.5:1 contrast or better. `text-wrap: pretty` is the body default and `balance` is applied to headings, table cells, labels and buttons so no single word wraps alone; check long Vietnamese strings on mobile widths.
+- Fonts: the whole site is set in **Arial** (system font, nothing to download); `font-sans` and `font-display` in `tailwind.config.ts` are the same Arial stack. Only the logo wordmark and the italic line of the homepage banner use **Lora** (`--font-brand`, loaded in `src/app/layout.tsx`). Headings are written in normal case with weight ≤ 700; only small kicker labels (e.g. "GIÁ TỐT") stay uppercase. Arial is wider than the old display font, so recheck headings and nowrap buttons at 360px.
 - Path alias `@/*` → `src/*`. Product photos must be files in `public/images`.
 - Charts are hand-written SVG (`src/components/admin/charts/`); there is no chart library.
 

@@ -104,7 +104,7 @@ export default function TodayDeals() {
             <span className="h-0.5 w-10 rounded-full bg-primary" aria-hidden="true" />
             Giá tốt
           </p>
-          <h2 id="deals-title" className="font-display text-3xl/[1.1] font-bold text-ink sm:text-4xl/[1.1]">
+          <h2 id="deals-title" className="font-display text-3xl/[1.2] font-bold text-ink sm:text-4xl/[1.2]">
             Ưu đãi hôm nay
           </h2>
           <p className="mt-2 max-w-[32rem] text-ink-muted">Các món giảm giá duy nhất trong hôm nay.</p>

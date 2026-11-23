@@ -52,7 +52,7 @@ export default function GiftBoxStarter() {
 
       <div className="relative flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 id="gift-box-title" className="font-display text-3xl/[1.1] font-bold text-ink md:text-4xl/[1.1]">
+          <h2 id="gift-box-title" className="font-display text-3xl/[1.2] font-bold text-ink md:text-4xl/[1.2]">
             Ghép hộp quà ba miền
           </h2>
           <p className="mt-2 max-w-[38rem] text-ink-muted">

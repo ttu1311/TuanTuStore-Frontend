@@ -322,7 +322,7 @@ print, ask the designer for a vector or a larger file.
 ## Credits
 
 Photos: Wikimedia Commons. Some photos of the November 2026 products show the same kind of product but not necessarily from the
-same place. Fonts: Phudu, Be Vietnam Pro and Lora (Google Fonts)
+same place. Fonts: the whole site is set in Arial (a system font, nothing to download); only the shop name in the logo uses Lora (Google Fonts)
 
 Homepage banner photos (`public/images/banner`): supplied by the shop owner (illustrations; the dishes are not all products sold in the shop).
 

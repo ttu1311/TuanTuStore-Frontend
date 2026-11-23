@@ -27,7 +27,7 @@ export default async function InfoPageView({ params }: InfoPageProps) {
     <PageContainer>
       <ContentSidebar sidebarLabel="Các trang hỗ trợ và chính sách" sidebar={<InfoNav current={page.slug} />}>
         <article>
-          <h1 className="font-display text-3xl/[1.1] font-semibold text-ink md:text-title/[1.1]">{page.title}</h1>
+          <h1 className="font-display text-3xl/[1.2] font-semibold text-ink md:text-title/[1.2]">{page.title}</h1>
           <p className="mt-3 max-w-[40rem] text-lg text-ink-muted">{page.description}</p>
           <p className="mt-6 rounded-lg bg-gold-soft px-4 py-3 text-sm text-gold-ink">
             Đặc sản 3 Miền là đồ án học tập: nội dung dưới đây là chính sách mẫu, mô tả cách cửa hàng vận hành.
