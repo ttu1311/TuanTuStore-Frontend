@@ -37,15 +37,22 @@ export default function AddressSection({ user }: { user: User }) {
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit} aria-labelledby="address-title" className="mt-10 border-t border-line pt-8">
+    <form noValidate onSubmit={handleSubmit} aria-labelledby="address-title">
       <h2 id="address-title" className="font-display text-2xl font-semibold text-ink">
         Địa chỉ giao hàng mặc định
       </h2>
       <p className="mt-1 text-ink-muted">
         Dùng khi bạn chọn “Mua cho bản thân” lúc thanh toán, để không phải nhập lại mỗi lần đặt hàng.
       </p>
-      <div className="mt-5 grid gap-5 sm:grid-cols-2">
-        <AddressFields idPrefix="default-" value={address} errors={errors} onChange={handleChange} />
+      {/* Từ lg khung này chỉ rộng bằng nửa trang: 1 cột ở lg (tên tỉnh không bị cắt), 2 cột lại từ xl khi khung đủ rộng */}
+      <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        <AddressFields
+          idPrefix="default-"
+          value={address}
+          errors={errors}
+          onChange={handleChange}
+          streetClassName="sm:col-span-2 lg:col-span-1 xl:col-span-2"
+        />
       </div>
       <button type="submit" className={`${btnBase} ${btnPrimary} mt-5`}>
         {user.address ? "Lưu địa chỉ" : "Thêm địa chỉ"}

@@ -14,11 +14,13 @@ type AddressFieldsProps = {
   value: SavedAddress;
   errors: AddressErrors;
   onChange: (field: keyof SavedAddress, value: string) => void;
+  // Lớp của ô "Số nhà, tên đường". Mặc định chiếm cả hai cột; form hẹp đổi số cột của lưới thì đổi theo (xem AddressSection)
+  streetClassName?: string;
 };
 
 // Ba ô địa chỉ 2 cấp: Tỉnh/Thành phố (chọn trong 34 tỉnh) → Xã/Phường/Đặc khu → Số nhà, tên đường.
 // Đặt trong một lưới 2 cột (sm:grid-cols-2) của form cha.
-export default function AddressFields({ idPrefix, value, errors, onChange }: AddressFieldsProps) {
+export default function AddressFields({ idPrefix, value, errors, onChange, streetClassName = "sm:col-span-2" }: AddressFieldsProps) {
   const id = (field: keyof SavedAddress) => `${idPrefix}${field}`;
   const describedBy = (field: keyof SavedAddress) => (errors[field] ? `${id(field)}-error` : undefined);
   const error = (field: keyof SavedAddress) =>
@@ -68,7 +70,7 @@ export default function AddressFields({ idPrefix, value, errors, onChange }: Add
         {error("ward")}
       </WardField>
 
-      <div className="sm:col-span-2">
+      <div className={streetClassName}>
         <label htmlFor={id("street")} className="mb-2 block font-medium text-ink">
           Số nhà, tên đường
         </label>
