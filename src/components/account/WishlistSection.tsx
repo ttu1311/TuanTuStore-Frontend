@@ -25,10 +25,14 @@ export default function WishlistSection() {
           </Link>
         </div>
       ) : (
-        <ul className="mt-6 grid grid-cols-1 gap-6 min-[480px]:grid-cols-2 xl:grid-cols-3">
+        // Thẻ có cỡ như ở trang chủ và trang Sản phẩm (khoảng 210 đến 290px), không bị kéo giãn dù chỉ có 1 hay 2 món:
+        // - từ 520px: lưới tự xếp theo bề rộng thẻ (mỗi thẻ tối thiểu 13rem), các ô trống giữ chỗ nên một món vẫn chỉ bằng một ô;
+        // - dưới 520px chỉ vừa một cột (auto-fill sẽ kéo cột duy nhất ra hết khung): một cột rộng tối đa 18rem, hẹp hơn thì bằng khung.
+        <ul className="mt-6 grid grid-cols-[minmax(0,18rem)] gap-x-6 gap-y-8 min-[520px]:grid-cols-[repeat(auto-fill,minmax(13rem,1fr))]">
           {items.map((product) => (
             <li key={product.id} className="flex">
-              <ProductCard product={product} />
+              {/* sizes khớp bề rộng thẻ ở đây: tối đa 18rem ở điện thoại (hẹp hơn thì bằng khung trừ lề trang và đệm khung), khoảng 290px từ 520px */}
+              <ProductCard product={product} sizes="(min-width: 520px) 290px, min(18rem, calc(100vw - 5rem))" />
             </li>
           ))}
         </ul>
