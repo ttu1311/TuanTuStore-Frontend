@@ -18,7 +18,7 @@ export default function CartToast({ toast, onClose }: { toast: Toast | null; onC
   }, [id, onClose]);
 
   return (
-    <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-4 bottom-4 z-50 sm:left-auto sm:right-6 sm:bottom-6">
+    <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-4 bottom-[calc(1rem+var(--bottom-bar,0px))] z-50 sm:left-auto sm:right-6 sm:bottom-[calc(1.5rem+var(--bottom-bar,0px))]">
       {toast && (
         <div className="pointer-events-auto ml-auto flex max-w-sm items-center gap-3 rounded-lg bg-ink px-4 py-3 text-sm text-white shadow-lg">
           <Icon name="check" size={18} />

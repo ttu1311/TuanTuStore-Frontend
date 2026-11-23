@@ -23,7 +23,7 @@ export default function BackToTop() {
       // Khi ẩn: trong suốt, không bấm được và bị bỏ qua khi dùng phím Tab
       tabIndex={visible ? 0 : -1}
       aria-hidden={!visible}
-      className={`fixed bottom-4 right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-card transition-all duration-300 hover:bg-primary-dark sm:bottom-6 sm:right-6 ${
+      className={`fixed bottom-[calc(1rem+var(--bottom-bar,0px))] right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-card transition-all duration-300 hover:bg-primary-dark sm:bottom-[calc(1.5rem+var(--bottom-bar,0px))] sm:right-6 ${
         visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
       }`}
     >

@@ -122,7 +122,6 @@ export default function ProductDetailView({ id }: { id: string }) {
                       href={`/san-pham?region=${key}`}
                       className="flex min-h-11 items-center gap-3 font-medium text-ink transition-colors duration-200 hover:text-primary"
                     >
-                      <span className={`h-2 w-2 rounded-full ${regions[key].dotClass}`} aria-hidden="true" />
                       {regions[key].label}
                     </Link>
                   </li>

@@ -133,7 +133,7 @@ function CartRow({ product, quantity, selected }: { product: Product; quantity: 
 
 // Giỏ hàng chỉ lưu id sản phẩm và số lượng; tên, giá và ảnh lấy từ danh sách sản phẩm.
 export default function CartView() {
-  const { isReady, cart, products, clearCart, setAllCartSelected } = useStore();
+  const { isReady, cart, products, currentUser, clearCart, setAllCartSelected } = useStore();
   // Bấm "Xóa tất cả" lần đầu chỉ hỏi lại; phải xác nhận mới xóa, tránh bấm nhầm mất cả giỏ
   const [confirmingClear, setConfirmingClear] = useState(false);
 
@@ -216,9 +216,13 @@ export default function CartView() {
                     <p className="mt-2 text-sm text-sale">Một số sản phẩm đã chọn không đủ hàng. Hãy sửa giỏ hàng để tiếp tục.</p>
                   </>
                 ) : (
-                  <Link href="/thanh-toan" className={`${btnBase} ${btnPrimary} mt-6 w-full`}>
-                    Mua hàng ({chosen.length})
-                  </Link>
+                  <>
+                    {/* Mua hàng cần đăng nhập: khách chưa đăng nhập được chuyển tới /dang-nhap rồi quay lại thanh toán, giỏ hàng vẫn còn */}
+                    <Link href="/thanh-toan" className={`${btnBase} ${btnPrimary} mt-6 w-full`}>
+                      {currentUser ? `Mua hàng (${chosen.length})` : `Đăng nhập để mua hàng (${chosen.length})`}
+                    </Link>
+                    {!currentUser && <p className="mt-2 text-sm text-ink-muted">Bạn cần đăng nhập để đặt hàng. Giỏ hàng được giữ nguyên.</p>}
+                  </>
                 )}
               </>
             )}

@@ -147,7 +147,7 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 | `/san-pham` | Product list: search, filter by region / province / occasion / price, sort. Reads `?q=`, `?region=`, `?province=` and `?dip=` (occasion) |
 | `/san-pham/[id]` | Product detail: price, stock left ("Hết hàng" disables buying), stars, description, information, quantity, "Thêm vào giỏ hàng", "Mua ngay", ♡ wishlist, related products |
 | `/gio-hang` | Cart with a **tick box per product** and "Chọn tất cả": only ticked products are priced and bought, the others stay in the cart. Change quantity (never above the stock), remove, clear all, progress towards free shipping; checkout is blocked while a *ticked* line exceeds the stock |
-| `/thanh-toan` | Checkout (only the ticked cart products; after the order only those leave the cart; "Mua ngay" on a product page ticks only that product): logged-in customers choose "Mua cho bản thân" (default address from the account, nothing to retype) or "Mua tặng người thân" (recipient form). 2-level address: province (34, after the 2025 merger) → ward typed by hand. COD or bank transfer with a **VietQR code** (amount and order code filled in). Optional free gift wrap. **Mã giảm giá** field (the passport coupon, see below) |
+| `/thanh-toan` | Checkout, **login required** (a guest is sent to `/dang-nhap` and comes back here; the cart is kept; `placeOrder` refuses too). Only the ticked cart products; after the order only those leave the cart; "Mua ngay" on a product page ticks only that product. The customer chooses "Mua cho bản thân" (default address from the account, nothing to retype) or "Mua tặng người thân" (recipient form). 2-level address: province (34, after the 2025 merger) → ward typed by hand. COD or bank transfer with a **VietQR code** (amount and order code filled in). Optional free gift wrap. **Mã giảm giá** field (the passport coupon, see below) |
 | `/dang-nhap` | Customer login. `?next=/path` returns to that page afterwards (only paths inside the site) |
 | `/dang-nhap-quan-tri` | Admin login (see "Admin login"): password checked on the server, Turnstile, increasing wait after wrong passwords. No link points to it from the shop. `?next=` only accepts paths under `/admin` |
 | `/dang-ky` | Registration with a Cloudflare Turnstile CAPTCHA, verified on the server (`/api/captcha/verify`). Also reads `?next=` |
@@ -156,7 +156,7 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 | `/tra-cuu-don-hang` | Order lookup without login: order code + phone number. Reads `?ma=` (the "Đặt hàng thành công" screen links here) |
 | `/thong-tin/[slug]` | Help and policy pages (content in `src/data/infoPages.ts`): buying guide, payment, FAQ, shipping, returns, privacy, terms |
 | `/lien-he` | Contact: call, Zalo and email links, and a "call me back" form (name, phone, topic, preferred time, message). Reads `?chu-de=` to pre-select the topic. Contact details live in `src/data/contact.ts` |
-| `/admin` | Admin dashboard: orders, revenue, average order, unpaid transfers, products, low stock, users, waiting call-backs; **revenue chart** by day (30 days) / week (12) / quarter (8) / year (completed orders, by order date); orders by status; low-stock list; top 5 sellers; **top 10 by stock** (ties: slower sellers first); recent orders |
+| `/admin` | Admin dashboard: orders, revenue, unpaid transfers, products, waiting call-backs; **revenue chart** by day (30 days) / week (12) / quarter (8) / year (completed orders, by order date); orders by status; low-stock list; top 5 sellers; **top 10 by stock** (ties: slower sellers first); recent orders |
 | `/admin/san-pham` | Admin: product list with stock, delete |
 | `/admin/san-pham/them` | Admin: add a product |
 | `/admin/san-pham/[id]/sua` | Admin: edit a product |
@@ -272,6 +272,9 @@ read from `localStorage`. This avoids hydration errors, because the server has n
 - Shipping fee is 30.000₫, free when the subtotal reaches 300.000₫; every order gets a fixed 20.000₫ discount. All three values are
   in `src/lib/cart.ts`; the banner, cart, checkout and help pages read them from there. Each order stores its own
   shipping fee, so changing these values never changes an old order.
+- **Buying requires an account.** Browsing and adding to the cart work for guests (the cart is saved in the browser and survives the login);
+  `/thanh-toan` and `placeOrder` need a logged-in customer, so every new order has a `userId`. Orders saved before this rule
+  (guest orders) and orders of deleted accounts have `userId: null` and show as "Khách vãng lai" in Admin.
 - Order lookup only finds orders saved in the same browser (there is no server).
 - **Reviews** can only be written by a logged-in customer who has a **completed** order containing that product (one review
   per customer per product; writing again replaces it). The author or an Admin can delete a review. There are no sample
@@ -319,7 +322,7 @@ print, ask the designer for a vector or a larger file.
 ## Credits
 
 Photos: Wikimedia Commons. Some photos of the November 2026 products show the same kind of product but not necessarily from the
-same place. Fonts: Phudu, Be Vietnam Pro and Lora (Google Fonts)
+same place. Fonts: the whole site is set in Arial (a system font, nothing to download); only the shop name in the logo uses Lora (Google Fonts)
 
 Homepage banner photos (`public/images/banner`): supplied by the shop owner (illustrations; the dishes are not all products sold in the shop).
 

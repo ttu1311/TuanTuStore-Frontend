@@ -21,7 +21,7 @@ export default async function GiftBoxPage({ searchParams }: GiftBoxPageProps) {
     <PageContainer>
       <div className="mb-8">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-ink">Quà tặng</p>
-        <h1 className="mt-2 font-display text-4xl/[1.1] font-bold text-ink md:text-title/[1.1]">Hộp quà Ba Miền</h1>
+        <h1 className="mt-2 font-display text-4xl/[1.2] font-bold text-ink md:text-title/[1.2]">Hộp quà Ba Miền</h1>
         <p className="mt-3 max-w-[40rem] text-lg text-ink-muted">
           Một món của đất Bắc, một món của miền Trung, một món của phương Nam, gói chung một hộp kèm thiệp viết tay lời nhắn
           của bạn.

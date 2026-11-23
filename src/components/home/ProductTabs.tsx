@@ -27,10 +27,10 @@ const selectedClass: Record<TabId, string> = {
   nam: "border-gold bg-gold text-ink shadow-md shadow-gold/30",
 };
 
-const tabs: { id: TabId; label: string; dotClass?: string }[] = [
+const tabs: { id: TabId; label: string }[] = [
   { id: "ban-chay", label: "Bán chạy" },
   { id: "tat-ca", label: "Tất cả" },
-  ...regionKeys.map((key) => ({ id: key as TabId, label: regions[key].label, dotClass: regions[key].dotClass })),
+  ...regionKeys.map((key) => ({ id: key as TabId, label: regions[key].label })),
 ];
 
 // "Tất cả sản phẩm" ở trang chủ, ngay dưới banner: các tab Bán chạy · Tất cả · Miền Bắc · Miền Trung · Miền Nam,
@@ -97,7 +97,6 @@ export default function ProductTabs() {
                 selected ? selectedClass[item.id] : "border-line bg-white text-ink hover:-translate-y-0.5 hover:border-primary hover:text-primary hover:shadow-md"
               }`}
             >
-              {item.dotClass && <span className={`h-2.5 w-2.5 rounded-full ring-2 ring-white ${item.dotClass}`} aria-hidden="true" />}
               {item.label}
             </button>
           );

@@ -29,7 +29,7 @@ export default function DealCard({ product }: { product: Product }) {
           />
         </Link>
         {/* Nhãn giảm giá to ở góc trái; một vệt sáng lướt qua mỗi vài giây (tắt khi người dùng bật "giảm chuyển động") */}
-        <span className="absolute left-2 top-2 overflow-hidden rounded-md bg-sale px-2.5 py-1 text-base font-extrabold leading-none text-white shadow-sm">
+        <span className="absolute left-2 top-2 overflow-hidden rounded-md bg-sale px-2.5 py-1 text-base font-bold leading-none text-white shadow-sm">
           -{discountPercent(product)}%
           <span
             aria-hidden="true"
@@ -42,9 +42,7 @@ export default function DealCard({ product }: { product: Product }) {
       </div>
 
       <div className="flex flex-1 flex-col pt-3">
-        {/* Chấm màu của vùng miền (cùng màu với các tab miền) */}
         <p className="flex items-center gap-2 text-xs text-ink-muted">
-          <span className={`h-2 w-2 shrink-0 rounded-full ${region.dotClass}`} aria-hidden="true" />
           <span className="sr-only">{region.label}, </span>
           <span className="min-w-0 truncate">{product.origin}</span>
         </p>
@@ -56,7 +54,7 @@ export default function DealCard({ product }: { product: Product }) {
         </h3>
 
         <div className="mt-2 flex flex-wrap items-baseline gap-x-2">
-          <span className="whitespace-nowrap text-xl font-extrabold text-sale">{formatVND(product.price)}</span>
+          <span className="whitespace-nowrap text-xl font-bold text-sale">{formatVND(product.price)}</span>
           <span className="whitespace-nowrap text-sm text-ink-muted line-through">
             <span className="sr-only">Giá cũ </span>
             {formatVND(product.oldPrice ?? product.price)}

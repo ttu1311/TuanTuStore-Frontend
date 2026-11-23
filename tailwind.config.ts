@@ -24,13 +24,15 @@ const config: Config = {
         sale: "rgb(var(--c-sale) / <alpha-value>)",
       },
       fontFamily: {
-        // --font-display / --font-sans được đặt trong src/app/layout.tsx
-        display: ["var(--font-display)", "Arial Narrow", "sans-serif"],
-        sans: ["var(--font-sans)", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
+        // Cả website dùng Arial (font có sẵn trong máy, không tải font web). `display` (tiêu đề) và `sans` (chữ thường)
+        // giống nhau, giữ hai tên để các class font-display ở tiêu đề vẫn dùng được. Riêng tên cửa hàng ở logo dùng Lora
+        // (--font-brand, nạp ở src/app/layout.tsx).
+        display: ["Arial", '"Helvetica Neue"', "Helvetica", "sans-serif"],
+        sans: ["Arial", '"Helvetica Neue"', "Helvetica", "sans-serif"],
       },
       fontSize: {
-        // Phudu là kiểu chữ hẹp, nên tiêu đề lớn hơn một cỡ so với kiểu chữ có độ rộng thông thường
-        title: ["2.75rem", { lineHeight: "1.1" }], // tiêu đề các phần (44px)
+        // Arial rộng hơn font hẹp trước đây (Phudu), nên tiêu đề nhỏ lại; dòng cao hơn để dấu tiếng Việt không chạm dòng trên
+        title: ["2.25rem", { lineHeight: "1.2" }], // tiêu đề các phần (36px)
       },
       maxWidth: {
         container: "1280px",
@@ -51,6 +53,11 @@ const config: Config = {
           from: { transform: "scaleX(0)" },
           to: { transform: "scaleX(1)" },
         },
+        // Ảnh món vừa chọn hiện ra trong ô của hộp quà (Hộp quà Ba Miền)
+        "pop-in": {
+          from: { opacity: "0", transform: "scale(0.6)" },
+          to: { opacity: "1", transform: "scale(1)" },
+        },
         "cart-pop": {
           "0%, 100%": { transform: "scale(1)" },
           "40%": { transform: "scale(1.35)" },
@@ -69,6 +76,7 @@ const config: Config = {
       animation: {
         "fade-up": "fade-up 0.6s ease-out both",
         progress: "progress 3s linear both", // một ảnh của banner trang chủ (SLIDE_SECONDS trong HeroBanner)
+        "pop-in": "pop-in 0.3s ease-out both",
         "cart-pop": "cart-pop 0.4s ease-out",
         equalizer: "equalizer 0.9s ease-in-out infinite",
         shimmer: "shimmer 3.6s ease-in-out infinite",

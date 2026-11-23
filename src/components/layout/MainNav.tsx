@@ -149,7 +149,6 @@ function RegionMenu() {
                     onClick={() => setOpen(false)}
                     className="flex min-h-12 items-center gap-3 rounded-lg px-3 text-ink transition-colors duration-200 hover:bg-surface"
                   >
-                    <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${regions[key].dotClass}`} aria-hidden="true" />
                     <span className="font-semibold">{regions[key].label}</span>
                     <span className="ml-auto text-sm text-ink-muted">{count} sản phẩm</span>
                   </Link>

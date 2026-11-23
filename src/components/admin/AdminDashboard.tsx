@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import AdminRevenue from "@/components/admin/AdminRevenue";
+import AdminStockPanel from "@/components/admin/AdminStockPanel";
 import OrderStatusBadge from "@/components/admin/OrderStatusBadge";
 import { table, tableWrap, td, th } from "@/components/admin/tableStyles";
 import { useStore } from "@/context/StoreContext";
 import { LOW_STOCK } from "@/lib/cart";
 import { formatDate, formatVND } from "@/lib/format";
 import { adminOrderStatuses, orderStatusLabels, paymentStatusOf } from "@/lib/orders";
-import { lowStockProducts, ordersByStatus, productStats, topStock } from "@/lib/stats";
+import { lowStockProducts, ordersByStatus, productStats, stockReport } from "@/lib/stats";
 import type { OrderStatus } from "@/types";
 
 // Màu thanh của từng trạng thái (cùng tông với huy hiệu trạng thái)
@@ -25,12 +26,11 @@ const linkStyle = "text-sm font-semibold text-primary underline-offset-4 hover:u
 
 // "Tổng quan": mọi con số đều được đếm từ dữ liệu trong localStorage
 export default function AdminDashboard() {
-  const { products, orders, users, contactRequests, productViews } = useStore();
+  const { products, orders, contactRequests, productViews } = useStore();
 
   const completed = orders.filter((order) => order.status === "COMPLETED");
   // Doanh thu = tổng của các đơn đã HOÀN THÀNH (COMPLETED)
   const revenue = completed.reduce((sum, order) => sum + order.total, 0);
-  const averageOrder = completed.length > 0 ? Math.round(revenue / completed.length) : 0;
   const cancelled = orders.filter((order) => order.status === "CANCELLED").length;
   // Đơn chuyển khoản chưa nhận tiền (đơn đã hủy thì thôi)
   const unpaid = orders.filter((order) => order.status !== "CANCELLED" && paymentStatusOf(order) === "UNPAID");
@@ -41,7 +41,7 @@ export default function AdminDashboard() {
   const maxStatus = Math.max(1, ...Object.values(byStatus));
   const lowStock = lowStockProducts(products);
   const allStats = productStats(products, orders, productViews);
-  const mostStock = topStock(allStats);
+  const stockInfo = stockReport(allStats, orders);
   const topSellers = allStats
     .filter((stat) => stat.sold > 0)
     .sort((a, b) => b.sold - a.sold || b.revenue - a.revenue)
@@ -51,7 +51,6 @@ export default function AdminDashboard() {
   const stats: { label: string; value: string; note?: string; href?: string; alert?: boolean }[] = [
     { label: "Tổng đơn hàng", value: String(orders.length), note: cancelled > 0 ? `${cancelled} đơn đã hủy` : undefined, href: "/admin/don-hang" },
     { label: "Doanh thu (đơn hoàn thành)", value: formatVND(revenue), note: `${completed.length} đơn hoàn thành` },
-    { label: "Giá trị trung bình mỗi đơn", value: formatVND(averageOrder), note: "Tính trên đơn hoàn thành" },
     {
       label: "Chờ thanh toán (chuyển khoản)",
       value: String(unpaid.length),
@@ -60,14 +59,12 @@ export default function AdminDashboard() {
       alert: unpaid.length > 0,
     },
     { label: "Tổng sản phẩm", value: String(products.length), note: soldOut > 0 ? `${soldOut} sản phẩm hết hàng` : undefined, href: "/admin/san-pham" },
-    { label: "Sắp hết hàng", value: String(lowStock.length), note: `Còn từ ${LOW_STOCK} trở xuống`, alert: lowStock.length > 0 },
-    { label: "Tổng người dùng", value: String(users.length), href: "/admin/nguoi-dung" },
     { label: "Yêu cầu liên hệ chờ gọi", value: String(waitingCalls), href: "/admin/lien-he", alert: waitingCalls > 0 },
   ];
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 xl:grid-cols-5">
         {stats.map((stat) => {
           const body = (
             <>
@@ -174,30 +171,10 @@ export default function AdminDashboard() {
             Xem tất cả sản phẩm →
           </Link>
         </div>
-        <p className="mt-1 text-sm text-ink-muted">Top 10 món còn nhiều hàng nhất. Cùng số tồn thì món bán chậm hơn xếp trước.</p>
-        {mostStock.length === 0 ? (
-          <p className="mt-4 text-sm text-ink-muted">Không còn sản phẩm nào trong kho.</p>
-        ) : (
-          <ol className="mt-4 space-y-3">
-            {mostStock.map((stat, index) => (
-              <li key={stat.product.id} className="grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-3 text-sm">
-                <span className="font-semibold text-ink-muted">{index + 1}</span>
-                <span className="min-w-0">
-                  <Link href={`/admin/san-pham/${stat.product.id}/sua`} className="block break-words text-ink hover:text-primary hover:underline">
-                    {stat.product.name}
-                  </Link>
-                  <span className="mt-1 block h-2 overflow-hidden rounded-full bg-surface" aria-hidden="true">
-                    <span className="block h-full rounded-full bg-gold" style={{ width: `${(stat.product.stock / mostStock[0].product.stock) * 100}%` }} />
-                  </span>
-                </span>
-                <span className="text-right">
-                  <span className="block whitespace-nowrap font-semibold tabular-nums text-ink">{stat.product.stock} trong kho</span>
-                  <span className="block whitespace-nowrap text-xs tabular-nums text-ink-muted">Đã bán {stat.sold}</span>
-                </span>
-              </li>
-            ))}
-          </ol>
-        )}
+        <p className="mt-1 text-sm text-ink-muted">
+          10 món còn nhiều hàng nhất. Cùng số tồn thì món đang giữ nhiều tiền hơn (tồn × giá bán) xếp trước.
+        </p>
+        <AdminStockPanel report={stockInfo} images={products.slice(0, 6)} />
       </section>
 
       <h2 className="mb-4 mt-10 font-display text-xl font-semibold text-ink">Đơn hàng gần đây</h2>

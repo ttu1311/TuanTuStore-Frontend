@@ -43,15 +43,15 @@ export const infoPages: InfoPage[] = [
           "Tìm đặc sản: gõ tên món vào ô tìm kiếm, hoặc chọn một miền trên menu hay các tab ở trang chủ. Ở trang Sản phẩm bạn có thể lọc theo vùng miền, tỉnh thành, thương hiệu và khoảng giá.",
           "Bấm “Thêm vào giỏ” ở sản phẩm bạn muốn mua. Số trên biểu tượng giỏ hàng cho biết giỏ đang có bao nhiêu món.",
           "Mở giỏ hàng để kiểm tra số lượng, xóa món không cần, và xem còn bao nhiêu nữa thì được miễn phí vận chuyển.",
-          "Bấm “Tiến hành thanh toán”, điền họ tên, số điện thoại, email và địa chỉ giao hàng, rồi chọn phương thức thanh toán.",
+          "Bấm “Mua hàng”. Bạn cần đăng nhập (hoặc đăng ký tài khoản) để đặt hàng; giỏ hàng vẫn được giữ nguyên. Sau đó điền họ tên, số điện thoại và địa chỉ giao hàng (hoặc dùng địa chỉ mặc định trong tài khoản), rồi chọn phương thức thanh toán.",
           "Bấm “Đặt hàng”. Màn hình hiện mã đơn hàng (ví dụ TT-000001): hãy ghi lại mã này để tra cứu đơn.",
         ],
       },
       {
         heading: "Có cần tài khoản không?",
         paragraphs: [
-          "Không bắt buộc. Bạn có thể đặt hàng mà không đăng nhập và theo dõi đơn ở trang Tra cứu đơn hàng bằng mã đơn và số điện thoại.",
-          "Nếu đăng nhập, thông tin của bạn được điền sẵn khi thanh toán, và mọi đơn hàng được gom trong mục “Lịch sử mua hàng” ở trang Tài khoản.",
+          "Có. Bạn cần đăng nhập mới đặt hàng được. Xem sản phẩm, tìm kiếm và thêm vào giỏ hàng thì không cần tài khoản.",
+          "Khi đăng nhập, thông tin của bạn được điền sẵn khi thanh toán, và mọi đơn hàng được gom trong mục “Lịch sử mua hàng” ở trang Tài khoản. Bạn cũng có thể tra cứu đơn ở trang Tra cứu đơn hàng bằng mã đơn và số điện thoại.",
         ],
       },
       {
@@ -122,7 +122,7 @@ export const infoPages: InfoPage[] = [
       },
       {
         question: "Tôi có cần tạo tài khoản để mua hàng không?",
-        answer: "Không. Bạn có thể đặt hàng ngay, rồi tra cứu đơn bằng mã đơn và số điện thoại ở trang Tra cứu đơn hàng.",
+        answer: "Có, bạn cần đăng nhập để đặt hàng (đăng ký chỉ mất một phút). Xem sản phẩm và thêm vào giỏ hàng thì chưa cần tài khoản, và giỏ hàng được giữ nguyên sau khi bạn đăng nhập.",
       },
       {
         question: "Làm sao biết đơn hàng của tôi đang ở đâu?",

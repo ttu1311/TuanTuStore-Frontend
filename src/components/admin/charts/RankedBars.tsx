@@ -10,7 +10,6 @@ export type BarItem = {
   valueText: string; // số ghi ở đầu thanh, ví dụ "6"
   tooltipValue: string; // dòng đậm đầu tiên của chú thích, ví dụ "6 đã bán"
   details: string[]; // các dòng thêm trong chú thích khi rê chuột, ví dụ "Doanh thu 1.050.000₫"
-  dotClass?: string; // chấm màu cạnh tên (ví dụ màu miền); tên vẫn ghi đủ, màu không mang nghĩa một mình
 };
 
 // Thanh ngang xếp từ lớn đến nhỏ, một màu, cùng một đường gốc bên trái.
@@ -37,7 +36,6 @@ export default function RankedBars({ items, label, empty }: { items: BarItem[]; 
             className="relative grid grid-cols-[minmax(0,40%)_minmax(0,1fr)] items-center gap-3 rounded-md px-1 py-1.5 outline-none transition-colors duration-150 hover:bg-surface focus-visible:bg-surface focus-visible:ring-[3px] focus-visible:ring-primary-soft"
           >
             <span className="flex min-w-0 items-center gap-2 text-sm text-ink">
-              {item.dotClass && <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${item.dotClass}`} aria-hidden="true" />}
               <span className="min-w-0 break-words" title={item.label}>
                 {item.label}
               </span>

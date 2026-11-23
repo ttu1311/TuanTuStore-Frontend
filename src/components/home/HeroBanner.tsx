@@ -144,10 +144,10 @@ export default function HeroBanner() {
                     <span className="h-0.5 w-8 rounded-full bg-gold" aria-hidden="true" />
                     {slide.kicker}
                   </p>
-                  <h2 className="mt-3 animate-fade-up font-display text-5xl/[1.02] font-bold text-ink [animation-delay:120ms] sm:text-6xl/[1.02] lg:text-7xl/[1.02]">
+                  <h2 className="mt-3 animate-fade-up font-display text-4xl/[1.12] font-bold text-ink [animation-delay:120ms] sm:text-5xl/[1.12] lg:text-6xl/[1.1]">
                     {slide.title}
                     <span
-                      className={`mt-1 block font-[family-name:var(--font-brand)] text-4xl/[1.15] font-semibold italic normal-case lg:text-5xl/[1.15] ${slide.accentClass}`}
+                      className={`mt-1 block font-[family-name:var(--font-brand)] text-3xl/[1.2] font-semibold italic normal-case lg:text-4xl/[1.2] ${slide.accentClass}`}
                     >
                       {slide.accent}
                     </span>
