@@ -19,6 +19,11 @@ const nextConfig: NextConfig = {
   // Ẩn nút tròn "N" (công cụ dev của Next.js) ở góc dưới bên trái khi chạy `npm run dev`: chỗ đó là nút nhạc nền.
   // Bảng báo lỗi của Next.js vẫn hiện khi có lỗi. Bản build / Vercel không có nút này.
   devIndicators: false,
+  // Trang /lien-he (form "Yêu cầu gọi lại") đã bỏ: link cũ và bookmark đi tới phần liên hệ ở footer (id="lien-he"), không ra 404.
+  // Tạm thời (307), không phải vĩnh viễn, để trình duyệt không nhớ mãi chuyển hướng này.
+  async redirects() {
+    return [{ source: "/lien-he", destination: "/#lien-he", permanent: false }];
+  },
 };
 
 export default nextConfig;
