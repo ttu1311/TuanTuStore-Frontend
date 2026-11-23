@@ -120,7 +120,7 @@ export default function AdminDashboard() {
             <ul className="mt-2 divide-y divide-line">
               {lowStock.map((product) => (
                 <li key={product.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
-                  <Link href={`/admin/san-pham/${product.id}/sua`} className="min-w-0 text-ink hover:text-primary hover:underline">
+                  <Link href={`/admin/san-pham/${product.id}/sua`} className="min-w-0 text-ink transition-colors duration-200 hover:text-primary">
                     {product.name}
                   </Link>
                   <span className={`whitespace-nowrap font-semibold ${product.stock <= 0 ? "text-sale" : "text-gold-ink"}`}>
