@@ -74,12 +74,13 @@ export default function ProductTabs() {
       </p>
       <SectionHeader id="products-title" title="Tất cả sản phẩm" description="Chọn theo bán chạy hoặc theo miền. Món nào cũng ghi rõ nơi làm ra." />
 
-      {/* Tab: cuộn ngang được trên điện thoại */}
+      {/* Tab: cuộn ngang được trên điện thoại. Vùng cuộn cắt mọi thứ lòi ra ngoài, nên có đệm 8px trên, 12px dưới, 6px hai bên
+          (đủ cho vòng focus 5px, nút nhích lên 2px khi rê chuột và bóng của nút đang chọn); margin âm bù lại để vị trí khối không đổi. */}
       <div
         role="tablist"
         aria-label="Lọc sản phẩm"
         onKeyDown={handleKeyDown}
-        className="-mt-4 mb-8 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="-mx-1.5 -mt-6 mb-6 flex gap-2 overflow-x-auto px-1.5 pb-3 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {tabs.map((item) => {
           const selected = item.id === tab;

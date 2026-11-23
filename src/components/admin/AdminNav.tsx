@@ -25,7 +25,8 @@ export default function AdminNav() {
 
   return (
     <nav aria-label="Quản trị" className="px-3 pb-3 lg:pb-0">
-      <ul className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
+      {/* Điện thoại: hàng cuộn ngang cắt vòng focus ở ngoài mục, nên có đệm 6px (margin âm bù lại); từ lg là cột dọc, không cắt */}
+      <ul className="-m-1.5 flex gap-1 overflow-x-auto p-1.5 lg:m-0 lg:flex-col lg:overflow-visible lg:p-0">
         {items.map((item) => {
           // "/admin" phải khớp chính xác, nếu không nó sẽ sáng ở mọi trang admin
           const isActive = item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);

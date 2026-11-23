@@ -18,9 +18,25 @@ const navItems: { label: string; href: string }[] = [
   { label: "Liên hệ", href: "/lien-he" },
 ];
 
-const linkBase = "flex h-full items-center gap-1.5 whitespace-nowrap border-b-2 text-base transition-colors duration-200";
-const linkIdle = "border-transparent font-medium text-ink-muted hover:text-ink";
-const linkActive = "border-primary font-semibold text-primary";
+// Mục đang mở chỉ khác bằng chữ màu primary và đậm hơn (không có gạch chân). Vòng focus vẽ VÀO TRONG (offset âm): liên kết cao
+// bằng cả thanh menu, mà thanh cuộn ngang trên điện thoại cắt mọi thứ lòi ra ngoài, nên vòng ở ngoài sẽ bị cắt mất.
+const linkBase =
+  "flex h-full items-center gap-1.5 whitespace-nowrap text-base transition-colors duration-200 focus-visible:[outline-offset:-3px]";
+const linkIdle = "font-medium text-ink-muted hover:text-ink";
+const linkActive = "font-semibold text-primary";
+
+// Chữ của một mục menu, kèm chỗ giữ sẵn cho bản chữ đậm: ::after chứa cùng chữ ở độ đậm 600, ẩn đi và cao 0,
+// nên mục đổi từ chữ thường sang chữ đậm không làm menu rộng ra hay các mục xê dịch.
+function NavLabel({ text }: { text: string }) {
+  return (
+    <span
+      data-label={text}
+      className="inline-flex flex-col items-center after:invisible after:h-0 after:overflow-hidden after:font-semibold after:content-[attr(data-label)]"
+    >
+      {text}
+    </span>
+  );
+}
 
 // Menu chính. Nó tự đọc địa chỉ của trang hiện tại (usePathname),
 // nên không trang nào phải báo cho Header biết nó đang ở đâu.
@@ -42,7 +58,7 @@ export default function MainNav() {
             <li className="flex items-center lg:order-last lg:ml-auto">
               <Link
                 href="/admin"
-                className="flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-primary px-4 text-sm font-semibold text-primary transition-colors duration-200 hover:bg-primary-soft"
+                className="flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-primary px-4 text-sm font-semibold text-primary transition-colors duration-200 hover:bg-primary-soft focus-visible:[outline-offset:-3px]"
               >
                 <Icon name="shield" size={16} />
                 Quản trị
@@ -61,7 +77,7 @@ export default function MainNav() {
                     aria-current={isActive ? "page" : undefined}
                     className={`${linkBase} ${isActive ? linkActive : linkIdle}`}
                   >
-                    {item.label}
+                    <NavLabel text={item.label} />
                   </SameRouteLink>
                 </li>
                 {item.href === "/san-pham" && <RegionMenu />}
@@ -127,7 +143,7 @@ function RegionMenu() {
         onClick={toggle}
         className={`${linkBase} ${open ? linkActive : linkIdle}`}
       >
-        3 Miền
+        <NavLabel text="3 Miền" />
         <Icon name="chevron-down" size={16} className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
 

@@ -37,7 +37,8 @@ export default function AccountView({ initialSection = "profile" }: { initialSec
       sticky
       sidebar={
         <nav aria-label="Tài khoản" className="min-w-0 rounded-xl border border-line bg-white p-3">
-          <ul className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
+          {/* Điện thoại: hàng cuộn ngang cắt vòng focus ở ngoài nút, nên có đệm 6px (margin âm bù lại); từ lg là cột dọc, không cắt */}
+          <ul className="-m-1.5 flex gap-1 overflow-x-auto p-1.5 lg:m-0 lg:flex-col lg:overflow-visible lg:p-0">
             {sections.map((section) => {
               const isActive = section.id === active;
               return (
