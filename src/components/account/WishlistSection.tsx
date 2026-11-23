@@ -13,9 +13,9 @@ export default function WishlistSection() {
   const items = wishlist.flatMap((id) => products.find((product) => product.id === id) ?? []);
 
   return (
+    // Tiêu đề "Sản phẩm yêu thích" là tiêu đề của cả trang (AccountShell), không lặp lại ở đây
     <div>
-      <h2 className="font-display text-2xl font-semibold text-ink">Sản phẩm yêu thích</h2>
-      <p className="mt-2 text-ink-muted">Bấm ♡ trên một sản phẩm để lưu vào đây. Bấm lại để bỏ.</p>
+      <p className="text-ink-muted">Bấm ♡ trên một sản phẩm để lưu vào đây. Bấm lại để bỏ.</p>
 
       {items.length === 0 ? (
         <div className="mt-6 rounded-xl border border-dashed border-line px-6 py-10 text-center">
