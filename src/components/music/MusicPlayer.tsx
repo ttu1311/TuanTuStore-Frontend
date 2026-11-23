@@ -47,7 +47,7 @@ export default function MusicPlayer() {
     notice ?? (resumeFrom !== null ? `Nghe tiếp «${track.title}»` : playing ? `Đang phát: ${track.title}` : "Bật nhạc thư giãn");
 
   return (
-    <div ref={wrapperRef} className="fixed bottom-4 left-4 z-40 sm:bottom-6 sm:left-6">
+    <div ref={wrapperRef} className="fixed bottom-[calc(1rem+var(--bottom-bar,0px))] left-4 z-40 sm:bottom-[calc(1.5rem+var(--bottom-bar,0px))] sm:left-6">
       {open && (
         <div
           id={cardId}

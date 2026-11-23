@@ -32,6 +32,17 @@
     @apply scroll-pt-header;
   }
 
+  /* Trang Hộp quà có thanh tóm tắt dính ở đáy (dưới lg): nâng nút nhạc, nút Lên đầu trang, thông báo giỏ lên trên thanh
+     (chúng dùng bottom: calc(… + var(--bottom-bar, 0px))) và chừa chỗ cho thanh ở cuối trang. */
+  @media (max-width: 1023px) {
+    html.has-gift-bar {
+      --bottom-bar: 3.5rem;
+    }
+    html.has-gift-bar body {
+      padding-bottom: var(--bottom-bar);
+    }
+  }
+
   body {
     @apply bg-paper font-sans text-base leading-relaxed text-ink antialiased;
     /* Không để một chữ lẻ loi rơi xuống dòng cuối ("Yến sào Khánh / Hòa" -> "Yến sào / Khánh Hòa") */
