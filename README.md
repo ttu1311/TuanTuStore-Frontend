@@ -156,7 +156,7 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 | `/tra-cuu-don-hang` | Order lookup without login: order code + phone number. Reads `?ma=` (the "Đặt hàng thành công" screen links here) |
 | `/thong-tin/[slug]` | Help and policy pages (content in `src/data/infoPages.ts`): buying guide, payment, FAQ, shipping, returns, privacy, terms |
 | `/lien-he` | Contact: call, Zalo and email links, and a "call me back" form (name, phone, topic, preferred time, message). Reads `?chu-de=` to pre-select the topic. Contact details live in `src/data/contact.ts` |
-| `/admin` | Admin dashboard: orders, revenue, unpaid transfers, products, waiting call-backs; **revenue chart** by day (30 days) / week (12) / quarter (8) / year (completed orders, by order date); orders by status; low-stock list; top 5 sellers; **top 10 by stock** (ties: slower sellers first); recent orders |
+| `/admin` | Admin dashboard: orders, revenue, unpaid transfers, products, users, waiting call-backs; **revenue chart** by day (30 days) / week (12) / quarter (8) / year (completed orders, by order date); orders by status; low-stock list; top 5 sellers; **top 10 by stock** (ties: slower sellers first); recent orders |
 | `/admin/san-pham` | Admin: product list with stock, delete |
 | `/admin/san-pham/them` | Admin: add a product |
 | `/admin/san-pham/[id]/sua` | Admin: edit a product |

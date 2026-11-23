@@ -26,7 +26,7 @@ const linkStyle = "text-sm font-semibold text-primary underline-offset-4 hover:u
 
 // "Tổng quan": mọi con số đều được đếm từ dữ liệu trong localStorage
 export default function AdminDashboard() {
-  const { products, orders, contactRequests, productViews } = useStore();
+  const { products, orders, users, contactRequests, productViews } = useStore();
 
   const completed = orders.filter((order) => order.status === "COMPLETED");
   // Doanh thu = tổng của các đơn đã HOÀN THÀNH (COMPLETED)
@@ -59,12 +59,14 @@ export default function AdminDashboard() {
       alert: unpaid.length > 0,
     },
     { label: "Tổng sản phẩm", value: String(products.length), note: soldOut > 0 ? `${soldOut} sản phẩm hết hàng` : undefined, href: "/admin/san-pham" },
+    { label: "Tổng người dùng", value: String(users.length), href: "/admin/nguoi-dung" },
     { label: "Yêu cầu liên hệ chờ gọi", value: String(waitingCalls), href: "/admin/lien-he", alert: waitingCalls > 0 },
   ];
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 xl:grid-cols-5">
+      {/* 6 ô số liệu: 1 cột (dưới 480px), 2 cột × 3 hàng, từ 1280px 3 cột × 2 hàng. Luôn đủ hàng, không lẻ ô. Thêm hoặc bớt ô thì đổi số cột cho khớp. */}
+      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 xl:grid-cols-3">
         {stats.map((stat) => {
           const body = (
             <>
