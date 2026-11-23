@@ -48,7 +48,7 @@ export default function DealCard({ product }: { product: Product }) {
         </p>
         {/* Tối đa 2 dòng; min-h giữ chỗ đủ 2 dòng để giá của các thẻ cạnh nhau thẳng hàng */}
         <h3 className="mt-1 line-clamp-2 min-h-[2.75rem] text-base/[1.375rem] font-semibold text-ink">
-          <Link href={detailUrl} className="hover:underline hover:decoration-2 hover:underline-offset-4">
+          <Link href={detailUrl} className="transition-colors duration-200 hover:text-primary">
             {product.name}
           </Link>
         </h3>

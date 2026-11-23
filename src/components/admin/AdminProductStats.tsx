@@ -230,7 +230,7 @@ export default function AdminProductStats() {
               sorted.map((stat) => (
                 <tr key={stat.product.id} className="group">
                   <td className={td}>
-                    <Link href={`/admin/san-pham/${stat.product.id}/sua`} className="font-medium hover:text-primary hover:underline">
+                    <Link href={`/admin/san-pham/${stat.product.id}/sua`} className="font-medium transition-colors duration-200 hover:text-primary">
                       {stat.product.name}
                     </Link>
                   </td>

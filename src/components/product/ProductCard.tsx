@@ -55,7 +55,7 @@ export default function ProductCard({ product, eager = false }: { product: Produ
           <span className="min-w-0 truncate">{product.origin}</span>
         </p>
         <h3 className="mt-1.5 text-lg font-semibold leading-snug">
-          <Link href={detailUrl} className="hover:underline hover:decoration-2 hover:underline-offset-4">
+          <Link href={detailUrl} className="transition-colors duration-200 hover:text-primary">
             {product.name}
           </Link>
         </h3>
