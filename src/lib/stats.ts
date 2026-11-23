@@ -1,5 +1,5 @@
 // Số liệu cho trang Admin (Tổng quan và Thống kê sản phẩm). Mọi con số đếm từ dữ liệu trong localStorage.
-import { LOW_STOCK } from "@/lib/cart";
+import { INITIAL_STOCK, LOW_STOCK } from "@/lib/cart";
 import { adminOrderStatuses } from "@/lib/orders";
 import type { Order, OrderStatus, Product } from "@/types";
 
@@ -37,12 +37,68 @@ export function ordersByStatus(orders: Order[]) {
   return counts;
 }
 
-// 10 sản phẩm tồn kho nhiều nhất. Bằng nhau thì món bán được ít hơn lên trước (hàng đứng lâu), rồi theo tên.
+// Giá trị hàng đang tồn của một món = số còn trong kho × giá bán hiện tại (vốn bị "đọng" ở món đó, tính theo giá bán)
+export function stockValue(product: Product) {
+  return product.stock * product.price;
+}
+
+// 10 sản phẩm tồn kho nhiều nhất. Bằng nhau thì món có giá trị tồn cao hơn lên trước (đọng nhiều tiền hơn), rồi theo tên.
 export function topStock(stats: ProductStat[], count = 10) {
   return [...stats]
     .filter((stat) => stat.product.stock > 0)
-    .sort((a, b) => b.product.stock - a.product.stock || a.sold - b.sold || a.product.name.localeCompare(b.product.name, "vi"))
+    .sort(
+      (a, b) =>
+        b.product.stock - a.product.stock ||
+        stockValue(b.product) - stockValue(a.product) ||
+        a.product.name.localeCompare(b.product.name, "vi")
+    )
     .slice(0, count);
+}
+
+export type StockRow = ProductStat & {
+  stockValue: number; // còn trong kho × giá bán
+  soldShare: number; // 0–1: đã bán / (đã bán + còn trong kho)
+  lastSoldAt: string | null; // ngày của đơn (không hủy) gần nhất có món này; null = chưa bán được
+};
+
+export type StockReport = {
+  rows: StockRow[]; // topStock, kèm các số liệu thêm
+  productCount: number; // số món đang bán (kể cả món hết hàng)
+  totalUnits: number; // tổng số sản phẩm còn trong kho
+  totalValue: number; // tổng giá trị hàng tồn
+  unsoldCount: number; // số món chưa bán được cái nào
+  scale: number; // mốc chung cho độ dài mọi thanh: tối đa của (INITIAL_STOCK, tồn + đã bán của món lớn nhất)
+  uniform: boolean; // mọi món cùng số tồn và chưa có lượt bán nào (xếp hạng không có gì để so sánh)
+};
+
+// Số liệu cho khối "Tồn kho nhiều nhất" ở trang Tổng quan
+export function stockReport(stats: ProductStat[], orders: Order[], count = 10): StockReport {
+  const lastSold = new Map<string, string>();
+  for (const order of orders) {
+    if (order.status === "CANCELLED") continue;
+    for (const item of order.items) {
+      const known = lastSold.get(item.productId);
+      if (!known || order.createdAt > known) lastSold.set(item.productId, order.createdAt);
+    }
+  }
+
+  const rows = topStock(stats, count).map((stat) => ({
+    ...stat,
+    stockValue: stockValue(stat.product),
+    soldShare: stat.sold > 0 ? stat.sold / (stat.sold + stat.product.stock) : 0,
+    lastSoldAt: lastSold.get(stat.product.id) ?? null,
+  }));
+
+  const firstStock = stats[0]?.product.stock ?? 0;
+  return {
+    rows,
+    productCount: stats.length,
+    totalUnits: stats.reduce((sum, stat) => sum + Math.max(0, stat.product.stock), 0),
+    totalValue: stats.reduce((sum, stat) => sum + Math.max(0, stockValue(stat.product)), 0),
+    unsoldCount: stats.filter((stat) => stat.sold === 0).length,
+    scale: Math.max(INITIAL_STOCK, ...rows.map((row) => row.product.stock + row.sold)),
+    uniform: firstStock > 0 && stats.every((stat) => stat.sold === 0 && stat.product.stock === firstStock),
+  };
 }
 
 // Sản phẩm còn từ LOW_STOCK trở xuống (kể cả đã hết), ít nhất lên đầu
@@ -73,6 +129,14 @@ function keyFromNumber(n: number) {
 // "2026-11-08" -> "08/11"
 export function shortDay(key: string) {
   return `${key.slice(8, 10)}/${key.slice(5, 7)}`;
+}
+
+// "Hôm nay", "Hôm qua", "12 ngày trước" (đếm theo ngày giờ Việt Nam)
+export function daysAgoLabel(iso: string, now = new Date()) {
+  const days = Math.max(0, dayNumber(dayKey(now)) - dayNumber(dayKey(iso)));
+  if (days === 0) return "Hôm nay";
+  if (days === 1) return "Hôm qua";
+  return `${days} ngày trước`;
 }
 
 export type RangeDays = 7 | 30 | 90 | null; // null = tất cả
