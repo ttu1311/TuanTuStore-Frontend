@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import ProductCard from "@/components/product/ProductCard";
 import ProductCardSkeleton from "@/components/product/ProductCardSkeleton";
 import ContentSidebar from "@/components/layout/PageLayout";
@@ -9,7 +10,7 @@ import ProductToolbar, { type FilterChip } from "@/components/products/ProductTo
 import { btnBase, btnSecondary, btnSmall } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
 import { normalizeProvince } from "@/data/provinces";
-import { groupProducts, productProvince, sortNewestFirst } from "@/lib/products";
+import { productProvince, provinceOptionsFor, sortNewestFirst } from "@/lib/products";
 import { isRegion, regions as allRegions } from "@/lib/regions";
 import { matchesSearch } from "@/lib/search";
 import type { Region } from "@/types";
@@ -48,10 +49,17 @@ function toUrl(pathname: string, query: ListingQuery) {
   return text ? `${pathname}?${text}` : pathname;
 }
 
+// Ghi địa chỉ mới bằng history.replaceState của trình duyệt chứ không bằng router.replace: Next.js (từ 14.1) đồng bộ
+// replaceState với useSearchParams, nên danh sách cập nhật ngay mà không phải chờ server trả về trang (router.replace gửi một
+// yêu cầu tới server cho mỗi lần đổi ?…, mạng chậm thì ô tích có cảm giác trễ). Trang này không đọc searchParams ở server
+// (xem src/app/(shop)/san-pham/page.tsx), nên không có gì cần server vẽ lại. Không thêm mục lịch sử, không cuộn trang.
+function replaceUrl(url: string) {
+  window.history.replaceState(null, "", url);
+}
+
 // Giữ tìm kiếm / lọc / sắp xếp (nằm trên địa chỉ trang, nên F5, Back và chia sẻ link giữ nguyên) và hiển thị các sản phẩm
 // đã lọc từ localStorage. Từ khóa đến từ ô tìm kiếm ở header (?q=): ở đây không có ô nhập từ khóa.
 export default function ProductListing() {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { isReady, products } = useStore();
@@ -66,20 +74,30 @@ export default function ProductListing() {
   };
   const { q: search, regions, price, sort } = query;
 
-  // Các ô chọn tỉnh kèm số sản phẩm của tỉnh đó, xếp A đến Z
-  const provinceOptions = groupProducts(products, productProvince).map(({ name, items }) => ({
-    name,
-    count: items.length,
-  }));
+  // Các ô chọn tỉnh kèm số sản phẩm của tỉnh đó, xếp A đến Z. Có tích miền thì chỉ các tỉnh thuộc các miền đó (src/lib/products.ts).
+  const provinceOptions = provinceOptionsFor(products, regions);
 
-  // Tên tỉnh trên địa chỉ không có trong dữ liệu (gõ sai, hoặc sản phẩm đã bị xóa) thì bỏ qua, để không lọc ra rỗng mà không thấy ô nào được tích
-  const activeProvinces = isReady
-    ? query.provinces.filter((province) => provinceOptions.some((option) => option.name === province))
-    : query.provinces;
+  // Chỉ giữ các tỉnh đang có ô trong danh sách. Tên tỉnh trên địa chỉ không có ô (gõ sai, sản phẩm đã bị xóa, hoặc không thuộc
+  // miền đang tích, ví dụ ?region=bac&province=Cà Mau) thì bỏ, để không bao giờ lọc theo một tỉnh mà không thấy ô nào được tích.
+  const keepShown = (list: string[], options: { name: string }[]) =>
+    list.filter((province) => options.some((option) => option.name === province));
+  const activeProvinces = isReady ? keepShown(query.provinces, provinceOptions) : query.provinces;
 
-  // Đổi một phần trạng thái: ghi lên địa chỉ bằng replace (không thêm mục lịch sử, không cuộn lên đầu)
+  // Địa chỉ còn tỉnh đã bị bỏ ở trên: viết lại địa chỉ cho khớp (chip và ô tích vốn đã đúng vì dùng activeProvinces)
+  const cleanUrl =
+    activeProvinces.length !== query.provinces.length ? toUrl(pathname, { ...query, provinces: activeProvinces }) : null;
+  useEffect(() => {
+    if (cleanUrl) replaceUrl(cleanUrl);
+  }, [cleanUrl]);
+
+  // Đổi một phần trạng thái: ghi lên địa chỉ (không thêm mục lịch sử, không cuộn lên đầu)
   function update(patch: Partial<ListingQuery>) {
-    router.replace(toUrl(pathname, { ...query, provinces: activeProvinces, ...patch }), { scroll: false });
+    replaceUrl(toUrl(pathname, { ...query, provinces: activeProvinces, ...patch }));
+  }
+
+  // Đổi các miền đang tích: tỉnh đang tích mà không còn ô trong danh sách mới thì bỏ tích luôn (cả trên địa chỉ và chip)
+  function setRegions(nextRegions: Region[]) {
+    update({ regions: nextRegions, provinces: keepShown(activeProvinces, provinceOptionsFor(products, nextRegions)) });
   }
 
   // 1. Lọc. Danh sách vùng/tỉnh rỗng nghĩa là "không lọc".
@@ -103,7 +121,7 @@ export default function ProductListing() {
     ...regions.map((region) => ({
       key: `region-${region}`,
       label: allRegions[region].label,
-      onRemove: () => update({ regions: regions.filter((item) => item !== region) }),
+      onRemove: () => setRegions(regions.filter((item) => item !== region)),
     })),
     ...activeProvinces.map((province) => ({
       key: `province-${province}`,
@@ -133,7 +151,7 @@ export default function ProductListing() {
           provinceOptions={provinceOptions}
           provinces={activeProvinces}
           price={price}
-          onToggleRegion={(region) => update({ regions: toggle(regions, region) })}
+          onToggleRegion={(region) => setRegions(toggle(regions, region))}
           onToggleProvince={(province) => update({ provinces: toggle(activeProvinces, province) })}
           onPriceChange={(value) => update({ price: value })}
           onReset={resetFilters}

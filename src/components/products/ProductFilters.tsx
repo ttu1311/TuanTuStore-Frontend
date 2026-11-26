@@ -19,7 +19,7 @@ const optionInput = "h-5 w-5 shrink-0 cursor-pointer accent-primary";
 
 type ProductFiltersProps = {
   regions: Region[]; // các vùng đã tích
-  provinceOptions: { name: string; count: number }[]; // mọi tỉnh có sản phẩm, kèm số sản phẩm
+  provinceOptions: { name: string; count: number }[]; // các tỉnh có sản phẩm (chỉ thuộc các miền đang tích, nếu có), kèm số sản phẩm
   provinces: string[]; // các tỉnh đã tích
   price: string; // giá trị mức giá đang chọn
   onToggleRegion: (region: Region) => void;
