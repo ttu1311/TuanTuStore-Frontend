@@ -1,5 +1,5 @@
 // Các hàm hỗ trợ cho sản phẩm: những gì các trang hiển thị, và quy tắc của form sản phẩm Admin.
-import type { Product } from "@/types";
+import type { Product, Region } from "@/types";
 import { isRegion } from "@/lib/regions";
 import { slugify } from "@/lib/text";
 import { occasions as allOccasions } from "@/data/occasions";
@@ -45,6 +45,15 @@ export function groupProducts(products: Product[], keyOf: (product: Product) => 
     groups.set(key, [...(groups.get(key) ?? []), product]);
   }
   return Array.from(groups, ([name, items]) => ({ name, items })).sort((a, b) => a.name.localeCompare(b.name, "vi"));
+}
+
+// Các ô "Tỉnh / thành" của bộ lọc trang Sản phẩm: mọi tỉnh có sản phẩm, kèm số món của tỉnh đó, xếp A đến Z.
+// Có tích miền (selectedRegions không rỗng) thì chỉ giữ các tỉnh có ít nhất một sản phẩm thuộc các miền đó (miền lấy theo
+// product.region); số món vẫn là số món của cả tỉnh. Không tích miền nào thì giữ mọi tỉnh.
+export function provinceOptionsFor(products: Product[], selectedRegions: Region[]) {
+  return groupProducts(products, productProvince)
+    .filter(({ items }) => selectedRegions.length === 0 || items.some((item) => selectedRegions.includes(item.region)))
+    .map(({ name, items }) => ({ name, count: items.length }));
 }
 
 // Mới nhất lên đầu ("Mới nhất")
