@@ -1,34 +1,13 @@
 import type { Product } from "@/types";
 import { INITIAL_STOCK } from "@/lib/cart";
 
-// 47 đặc sản thêm vào tháng 11/2026, để mỗi miền có 20 món (cùng 13 món có từ trước).
+// Các đặc sản thêm vào tháng 11/2026 (ban đầu 47 món), để mỗi miền có 20 món (cùng các món có từ trước).
 // Trình duyệt đã lưu danh sách sản phẩm từ trước nhận các món này MỘT LẦN (seedBatches "ba-mien-60" trong src/lib/storage.ts).
+// 4 món trong nhóm ban đầu đã được thay bằng món khác (xem fullProvinceProducts ở cuối file).
 // Thương hiệu là chỉ dẫn địa lý (đã kiểm chứng) hoặc tên làng nghề / vùng có thật, xem src/data/brands.ts.
 // Giá và quy cách là giá trị mẫu cho đồ án, KHÔNG phải giá thị trường. Ảnh: Wikimedia Commons.
 // Ngày đi từ mới nhất đến cũ nhất, xen kẽ ba miền.
 export const threeRegionProducts: Product[] = [
-  {
-    id: "tra-sen-tay-ho",
-    name: "Trà sen Tây Hồ",
-    shortDescription: "Chè búp ướp nhiều lượt với gạo sen Bách Diệp của Hồ Tây, hương sen thanh, hợp làm quà biếu.",
-    description:
-      "Trà sen Tây Hồ được làm bằng cách ướp chè búp với gạo sen, phần nhị vàng trong bông sen Bách Diệp trồng ở Hồ Tây. Chè được ướp và sấy nhiều lượt để hương sen ngấm đều vào từng cánh chè.\n\n" +
-      "Nước trà xanh vàng, hương sen dịu, vị chát nhẹ rồi ngọt hậu. Đây là món quà trang trọng, hợp biếu ông bà, bố mẹ hoặc dùng tiếp khách ngày Tết.",
-    price: 350000,
-    image: "/images/p-tra-sen-tay-ho.jpg",
-    region: "bac",
-    brand: "Trà sen Quảng An",
-    origin: "Hà Nội",
-    pack: "Hộp 100g",
-    stock: INITIAL_STOCK,
-    occasions: ["qua-tet", "bieu-nguoi-lon"],
-    story: {
-      enjoy: "Dùng ấm sứ nhỏ, khoảng 5g trà cho một ấm, rót nước khoảng 85°C, đợi 1–2 phút. Nên pha vừa đủ uống, không để trà ngâm lâu.",
-      storage: "Đựng trong hộp kín, để nơi khô mát, tránh ánh nắng và đồ có mùi mạnh. Nên dùng trong vài tháng để giữ hương sen.",
-      season: "Sen Hồ Tây nở vào mùa hè (khoảng tháng 5 đến tháng 7), cũng là mùa ướp trà.",
-    },
-    createdAt: "2026-11-14T10:00:00.000Z",
-  },
   {
     id: "nem-chua-thanh-hoa",
     name: "Nem chua Thanh Hóa",
@@ -261,27 +240,6 @@ export const threeRegionProducts: Product[] = [
     createdAt: "2026-11-14T09:49:00.000Z",
   },
   {
-    id: "nuoc-mam-cat-hai",
-    name: "Nước mắm Cát Hải",
-    shortDescription: "Nước mắm cá biển ủ chượp theo cách truyền thống của đảo Cát Hải, màu cánh gián, vị đậm.",
-    description:
-      "Người dân Cát Hải làm nước mắm từ cá biển đánh bắt quanh đảo, trộn với muối rồi ủ chượp trong bể nhiều tháng. Nước mắm được lọc từ chượp đã chín.\n\n" +
-      "Nước mắm có màu cánh gián, mùi thơm đặc trưng và vị mặn đậm, ngọt hậu. Dùng để chấm, pha nước mắm chua ngọt hoặc nêm món ăn.",
-    price: 90000,
-    image: "/images/p-nuoc-mam-cat-hai.jpg",
-    region: "bac",
-    brand: "Nước mắm Cát Hải",
-    origin: "Hải Phòng",
-    pack: "Chai 500ml",
-    stock: INITIAL_STOCK,
-    occasions: ["vao-bep"],
-    story: {
-      enjoy: "Pha với chanh, tỏi, ớt, đường để chấm rau luộc và đồ chiên; dùng nguyên chất để nêm canh, kho cá.",
-      storage: "Đậy kín nắp, để nơi thoáng mát, tránh ánh nắng trực tiếp. Tinh thể muối đọng ở đáy chai là hiện tượng tự nhiên.",
-    },
-    createdAt: "2026-11-14T09:48:00.000Z",
-  },
-  {
     id: "me-xung-hue",
     name: "Mè xửng Huế",
     shortDescription: "Kẹo dẻo mạch nha với đậu phộng, phủ mè rang, ngọt thanh kiểu Huế, dùng với trà.",
@@ -344,27 +302,6 @@ export const threeRegionProducts: Product[] = [
       season: "Nhãn lồng Hưng Yên chín vào khoảng tháng 7 – tháng 8, long nhãn mới thường có sau mùa này.",
     },
     createdAt: "2026-11-14T09:45:00.000Z",
-  },
-  {
-    id: "nuoc-mam-nam-o",
-    name: "Nước mắm Nam Ô",
-    shortDescription: "Nước mắm cá cơm của làng Nam Ô, ủ chượp trong chum, màu vàng rơm, vị đậm và ngọt hậu.",
-    description:
-      "Nam Ô là làng chài ven biển ở chân đèo Hải Vân, Đà Nẵng. Người dân ở đây làm nước mắm từ cá cơm đánh bắt gần bờ, trộn muối và ủ trong chum, thùng gỗ nhiều tháng.\n\n" +
-      "Nước mắm có màu vàng rơm đến cánh gián, mùi thơm và vị đậm đà, ngọt hậu. Dùng để chấm, pha nước chấm hoặc nêm nấu.",
-    price: 110000,
-    image: "/images/p-nuoc-mam-nam-o.jpg",
-    region: "trung",
-    brand: "Nước mắm Nam Ô",
-    origin: "Đà Nẵng",
-    pack: "Chai 500ml",
-    stock: INITIAL_STOCK,
-    occasions: ["vao-bep"],
-    story: {
-      enjoy: "Chấm trực tiếp với cá luộc, thịt luộc; pha với chanh, tỏi, ớt để chấm gỏi cuốn, bánh xèo.",
-      storage: "Đậy kín nắp, để nơi thoáng mát, tránh ánh nắng trực tiếp.",
-    },
-    createdAt: "2026-11-14T09:44:00.000Z",
   },
   {
     id: "hat-sen-dong-thap",
@@ -935,27 +872,6 @@ export const threeRegionProducts: Product[] = [
     createdAt: "2026-11-14T09:17:00.000Z",
   },
   {
-    id: "banh-da-nem-lang-cheu",
-    name: "Bánh đa nem làng Chều",
-    shortDescription: "Bánh đa nem làng Chều tráng mỏng, phơi trên phên nứa, cuốn nem rán giòn tan mà không bị vỡ.",
-    description:
-      "Gạo được ngâm, xay thành bột nước rồi tráng mỏng, phơi trên những tấm phên nứa dưới nắng. Bánh đa nem làng Chều mỏng, dai và có vân phên nứa đặc trưng.\n\n" +
-      "Bánh dùng để cuốn nem rán, món không thể thiếu trên mâm cỗ ngày Tết của người miền Bắc. Khi rán, vỏ nem vàng đều và giòn tan.",
-    price: 30000,
-    image: "/images/p-banh-da-nem-lang-cheu.jpg",
-    region: "bac",
-    brand: "Bánh đa nem làng Chều",
-    origin: "Ninh Bình",
-    pack: "Tập 50 lá",
-    stock: INITIAL_STOCK,
-    occasions: ["vao-bep", "qua-tet"],
-    story: {
-      enjoy: "Quệt chút nước cho bánh mềm rồi cuốn nem; rán lửa vừa cho vỏ vàng giòn.",
-      storage: "Để nơi khô ráo, gói kín để bánh không bị ẩm.",
-    },
-    createdAt: "2026-11-14T09:16:00.000Z",
-  },
-  {
     id: "yen-sao-khanh-hoa",
     name: "Yến sào Khánh Hòa",
     shortDescription: "Tổ yến thô khai thác từ hang đảo ven biển Khánh Hòa, sợi dày, dùng chưng đường phèn hoặc nấu chè.",
@@ -996,5 +912,122 @@ export const threeRegionProducts: Product[] = [
       storage: "Đựng hũ kín, để nơi khô ráo vì đường dễ hút ẩm.",
     },
     createdAt: "2026-11-14T09:14:00.000Z",
+  },
+];
+
+// Đổi 5 món (11/2026) để cả 34 tỉnh đều có sản phẩm, mỗi miền vẫn 20 món: Nước mắm Cát Hải -> Bánh gai Ninh Giang,
+// Bánh cốm -> Vải thiều sấy Lục Ngạn (Bắc Ninh), Trà sen Tây Hồ -> Bưởi Đoan Hùng (Phú Thọ),
+// Bánh đa nem làng Chều -> Thảo quả Lai Châu (Lai Châu), Nước mắm Nam Ô -> Cam Vinh (Nghệ An).
+// Mỗi món mới giữ ngày tạo của món cũ, để thứ tự "Mới nhất" không đổi. Trình duyệt cũ nhận nhóm này MỘT LẦN
+// (seedBatches "du-34-tinh"); món cũ được bỏ bởi các bước replace-* trong runMigrations (src/lib/storage.ts).
+// Bưởi và Cam Vinh là trái cây tươi theo mùa (ngoại lệ của tiêu chí "đồ khô hoặc đóng gói kín"): câu chuyện sản phẩm ghi rõ hạn dùng.
+export const fullProvinceProducts: Product[] = [
+  {
+    id: "banh-gai-ninh-giang",
+    name: "Bánh gai Ninh Giang",
+    shortDescription: "Bánh nếp bọc lá chuối, vỏ đen từ lá gai, nhân dừa và đậu, dẻo thơm mùi lá gai.",
+    description:
+      "Bánh gai là đặc sản của vùng Ninh Giang, Hải Dương cũ (nay thuộc Hải Phòng). Vỏ bánh làm từ bột nếp trộn lá gai nấu nhừ nên có màu đen bóng và mùi thơm riêng của lá gai.\n\n" +
+      "Nhân bánh thường có dừa, đậu và chút mỡ heo, bánh được gói lá chuối rồi hấp chín. Bánh dẻo, ngọt bùi, béo nhẹ, hợp làm quà biếu hoặc ăn nhẹ cùng trà nóng.",
+    price: 60000,
+    image: "/images/p-banh-gai-ninh-giang.jpg",
+    region: "bac",
+    brand: "Bánh gai Ninh Giang",
+    origin: "Hải Phòng",
+    pack: "Hộp 6 cái",
+    stock: INITIAL_STOCK,
+    occasions: ["qua-tet", "an-vat"],
+    story: {
+      enjoy: "Bóc lá, cắt miếng ăn ngay hoặc hấp lại vài phút cho bánh mềm dẻo; hợp ăn cùng trà nóng.",
+      storage: "Hàng làm mới, giao nhanh. Bánh làm từ nếp nên mau cứng: để ngăn mát và dùng trong vài ngày; hấp lại trước khi ăn.",
+    },
+    createdAt: "2026-11-14T09:48:00.000Z",
+  },
+  {
+    id: "vai-thieu-say-luc-ngan",
+    name: "Vải thiều sấy Lục Ngạn",
+    shortDescription: "Vải thiều Lục Ngạn sấy khô nguyên quả, cùi dẻo, ngọt đậm, thơm mùi khói nhẹ.",
+    description:
+      "Lục Ngạn (Bắc Giang cũ, nay thuộc Bắc Ninh) là vùng vải thiều lớn nhất cả nước; vải thiều Lục Ngạn được bảo hộ chỉ dẫn địa lý trong nước và được Nhật Bản bảo hộ năm 2021. Sau mùa vải tươi, một phần quả được sấy khô nguyên vỏ để dùng quanh năm.\n\n" +
+      "Vải sấy có cùi màu nâu cánh gián, dẻo, ngọt đậm hơn vải tươi. Bóc vỏ ăn như món nhâm nhi cùng trà, hoặc nấu chè.",
+    price: 120000,
+    image: "/images/p-vai-thieu-say-luc-ngan.jpg",
+    region: "bac",
+    brand: "Vải thiều Lục Ngạn",
+    origin: "Bắc Ninh",
+    pack: "Túi 1kg",
+    stock: INITIAL_STOCK,
+    occasions: ["qua-tet", "an-vat"],
+    story: {
+      enjoy: "Bóc vỏ, ăn cùi vải sấy như món nhâm nhi cùng trà nóng; có thể nấu chè hoặc hầm cùng long nhãn, táo đỏ.",
+      storage: "Đồ khô, để nhiệt độ thường: giữ trong túi hoặc hũ kín, nơi khô ráo (có gói hút ẩm càng tốt). Dùng trong khoảng 6 tháng; cứ 2–3 tháng xem lại một lần, bỏ quả bị ẩm mốc.",
+      season: "Vải thiều Lục Ngạn chín vào khoảng tháng 6–7; vải sấy làm sau vụ nên có quanh năm.",
+    },
+    createdAt: "2026-01-04T00:00:00.000Z",
+  },
+  {
+    id: "buoi-doan-hung",
+    name: "Bưởi Đoan Hùng",
+    shortDescription: "Bưởi Đoan Hùng quả tròn, múi vàng mọng, vị ngọt mát; hàng tươi theo mùa, giao nhanh.",
+    description:
+      "Đoan Hùng (Phú Thọ) là vùng bưởi nổi tiếng của miền Bắc, với giống bưởi Bằng Luân nổi tiếng nhất. Bưởi Đoan Hùng được cấp chỉ dẫn địa lý năm 2006.\n\n" +
+      "Múi bưởi vàng nhạt, mọng nước, vị ngọt mát. Bưởi là món quà quen thuộc dịp cuối năm và mâm ngũ quả ngày Tết.",
+    price: 120000,
+    image: "/images/p-buoi-doan-hung.jpg",
+    region: "bac",
+    brand: "Bưởi Đoan Hùng",
+    origin: "Phú Thọ",
+    pack: "2 quả (khoảng 2kg)",
+    stock: INITIAL_STOCK,
+    occasions: ["qua-tet", "bieu-nguoi-lon"],
+    story: {
+      enjoy: "Bóc vỏ, tách múi ăn tươi; vỏ bưởi có thể làm mứt hoặc nấu chè bưởi.",
+      storage: "Hàng tươi theo mùa, giao nhanh. Để nơi khô thoáng, tránh nắng, không cần tủ lạnh; nên dùng trong khoảng 3 tuần kể từ khi nhận. Vỏ hơi héo là bình thường, múi bên trong vẫn ngọt.",
+      season: "Bưởi vào mùa cuối năm, ngon nhất dịp cận Tết.",
+    },
+    createdAt: "2026-11-14T10:00:00.000Z",
+  },
+  {
+    id: "thao-qua-lai-chau",
+    name: "Thảo quả Lai Châu",
+    shortDescription: "Quả thảo quả sấy khô từ rừng Lai Châu, mùi thơm nồng, là gia vị không thể thiếu của phở và các món hầm.",
+    description:
+      "Thảo quả được trồng dưới tán rừng ở các vùng núi cao Lai Châu như Mường Tè, Tam Đường, Tân Uyên. Người dân gọi thảo quả là \"vàng đỏ\" vì đây là cây giúp nhiều hộ thoát nghèo. Quả chín được hái rồi sấy khô.\n\n" +
+      "Thảo quả khô có vỏ nâu, nhiều rãnh dọc, hạt bên trong thơm nồng và hơi cay. Đây là gia vị quen thuộc của nước dùng phở, bò kho, thắng cố và các món hầm.",
+    price: 70000,
+    image: "/images/p-thao-qua-lai-chau.jpg",
+    region: "bac",
+    brand: "Thảo quả Lai Châu",
+    origin: "Lai Châu",
+    pack: "Gói 200g",
+    stock: INITIAL_STOCK,
+    occasions: ["vao-bep"],
+    story: {
+      enjoy: "Nướng sơ cho dậy mùi, đập dập rồi cho vào nồi nước dùng phở, bò kho, thắng cố hay món hầm; 1–2 quả cho một nồi.",
+      storage: "Gia vị khô, để nhiệt độ thường: đựng trong túi hoặc hũ kín, nơi khô mát, tránh ẩm. Dùng tốt trong khoảng 12 tháng; để nguyên quả giữ mùi lâu hơn đã đập dập.",
+    },
+    createdAt: "2026-11-14T09:16:00.000Z",
+  },
+  {
+    id: "cam-vinh",
+    name: "Cam Vinh",
+    shortDescription: "Cam Vinh vỏ vàng xanh, múi mọng nước, vị ngọt thanh và thơm; hàng tươi theo mùa, giao nhanh.",
+    description:
+      "Cam Vinh là đặc sản của Nghệ An, được Cục Sở hữu trí tuệ cấp chỉ dẫn địa lý số 00012 năm 2007; vùng được dùng chỉ dẫn địa lý đã được mở rộng năm 2019.\n\n" +
+      "Quả cam vỏ vàng xanh, múi mọng nước, vị ngọt thanh, thơm mùi tinh dầu vỏ cam. Cam vào chính vụ khoảng tháng 11–12, đúng dịp làm quà cuối năm.",
+    price: 90000,
+    image: "/images/p-cam-vinh.jpg",
+    region: "trung",
+    brand: "Cam Vinh",
+    origin: "Nghệ An",
+    pack: "Túi 2kg",
+    stock: INITIAL_STOCK,
+    occasions: ["qua-tet", "bieu-nguoi-lon"],
+    story: {
+      enjoy: "Ăn tươi hoặc vắt lấy nước; nước cam nên uống ngay sau khi vắt.",
+      storage: "Hàng tươi theo mùa, giao nhanh. Để nơi khô thoáng, tránh nắng thì nên dùng trong khoảng 1 tuần; cất ngăn mát tủ lạnh giữ được đến khoảng 3 tuần.",
+      season: "Chính vụ khoảng tháng 11–12.",
+    },
+    createdAt: "2026-11-14T09:44:00.000Z",
   },
 ];

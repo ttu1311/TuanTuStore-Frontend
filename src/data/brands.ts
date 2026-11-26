@@ -87,10 +87,10 @@ export const brands: Brand[] = [
   },
   // ----- Thêm tháng 11/2026: chỉ dẫn địa lý (đã kiểm chứng) và làng nghề / vùng đặc sản có thật -----
   {
-    name: "Trà sen Quảng An",
-    kind: "Nghề truyền thống",
-    place: "Quảng An, Tây Hồ, Hà Nội",
-    about: "Làng Quảng An bên Hồ Tây nổi tiếng với nghề ướp trà bằng hoa sen Bách Diệp, giống sen trăm cánh của hồ.",
+    name: "Bưởi Đoan Hùng",
+    kind: "Chỉ dẫn địa lý",
+    place: "Đoan Hùng, Phú Thọ",
+    about: "Bưởi Đoan Hùng được Cục Sở hữu trí tuệ cấp văn bằng chỉ dẫn địa lý năm 2006; giống nổi tiếng nhất là bưởi Bằng Luân.",
   },
   {
     name: "Chả mực Hạ Long",
@@ -111,10 +111,10 @@ export const brands: Brand[] = [
     about: "Hải Dương có nghề làm bánh đậu xanh lâu đời; bánh làm từ đậu xanh, đường và mỡ, ép thành những bánh nhỏ vuông vắn.",
   },
   {
-    name: "Nước mắm Cát Hải",
+    name: "Bánh gai Ninh Giang",
     kind: "Nghề truyền thống",
-    place: "Đảo Cát Hải, Hải Phòng",
-    about: "Cát Hải là đảo của Hải Phòng, có nghề làm nước mắm truyền thống từ cá biển và muối.",
+    place: "Ninh Giang, Hải Dương cũ (nay thuộc Hải Phòng)",
+    about: "Ninh Giang (Hải Dương cũ) nổi tiếng với bánh gai: vỏ nếp màu đen làm từ lá gai, nhân dừa, đậu và mỡ heo.",
   },
   {
     name: "Nhãn lồng Hưng Yên",
@@ -183,10 +183,16 @@ export const brands: Brand[] = [
     about: "Chỉ dẫn địa lý “Văn Yên” bảo hộ cho quế vỏ của vùng Văn Yên, nơi trồng quế lâu đời ở miền Bắc.",
   },
   {
-    name: "Bánh đa nem làng Chều",
-    kind: "Nghề truyền thống",
-    place: "Xuân Trường, Nam Định cũ (nay thuộc Ninh Bình)",
-    about: "Làng Chều ở Xuân Trường (Nam Định cũ) nổi tiếng với nghề tráng bánh đa nem mỏng, dai, phơi trên những phên nứa.",
+    name: "Thảo quả Lai Châu",
+    kind: "Đặc sản địa phương",
+    place: "Mường Tè, Tam Đường, Tân Uyên (Lai Châu)",
+    about: "Thảo quả được trồng dưới tán rừng ở vùng núi cao Lai Châu; người dân gọi là \"vàng đỏ\" vì giúp nhiều hộ thoát nghèo.",
+  },
+  {
+    name: "Vải thiều Lục Ngạn",
+    kind: "Đặc sản địa phương",
+    place: "Lục Ngạn, Bắc Giang cũ (nay thuộc Bắc Ninh)",
+    about: "Lục Ngạn là vùng trồng vải thiều lớn nhất cả nước. Chỉ dẫn địa lý vải thiều Lục Ngạn được cấp năm 2008 và được Nhật Bản bảo hộ năm 2021 (cho quả tươi); vải sấy là sản phẩm chế biến của vùng.",
   },
   {
     name: "Nem chua Thanh Hóa",
@@ -219,10 +225,10 @@ export const brands: Brand[] = [
     about: "Mè xửng là món kẹo truyền thống của Huế, làm từ mạch nha, đường, đậu phộng và mè.",
   },
   {
-    name: "Nước mắm Nam Ô",
-    kind: "Nghề truyền thống",
-    place: "Làng Nam Ô, Đà Nẵng",
-    about: "Làng chài Nam Ô ở chân đèo Hải Vân có nghề làm nước mắm từ cá cơm và muối, ủ trong chum và thùng gỗ.",
+    name: "Cam Vinh",
+    kind: "Chỉ dẫn địa lý",
+    place: "Nghệ An",
+    about: "Cam Vinh được Cục Sở hữu trí tuệ cấp giấy chứng nhận chỉ dẫn địa lý số 00012 năm 2007 (Quyết định 386/QĐ-SHTT); khu vực địa lý được mở rộng năm 2019.",
   },
   {
     name: "Bánh tráng Đại Lộc",

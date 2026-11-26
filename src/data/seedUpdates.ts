@@ -10,14 +10,13 @@ export type SeedUpdate = {
   from: string | number | RegExp;
 };
 
-const placeholderBrand = /^Thương hiệu [A-Z]$/; // "Thương hiệu A" … giá trị giữ chỗ cũ
+export const placeholderBrand = /^Thương hiệu [A-Z]$/; // "Thương hiệu A" … giá trị giữ chỗ cũ
 
 export const seedUpdates: SeedUpdate[] = [
   // Thương hiệu giữ chỗ -> thương hiệu thật (mọi sản phẩm mẫu)
   ...initialProducts.map((product): SeedUpdate => ({ id: product.id, field: "brand", from: placeholderBrand })),
 
   // Xuất xứ cho khớp với thương hiệu mới
-  { id: "banh-com", field: "origin", from: "Hàng Than, Hà Nội" },
   { id: "banh-pia", field: "origin", from: "Vũng Thơm, Sóc Trăng" },
   { id: "keo-dua", field: "origin", from: "Cồn Phụng, Bến Tre" },
 

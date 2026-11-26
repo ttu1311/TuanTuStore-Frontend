@@ -1,6 +1,6 @@
 import type { Product, User } from "@/types";
 import { INITIAL_STOCK } from "@/lib/cart";
-import { threeRegionProducts } from "@/data/moreProducts";
+import { fullProvinceProducts, threeRegionProducts } from "@/data/moreProducts";
 
 // Dữ liệu chỉ được ghi vào localStorage ở lần truy cập ĐẦU TIÊN (xem initializeStorage trong src/lib/storage.ts).
 // Sau đó, website luôn dùng những gì đã lưu trong localStorage, nên thay đổi của Admin được giữ lại.
@@ -121,6 +121,7 @@ export const caMauProducts: Product[] = [
 // Ngày đi từ mới nhất đến cũ nhất trong danh sách này, nên thứ tự "Mới nhất" mặc định
 // hiển thị sản phẩm đúng thứ tự bên dưới. Sản phẩm do Admin thêm có ngày của thời điểm thêm.
 export const initialProducts: Product[] = [
+  ...fullProvinceProducts,
   ...threeRegionProducts,
   ...caMauProducts,
   {
@@ -209,28 +210,6 @@ export const initialProducts: Product[] = [
       storage: "Để nơi thoáng mát, tránh nắng; dùng trong hạn sử dụng in trên hộp, nhất là bánh có nhân trứng muối.",
     },
     createdAt: "2026-01-05T00:00:00.000Z",
-  },
-  {
-    id: "banh-com",
-    name: "Bánh cốm",
-    shortDescription: "Bánh mềm màu xanh từ cốm, nhân đậu xanh và dừa, thơm mùi lá dứa.",
-    description:
-      "Cốm là món quà của mùa thu Hà Nội, được làm từ lúa nếp non. Từ cốm, người thợ làm ra bánh cốm với lớp vỏ xanh mềm, bên trong là nhân đậu xanh và dừa.\n\n" +
-      "Bánh có vị ngọt thanh, thơm mùi cốm. Bánh thường xuất hiện trong các mâm lễ cưới và quà biếu truyền thống của người miền Bắc.",
-    price: 90000,
-    image: "/images/p-banh-com.jpg",
-    region: "bac",
-    brand: "Hồng Lam",
-    origin: "Hà Nội",
-    pack: "Hộp 10 bánh",
-    stock: INITIAL_STOCK,
-    occasions: ["bieu-nguoi-lon", "an-vat"],
-    story: {
-      enjoy: "Dùng cùng trà nóng. Bánh cốm cũng thường có mặt trong lễ ăn hỏi, cưới hỏi của người Hà Nội.",
-      storage: "Bánh làm thủ công, ít chất bảo quản nên dùng trong vài ngày. Để nơi thoáng mát; không cất tủ lạnh vì bánh dễ bị cứng.",
-      season: "Cốm ngon nhất vào mùa thu, khi lúa nếp non vào mùa.",
-    },
-    createdAt: "2026-01-04T00:00:00.000Z",
   },
   {
     id: "ca-phe",
