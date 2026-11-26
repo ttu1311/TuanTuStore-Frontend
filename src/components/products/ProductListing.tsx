@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import ProductCard from "@/components/product/ProductCard";
 import ProductCardSkeleton from "@/components/product/ProductCardSkeleton";
@@ -49,10 +49,17 @@ function toUrl(pathname: string, query: ListingQuery) {
   return text ? `${pathname}?${text}` : pathname;
 }
 
+// Ghi địa chỉ mới bằng history.replaceState của trình duyệt chứ không bằng router.replace: Next.js (từ 14.1) đồng bộ
+// replaceState với useSearchParams, nên danh sách cập nhật ngay mà không phải chờ server trả về trang (router.replace gửi một
+// yêu cầu tới server cho mỗi lần đổi ?…, mạng chậm thì ô tích có cảm giác trễ). Trang này không đọc searchParams ở server
+// (xem src/app/(shop)/san-pham/page.tsx), nên không có gì cần server vẽ lại. Không thêm mục lịch sử, không cuộn trang.
+function replaceUrl(url: string) {
+  window.history.replaceState(null, "", url);
+}
+
 // Giữ tìm kiếm / lọc / sắp xếp (nằm trên địa chỉ trang, nên F5, Back và chia sẻ link giữ nguyên) và hiển thị các sản phẩm
 // đã lọc từ localStorage. Từ khóa đến từ ô tìm kiếm ở header (?q=): ở đây không có ô nhập từ khóa.
 export default function ProductListing() {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { isReady, products } = useStore();
@@ -80,12 +87,12 @@ export default function ProductListing() {
   const cleanUrl =
     activeProvinces.length !== query.provinces.length ? toUrl(pathname, { ...query, provinces: activeProvinces }) : null;
   useEffect(() => {
-    if (cleanUrl) router.replace(cleanUrl, { scroll: false });
-  }, [cleanUrl, router]);
+    if (cleanUrl) replaceUrl(cleanUrl);
+  }, [cleanUrl]);
 
-  // Đổi một phần trạng thái: ghi lên địa chỉ bằng replace (không thêm mục lịch sử, không cuộn lên đầu)
+  // Đổi một phần trạng thái: ghi lên địa chỉ (không thêm mục lịch sử, không cuộn lên đầu)
   function update(patch: Partial<ListingQuery>) {
-    router.replace(toUrl(pathname, { ...query, provinces: activeProvinces, ...patch }), { scroll: false });
+    replaceUrl(toUrl(pathname, { ...query, provinces: activeProvinces, ...patch }));
   }
 
   // Đổi các miền đang tích: tỉnh đang tích mà không còn ô trong danh sách mới thì bỏ tích luôn (cả trên địa chỉ và chip)
