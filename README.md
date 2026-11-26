@@ -347,8 +347,7 @@ print, ask the designer for a vector or a larger file.
 
 ## Credits
 
-Photos: Wikimedia Commons. Some photos of the November 2026 products show the same kind of product but not necessarily from the
-same place. Fonts: the whole site is set in Arial (a system font, nothing to download); only the shop name in the logo uses Lora (Google Fonts)
+Photos: Wikimedia Commons (full list below). Fonts: the whole site is set in Arial (a system font, nothing to download); only the shop name in the logo uses Lora (Google Fonts)
 
 Homepage banner photos (`public/images/banner`): supplied by the shop owner (illustrations; the dishes are not all products sold in the shop).
 
@@ -362,7 +361,129 @@ Background music (`public/audio`, listed in `src/data/playlist.ts`):
 - `thanh-do.mp3`: "Thành Đô" by GUrbane (label: ZuongZero Entertainment, from the file's own tags). **Copyrighted**: used with the
   permission the project owner obtained for this site. Remove it if that permission ends.
 
-Photos of the Cà Mau products (cropped and resized):
+Photos of the products (Wikimedia Commons; each one cropped to a square and resized). **"Illustration"** means the photo shows
+the same kind of product but was not made or photographed at the place in the product name (or the file page does not say
+where). No two products use the same source photo.
+
+Miền Bắc (20 products):
+
+
+- `p-banh-cay-lang-nguyen.jpg`: "Bánh cáy" by Nguyễn Thanh Quang, CC BY-SA 4.0 (làng Nguyễn, Thái Bình cũ) —
+  https://commons.wikimedia.org/wiki/File:B%C3%A1nh_c%C3%A1y.JPG
+- `p-banh-dau-xanh-hai-duong.jpg`: "Bánh đậu xanh" by Hoangkid, CC BY-SA 4.0 (a Hải Dương brand) —
+  https://commons.wikimedia.org/wiki/File:B%C3%A1nh_%C4%91%E1%BA%ADu_xanh.jpg
+- `p-banh-gai-ninh-giang.jpg`: "Banh gai 3" by Phó Nháy, public domain — **illustration** (bánh gai of Nam Định; contrast and
+  saturation raised slightly) — https://commons.wikimedia.org/wiki/File:Banh_gai_3.jpg
+- `p-buoi-doan-hung.jpg`: "Pomelo fruit" by Ivar Leidus, CC BY-SA 4.0 — **illustration** (background extended at the top and
+  bottom to make it square) — https://commons.wikimedia.org/wiki/File:Pomelo_fruit.jpg
+- `p-cha-muc-ha-long.jpg`: "Chả mực" by Hoangkid (Đặng Thái Hoàng), CC BY-SA 4.0 (Hạ Long) —
+  https://commons.wikimedia.org/wiki/File:Ch%E1%BA%A3_m%E1%BB%B1c.jpg
+- `p-che-shan-tuyet-moc-chau.jpg`: "Che Shan tuyet" by VuThiAnh, public domain — **illustration** (Shan tuyết tea photographed
+  in Hà Nội) — https://commons.wikimedia.org/wiki/File:Che_Shan_tuyet.JPG
+- `p-com-chay-ninh-binh.jpg`: "Cơm cháy Ninh Bình" by Nguyễn Thanh Quang, CC BY-SA 3.0 —
+  https://commons.wikimedia.org/wiki/File:C%C6%A1m_ch%C3%A1y_Ninh_B%C3%ACnh.JPG
+- `p-gao-tam-dien-bien.jpg`: "JasmineRice" by Henningklevjer, CC BY-SA 2.5 — **illustration** —
+  https://commons.wikimedia.org/wiki/File:JasmineRice.jpg
+- `p-hat-de-trung-khanh-v2.jpg`: "Chestnuts roasted" by Achromatic, CC BY 3.0 — **illustration** (530 px, the largest usable
+  size) — https://commons.wikimedia.org/wiki/File:Chestnuts_roasted.jpg
+- `p-hoa-hoi-lang-son.jpg`: "Dried Star Anise Fruit Seeds" by Sanjay Acharya, CC BY-SA 4.0 — **illustration** —
+  https://commons.wikimedia.org/wiki/File:Dried_Star_Anise_Fruit_Seeds.jpg
+- `p-long-nhan-hung-yen.jpg`: "Seedless longan jerky" by Fumikas Sagisavas, CC0 — **illustration** (photographed in China) —
+  https://commons.wikimedia.org/wiki/File:Seedless_longan_jerky.jpg
+- `p-mat-ong-bac-ha-meo-vac-v2.jpg`: "Antiguan honey products at an exhibition in Saint Lucia" by the Government of Antigua and
+  Barbuda, public domain — **illustration** —
+  https://commons.wikimedia.org/wiki/File:Antiguan_honey_products_at_an_exhibition_in_Saint_Lucia.jpg
+- `p-mien-dong-binh-lieu-v2.jpg`: "Dongfen" by Miuki (author assumed by Commons), CC BY-SA 3.0 — **illustration** (the photo
+  shows mung-bean vermicelli; miến dong is made from canna starch) — https://commons.wikimedia.org/wiki/File:Dongfen.JPG
+- `p-o-mai.jpg`: "O mai chanh com" by VuThiAnh, public domain — **illustration** (ô mai chanh cốm, a close kind of ô mai) —
+  https://commons.wikimedia.org/wiki/File:O_mai_chanh_com.JPG
+- `p-que-van-yen.jpg`: "Cassia bark - (2)" by trophygeek, CC BY 2.0 — **illustration** —
+  https://commons.wikimedia.org/wiki/File:Cassia_bark_-_(2).jpg
+- `p-thao-qua-lai-chau.jpg`: "Dried Yunnan grass fruit" by Fumikas Sagisavas, CC0 — **illustration** (photographed in China) —
+  https://commons.wikimedia.org/wiki/File:Dried_Yunnan_grass_fruit.jpg
+- `p-thit-trau-gac-bep.jpg`: "Thịt trâu gác bếp Tả Phìn Hồ" by GiangLy, CC BY-SA 4.0 — **illustration** (Tả Phìn Hồ, Hà Giang cũ,
+  not Sơn La) — https://commons.wikimedia.org/wiki/File:Th%E1%BB%8Bt_tr%C3%A2u_g%C3%A1c_b%E1%BA%BFp_T%E1%BA%A3_Ph%C3%ACn_H%E1%BB%93.jpg
+- `p-tra-thai-nguyen.jpg`: "Tra sen - Vietnamese Lotus Tea" by VuThiAnh, public domain — **illustration** (Vietnamese tea
+  photographed in Hà Nội, not Tân Cương tea) — https://commons.wikimedia.org/wiki/File:Tra_sen_-_Vietnamese_Lotus_Tea.JPG
+- `p-tuong-ban-v3.jpg`: "Chum ủ tương Bần, Hưng Yên, 2024" by Truyền hình Hưng Yên (HYTV), CC BY 3.0 —
+  https://commons.wikimedia.org/wiki/File:Chum_%E1%BB%A7_t%C6%B0%C6%A1ng_B%E1%BA%A7n,_H%C6%B0ng_Y%C3%AAn,_2024.png
+- `p-vai-thieu-say-luc-ngan.jpg`: "Dried lychee (1)" by Fumikas Sagisavas, CC0 — **illustration** (photographed in China) —
+  https://commons.wikimedia.org/wiki/File:Dried_lychee_(1).jpg
+
+
+Miền Trung (20 products):
+
+- `p-nem-chua-thanh-hoa.jpg` (Nem chua Thanh Hóa): "Nem chua" by Ron Diggity, CC BY 2.0 — **illustration** (nem chua at a restaurant, not checked as Thanh Hóa) —
+  https://commons.wikimedia.org/wiki/File:Nem_chua.jpg
+- `p-keo-cu-do-ha-tinh.jpg` (Kẹo cu đơ Hà Tĩnh): "KeoCudo" by Lưu Ly at vi.wikipedia, public domain — **illustration** (place not stated) —
+  https://commons.wikimedia.org/wiki/File:KeoCudo.JPG
+- `p-khoai-deo-quang-binh.jpg` (Khoai deo Quảng Bình): "Đặc Sản Khoai Deo Quảng Bình" by Review Quang Binh, CC BY-SA 4.0 —
+  https://commons.wikimedia.org/wiki/File:%C4%90%E1%BA%B7c_S%E1%BA%A3n_Khoai_Deo_Qu%E1%BA%A3ng_B%C3%ACnh.jpg
+- `p-che-vang-quang-tri.jpg` (Chè vằng Quảng Trị): "Chè vằng" by Viethavvh, CC BY-SA 3.0 — **illustration** (place not stated) —
+  https://commons.wikimedia.org/wiki/File:Ch%C3%A8_v%E1%BA%B1ng.jpg
+- `p-me-xung-hue.jpg` (Mè xửng Huế): "Caramelo de mango con sésamo y maní · Vietnam" by Seba Della y Sole Bossio, CC BY 2.0 (sesame candy from Huế) —
+  https://commons.wikimedia.org/wiki/File:Caramelo_de_mango_con_s%C3%A9samo_y_man%C3%AD_%C2%B7_Vietnam.jpg
+- `p-banh-trang-dai-loc.jpg` (Bánh tráng Đại Lộc): "Handmade rice paper wrappers drying on bamboo mats" by Wanderingspoon, CC BY-SA 4.0 — **illustration** (place not stated) —
+  https://commons.wikimedia.org/wiki/File:Handmade_rice_paper_wrappers_drying_on_bamboo_mats.jpg
+- `p-toi-ly-son.jpg` (Tỏi Lý Sơn): "Rổ tỏi Lý Sơn ng5th2n2023" by Phương Huy, CC BY-SA 4.0 —
+  https://commons.wikimedia.org/wiki/File:R%E1%BB%95_t%E1%BB%8Fi_L%C3%BD_S%C6%A1n_ng5th2n2023.jpg
+- `p-ho-tieu-chu-se.jpg` (Hồ tiêu Chư Sê): "Black Peppercorns (4422070187)" by Ryan Snyder, CC BY 2.0 — **illustration** —
+  https://commons.wikimedia.org/wiki/File:Black_Peppercorns_(4422070187).jpg
+- `p-nho-say-ninh-thuan.jpg` (Nho sấy Ninh Thuận): "Giống nho NH01-125, Ninh Thuận" by Windrain, CC BY-SA 4.0 — **illustration** (fresh grapes of Ninh Thuận, not raisins) —
+  https://commons.wikimedia.org/wiki/File:Gi%E1%BB%91ng_nho_NH01-125,_Ninh_Thu%E1%BA%ADn.jpg
+- `p-muc-mot-nang-nha-trang.jpg` (Mực một nắng Nha Trang): "Phan Thiết ng25th7n2023 (mực một nắng Phan Thiết) (2)" by Phương Huy, CC0 — **illustration** (one-sun squid of Phan Thiết, not Nha Trang) —
+  https://commons.wikimedia.org/wiki/File:Phan_Thi%E1%BA%BFt_ng25th7n2023_(m%E1%BB%B1c_m%E1%BB%99t_n%E1%BA%AFng_Phan_Thi%E1%BA%BFt)_(2).jpg
+- `p-tra-atiso-da-lat.jpg` (Trà atiso Đà Lạt): "Atisô bán tại chợ Đà Lạt, Vietnam" by Hungda, CC BY-SA 3.0 — **illustration** (fresh artichokes at Đà Lạt market, not the tea) —
+  https://commons.wikimedia.org/wiki/File:Atis%C3%B4_b%C3%A1n_t%E1%BA%A1i_ch%E1%BB%A3_%C4%90%C3%A0_L%E1%BA%A1t,_Vietnam.JPG
+- `p-ca-phe-khe-sanh.jpg` (Cà phê Khe Sanh): "Cà phê Khe Sanh ở Đông Hà 20201110" by Phương Huy, CC BY-SA 4.0 (Khe Sanh coffee served in Đông Hà) —
+  https://commons.wikimedia.org/wiki/File:C%C3%A0_ph%C3%AA_Khe_Sanh_%E1%BB%9F_%C4%90%C3%B4ng_H%C3%A0_20201110.jpg
+- `p-yen-sao-khanh-hoa.jpg` (Yến sào Khánh Hòa): "Yến sào thô" by Yensaolocoi, CC0 — **illustration** (place not stated) —
+  https://commons.wikimedia.org/wiki/File:Y%E1%BA%BFn_s%C3%A0o_th%C3%B4.jpg
+- `p-duong-phen-quang-ngai.jpg` (Đường phèn Quảng Ngãi): "Đường phèn dạng hạt" by Southern Vietnam, CC BY-SA 4.0 — **illustration** (place not stated) —
+  https://commons.wikimedia.org/wiki/File:%C4%90%C6%B0%E1%BB%9Dng_ph%C3%A8n_d%E1%BA%A1ng_h%E1%BA%A1t.jpg
+- `p-banh-kho-me.jpg` (Bánh khô mè Cẩm Lệ): "Banh kho me" by Huỳnh Đức Sol, CC BY-SA 4.0 — **illustration** (place not stated) —
+  https://commons.wikimedia.org/wiki/File:Banh_kho_me.jpg
+- `p-ca-phe.jpg` (Cà phê hạt Buôn Ma Thuột): "Vietnam coffee beans VOA" by Daniel Schearf, public domain (coffee cherries at a farm in Buôn Ma Thuột) —
+  https://commons.wikimedia.org/wiki/File:Vietnam_coffee_beans_VOA.jpg
+- `p-cam-vinh.jpg` (Cam Vinh): "Cam Vinh - một loại cam đặc sản Nghệ An" by Hangphuong86, CC BY-SA 3.0 (cropped to leave out
+  the traceability sticker) —
+  https://commons.wikimedia.org/wiki/File:Cam_Vinh_-_m%E1%BB%99t_lo%E1%BA%A1i_cam_%C4%91%E1%BA%B7c_s%E1%BA%A3n_Ngh%E1%BB%87_An.JPG
+- `p-mach-nha-thi-pho.jpg` (Mạch nha Thi Phổ), `p-bo-mot-nang-krong-pa.jpg` (Bò một nắng Krông Pa),
+  `p-nuoc-mam-phan-thiet.jpg` (Nước mắm Phan Thiết): **source not traced yet**. They were taken from Wikimedia Commons in
+  November 2026 but their file pages have not been found again; they will be credited or replaced in the Miền Trung photo review.
+
+
+Miền Nam (20 products; the 5 Cà Mau photos and the coconut candy are listed below):
+
+- `p-banh-trang-phoi-suong.jpg` (Bánh tráng phơi sương Trảng Bàng): "Bánh tráng cuốn thịt heo" by Lê Huỳnh Bộ, CC BY-SA 4.0 — **illustration** (place not stated) —
+  https://commons.wikimedia.org/wiki/File:B%C3%A1nh_tr%C3%A1ng_cu%E1%BB%91n_th%E1%BB%8Bt_heo.jpg
+- `p-hat-dieu-binh-phuoc.jpg` (Hạt điều Bình Phước): "Hạt điều Bình Phước, tháng 12 năm 2016 (1)" by Phương Huy, public domain —
+  https://commons.wikimedia.org/wiki/File:H%E1%BA%A1t_%C4%91i%E1%BB%81u_B%C3%ACnh_Ph%C6%B0%E1%BB%9Bc,_th%C3%A1ng_12_n%C4%83m_2016_(1).jpg
+- `p-kho-ca-dua-can-gio.jpg` (Khô cá dứa Cần Giờ): "Cà Mau ng24th2n2023 (đặc sản khô cá dứa) (2)" by Phương Huy, CC0 — **illustration** (dried fish of Cà Mau, not Cần Giờ) —
+  https://commons.wikimedia.org/wiki/File:C%C3%A0_Mau_ng24th2n2023_(%C4%91%E1%BA%B7c_s%E1%BA%A3n_kh%C3%B4_c%C3%A1_d%E1%BB%A9a)_(2).jpg
+- `p-nem-lai-vung.jpg` (Nem Lai Vung): "Nem chua Lai Vung" by TUIBAJAVE, CC BY-SA 4.0 —
+  https://commons.wikimedia.org/wiki/File:Nem_chua_Lai_Vung.jpg
+- `p-hat-sen-dong-thap.jpg` (Hạt sen sấy Đồng Tháp): "Hạt sen và táo tàu ng30th6n2022 (2)" by Phương Huy, CC0 — **illustration** (place not stated) —
+  https://commons.wikimedia.org/wiki/File:H%E1%BA%A1t_sen_v%C3%A0_t%C3%A1o_t%C3%A0u_ng30th6n2022_(2).jpg
+- `p-hu-tieu-my-tho.jpg` (Hủ tiếu khô Mỹ Tho): "Tô hủ tiếu Mỹ Tho, ng14th8n2022 (chén gan thêm) (1)" by Phương Huy, CC0 — **illustration** (a bowl of hủ tiếu Mỹ Tho, not the dried noodles) —
+  https://commons.wikimedia.org/wiki/File:T%C3%B4_h%E1%BB%A7_ti%E1%BA%BFu_M%E1%BB%B9_Tho,_ng14th8n2022_(ch%C3%A9n_gan_th%C3%AAm)_(1).jpg
+- `p-lap-xuong-soc-trang.jpg` (Lạp xưởng Sóc Trăng): "Lễ hội ẩm thực Cửa Việt th4n2023 đặc sản Hướng Hóa, lạp xưởng (1)" by Phương Huy, CC BY-SA 4.0 — **illustration** (lạp xưởng of Hướng Hóa, Quảng Trị, not Sóc Trăng) —
+  https://commons.wikimedia.org/wiki/File:L%E1%BB%85_h%E1%BB%99i_%E1%BA%A9m_th%E1%BB%B1c_C%E1%BB%ADa_Vi%E1%BB%87t_th4n2023_%C4%91%E1%BA%B7c_s%E1%BA%A3n_H%C6%B0%E1%BB%9Bng_H%C3%B3a,_l%E1%BA%A1p_x%C6%B0%E1%BB%9Fng_(1).jpg
+- `p-mam-chau-doc.jpg` (Mắm cá lóc Châu Đốc): "Mắm cá lóc" by Bùi Thụy Đào Nguyên, CC BY-SA 3.0 —
+  https://commons.wikimedia.org/wiki/File:M%E1%BA%AFm_c%C3%A1_l%C3%B3c.JPG
+- `p-duong-thot-not.jpg` (Đường thốt nốt An Giang): "Trái thốt nốt 2" by Bùi Thụy Đào Nguyên, CC BY-SA 3.0 — **illustration** (palmyra fruits sold in An Giang, not the sugar) —
+  https://commons.wikimedia.org/wiki/File:Tr%C3%A1i_th%E1%BB%91t_n%E1%BB%91t_2.jpg
+- `p-xoai-cat-hoa-loc.jpg` (Xoài cát Hòa Lộc): "Xoài cát Hòa Lộc" by Hungda, CC0 (Hòa Lộc mangoes at a market in Cần Thơ) —
+  https://commons.wikimedia.org/wiki/File:Xo%C3%A0i_c%C3%A1t_H%C3%B2a_L%E1%BB%99c.JPG
+- `p-dua-sap-cau-ke.jpg` (Dừa sáp Cầu Kè): "Dừa sáp Cầu Kè, Trà Vinh." by Dongson.vmvn, CC BY-SA 3.0 —
+  https://commons.wikimedia.org/wiki/File:D%E1%BB%ABa_s%C3%A1p_C%E1%BA%A7u_K%C3%A8,_Tr%C3%A0_Vinh..jpg
+- `p-banh-pia.jpg` (Bánh pía Sóc Trăng): "Bánh pía 01" by Nguyễn Thanh Quang, CC BY-SA 3.0 — **illustration** (place not stated) —
+  https://commons.wikimedia.org/wiki/File:B%C3%A1nh_p%C3%ADa_01.JPG
+- `p-nuoc-mam.jpg` (Nước mắm cá cơm Phú Quốc): "Vietnam - Fish sauce fermentation jars" by P. Hughes, CC BY 4.0 — **illustration** (fermentation jars in the Mekong delta, not Phú Quốc) —
+  https://commons.wikimedia.org/wiki/File:Vietnam_-_Fish_sauce_fermentation_jars.jpg
+- `p-muoi-tom-tay-ninh.jpg` (Muối tôm Tây Ninh): **source not traced yet** (same as above; Miền Nam photo review).
+
+Photos of the Cà Mau products and the coconut candy (cropped and resized):
 
 - `p-cua-bien-nam-can.jpg`: "Cua Cà Mau bán trên đường NS, ng30th7n2023 (3)" by Phương Huy, CC BY-SA 4.0 —
   https://commons.wikimedia.org/wiki/File:Cua_C%C3%A0_Mau_b%C3%A1n_tr%C3%AAn_%C4%91%C6%B0%E1%BB%9Dng_NS,_ng30th7n2023_(3).jpg
@@ -397,3 +518,14 @@ Sources for the brand introductions in `src/data/brands.ts` (public articles, ch
 - Chỉ dẫn địa lý "Tân Cương": https://vov.vn/kinh-te/tang-cuong-bao-ve-thuong-hieu-che-tan-cuong-post1140083.vov
 - Khải Hoàn: https://vinpearl.com/vi/tong-hop-cac-nha-thung-nuoc-mam-phu-quoc-noi-tieng-nhat
 - Trung Nguyên: https://en.wikipedia.org/wiki/Trung_Nguy%C3%AAn
+- Bánh gai Ninh Giang: Báo Hải Phòng — https://news.baohaiphong.vn/print/155772.html; Vietnam+ —
+  https://en.vietnamplus.vn/specialities-of-hai-duong-post196185.vnp
+- Vải thiều Lục Ngạn (geographical indication 2008, protected in Japan 2021): Tuổi Trẻ —
+  https://tuoitre.vn/vai-thieu-luc-ngan-duoc-nhat-ban-cap-bang-bao-ho-chi-dan-dia-ly-20210316202354705.htm
+- Bưởi Đoan Hùng (geographical indication 2006): Bộ Công Thương —
+  https://moit.gov.vn/tin-tuc/xuc-tien-thuong-mai/bao-ve-va-phat-trien-thuong-hieu-buoi-dac-san-doan-hung-.html
+- Thảo quả Lai Châu: Báo Pháp luật —
+  https://doanhnhan.baophapluat.vn/kham-pha-san-vat-mien-bac-viet-nam-mien-dong-binh-lu-hat-doi-rung-thao-qua-lai-chau-47291.html;
+  Báo Lai Châu — https://baolaichau.vn/kinh-te/am-no-nho-thao-qua
+- Cam Vinh (geographical indication no. 00012, 2007; area extended 2019): Nông nghiệp và Môi trường —
+  https://nongnghiepmoitruong.vn/mo-rong-khu-vuc-dia-ly-trong-cam-vinh-d252262.html
