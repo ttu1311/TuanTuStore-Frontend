@@ -10,6 +10,7 @@ import LoadingState from "@/components/ui/LoadingState";
 import { useStore } from "@/context/StoreContext";
 import FreeShippingProgress from "@/components/cart/FreeShippingProgress";
 import { calculateTotals, getCartLines, maxOrderable, selectedLines } from "@/lib/cart";
+import { WELCOME_COUPON, isFirstOrder } from "@/lib/coupons";
 import { formatVND } from "@/lib/format";
 import type { Product } from "@/types";
 
@@ -133,7 +134,7 @@ function CartRow({ product, quantity, selected }: { product: Product; quantity: 
 
 // Giỏ hàng chỉ lưu id sản phẩm và số lượng; tên, giá và ảnh lấy từ danh sách sản phẩm.
 export default function CartView() {
-  const { isReady, cart, products, currentUser, clearCart, setAllCartSelected } = useStore();
+  const { isReady, cart, products, orders, currentUser, clearCart, setAllCartSelected } = useStore();
   // Bấm "Xóa tất cả" lần đầu chỉ hỏi lại; phải xác nhận mới xóa, tránh bấm nhầm mất cả giỏ
   const [confirmingClear, setConfirmingClear] = useState(false);
 
@@ -157,16 +158,16 @@ export default function CartView() {
   const chosen = selectedLines(lines);
   const allSelected = chosen.length === lines.length;
   const someSelected = chosen.length > 0 && !allSelected;
-  const { subtotal, shippingFee, discount, total } = calculateTotals(
-    chosen.reduce((sum, line) => sum + line.product.price * line.quantity, 0)
-  );
+  // Giỏ hàng chưa có mã giảm giá (nhập ở trang thanh toán), nên chưa giảm gì
+  const { subtotal, shippingFee, total } = calculateTotals(chosen.reduce((sum, line) => sum + line.product.price * line.quantity, 0));
+  // Nhắc mã CHAOBAN cho khách chưa đăng nhập và khách chưa có đơn nào (không tính đơn đã hủy)
+  const showWelcome = !currentUser || isFirstOrder(orders, currentUser.id);
   // Món ĐÃ CHỌN hết hàng hoặc vượt số còn lại: chưa cho thanh toán (món chưa chọn không ảnh hưởng)
   const stockProblem = chosen.some((line) => line.quantity > line.product.stock);
 
   const summaryRows = [
     { label: "Tạm tính", value: formatVND(subtotal) },
     { label: "Phí vận chuyển", value: shippingFee === 0 ? "Miễn phí" : formatVND(shippingFee) },
-    { label: "Giảm giá", value: `−${formatVND(discount)}` },
   ];
 
   return (
@@ -208,6 +209,12 @@ export default function CartView() {
                     <dd className="text-2xl font-bold text-primary">{formatVND(total)}</dd>
                   </div>
                 </dl>
+                {showWelcome && (
+                  <p className="mt-3 text-sm text-ink-muted">
+                    Đơn đầu tiên? Nhập mã <span className="font-semibold text-ink">{WELCOME_COUPON.code}</span> ở bước thanh toán để được giảm{" "}
+                    {formatVND(WELCOME_COUPON.amount)}.
+                  </p>
+                )}
                 {stockProblem ? (
                   <>
                     <button type="button" disabled className={`${btnBase} ${btnPrimary} mt-6 w-full cursor-not-allowed opacity-50`}>

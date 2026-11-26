@@ -5,7 +5,6 @@ export const INITIAL_STOCK = 50; // tồn kho ban đầu của mỗi sản phẩ
 export const LOW_STOCK = 5; // còn từ số này trở xuống: "Sắp hết hàng" (trang Admin)
 export const SHIPPING_FEE = 30000; // phí vận chuyển (VND) cho đơn dưới FREE_SHIPPING_MIN
 export const FREE_SHIPPING_MIN = 300000; // tạm tính từ mức này trở lên thì miễn phí vận chuyển (VND)
-export const DISCOUNT = 20000; // giảm giá cố định cho mọi đơn hàng (VND)
 
 // Số lượng luôn là số nguyên từ 1 đến 99
 export function cleanQuantity(value: number) {
@@ -39,9 +38,11 @@ export function shippingFeeFor(subtotal: number) {
 
 // Tạm tính + Phí vận chuyển − Giảm giá = Tổng cộng
 // Đơn hàng lưu lại phí vận chuyển của chính nó, nên đổi các mức ở trên không làm đổi đơn cũ.
-// discount: số tiền của mã giảm giá khách đã nhập (src/lib/coupons.ts); không có mã thì giảm DISCOUNT.
+// discount: số tiền của mã giảm giá khách đã nhập (src/lib/coupons.ts); không có mã thì không giảm.
 // freeShipping: khách đã nhập mã miễn phí vận chuyển.
-export function calculateTotals(subtotal: number, discount: number = DISCOUNT, freeShipping = false) {
+// Giảm giá không bao giờ quá tạm tính, nên Tổng cộng luôn ≥ 0 (giảm giá trả về là số tiền giảm THỰC TẾ).
+export function calculateTotals(subtotal: number, discount = 0, freeShipping = false) {
   const shippingFee = freeShipping ? 0 : shippingFeeFor(subtotal);
-  return { subtotal, shippingFee, discount, total: subtotal + shippingFee - discount };
+  const actualDiscount = Math.max(0, Math.min(discount, subtotal));
+  return { subtotal, shippingFee, discount: actualDiscount, total: Math.max(0, subtotal + shippingFee - actualDiscount) };
 }

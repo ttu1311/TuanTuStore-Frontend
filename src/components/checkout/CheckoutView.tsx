@@ -10,7 +10,17 @@ import LoadingState from "@/components/ui/LoadingState";
 import { useStore } from "@/context/StoreContext";
 import FreeShippingProgress from "@/components/cart/FreeShippingProgress";
 import { calculateTotals, getCartLines, selectedLines, type CartLine } from "@/lib/cart";
-import { PASSPORT_COUPON, applyCodes, codeExists, codeProblem, codeSlot, describeCode, normalizeCouponCode, type AppliedCodes } from "@/lib/coupons";
+import {
+  PASSPORT_COUPON,
+  WELCOME_COUPON,
+  applyCodes,
+  codeExists,
+  codeProblem,
+  codeSlot,
+  describeCode,
+  normalizeCouponCode,
+  type AppliedCodes,
+} from "@/lib/coupons";
 import { formatVND } from "@/lib/format";
 import { emptyAddress, formatAddress, validateAddress } from "@/lib/address";
 import {
@@ -19,6 +29,7 @@ import {
   validateCheckout,
   type CheckoutErrors,
   type CheckoutFields,
+  paymentStatusOf,
 } from "@/lib/orders";
 import { isValidPhone } from "@/lib/validation";
 import type { Order, PaymentMethod, SavedAddress, User } from "@/types";
@@ -93,6 +104,8 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
   // Mã đã áp dụng mà nay không còn hợp lệ (ví dụ Admin vừa tắt mã ở tab khác): tính như chưa có mã, placeOrder sẽ báo lỗi
   const priced = applyCodes(codes, couponContext);
   const { subtotal, shippingFee, discount, total } = priced.ok ? priced.totals : calculateTotals(lineTotal);
+  // Gợi ý mã CHAOBAN: khách đủ điều kiện (đơn đầu tiên) và chưa có mã giảm giá nào
+  const suggestWelcome = !codes.coupon && codeProblem(WELCOME_COUPON.code, couponContext) === null;
 
   function applyCoupon() {
     const code = normalizeCouponCode(couponText);
@@ -100,6 +113,11 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
       setCouponError("Vui lòng nhập mã giảm giá.");
       return;
     }
+    if (applyCode(code)) setCouponText("");
+  }
+
+  // Kiểm tra rồi áp một mã; trả về true nếu đã áp
+  function applyCode(code: string) {
     const slot = codeSlot(code, coupons) === "shipping" ? "shippingCoupon" : "coupon";
     const current = codes[slot];
     const problem = !codeExists(code, coupons)
@@ -112,10 +130,14 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
             : `Đơn đã có mã miễn phí vận chuyển ${current}.`
           : codeProblem(code, couponContext);
     setCouponError(problem ?? "");
-    if (!problem) {
-      setCodes({ ...codes, [slot]: code });
-      setCouponText("");
-    }
+    if (!problem) setCodes({ ...codes, [slot]: code });
+    return !problem;
+  }
+
+  // Nút "Áp dụng" ở dòng gợi ý biến mất sau khi bấm: chuyển focus về ô nhập mã để không bị mất
+  function applyWelcome() {
+    applyCode(WELCOME_COUPON.code);
+    document.getElementById("coupon")?.focus();
   }
 
   function removeCode(slot: keyof AppliedCodes) {
@@ -221,7 +243,8 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
       label: codes.shippingCoupon ? `Phí vận chuyển (mã ${codes.shippingCoupon})` : "Phí vận chuyển",
       value: shippingFee === 0 ? "Miễn phí" : formatVND(shippingFee),
     },
-    { label: codes.coupon ? `Giảm giá (mã ${codes.coupon})` : "Giảm giá", value: `−${formatVND(discount)}` },
+    // Không có mã giảm giá thì không giảm, không hiện dòng này
+    ...(discount > 0 ? [{ label: codes.coupon ? `Giảm giá (mã ${codes.coupon})` : "Giảm giá", value: `−${formatVND(discount)}` }] : []),
     ...(giftWrap ? [{ label: "Gói quà & thiệp", value: "Miễn phí" }] : []),
   ];
 
@@ -280,6 +303,17 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
                   </div>
                 );
               })}
+              {suggestWelcome && (
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 rounded-lg bg-gold-soft px-4 py-1">
+                  <p className="text-sm text-gold-ink">
+                    Đơn đầu tiên của bạn? Dùng mã <span className="font-semibold">{WELCOME_COUPON.code}</span> giảm{" "}
+                    {formatVND(WELCOME_COUPON.amount)}
+                  </p>
+                  <button type="button" onClick={applyWelcome} aria-label={`Áp dụng mã ${WELCOME_COUPON.code}`} className="min-h-11 text-sm font-medium text-primary underline underline-offset-4">
+                    Áp dụng
+                  </button>
+                </div>
+              )}
               <div className="flex gap-2">
                 <input
                   id="coupon"
@@ -324,13 +358,13 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
             <dl className="mt-4 space-y-3 border-t border-line pt-4">
               {summaryRows.map((row) => (
                 <div key={row.label} className="flex justify-between gap-4">
-                  <dt className="text-ink-muted">{row.label}</dt>
-                  <dd className="font-medium text-ink">{row.value}</dd>
+                  <dt className="min-w-0 text-ink-muted">{row.label}</dt>
+                  <dd className="whitespace-nowrap font-medium text-ink">{row.value}</dd>
                 </div>
               ))}
               <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-line pt-4">
                 <dt className="text-lg font-semibold text-ink">Tổng cộng</dt>
-                <dd className="text-2xl font-bold text-primary">{formatVND(total)}</dd>
+                <dd className="whitespace-nowrap text-2xl font-bold text-primary">{formatVND(total)}</dd>
               </div>
             </dl>
 
@@ -470,7 +504,9 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
               ))}
               {payment === "BANK_TRANSFER" && (
                 <p className="pl-8 text-sm text-ink-muted">
-                  Đặt hàng xong, bạn sẽ thấy mã QR có sẵn số tiền và nội dung chuyển khoản (mã đơn).
+                  {total > 0
+                    ? "Đặt hàng xong, bạn sẽ thấy mã QR có sẵn số tiền và nội dung chuyển khoản (mã đơn)."
+                    : "Tổng cộng 0₫ nên đơn này không cần chuyển khoản."}
                 </p>
               )}
             </div>
@@ -535,7 +571,7 @@ export default function CheckoutView() {
         <p className="mt-1 text-ink-muted">
           Tổng cộng: <span className="text-lg font-bold text-primary">{formatVND(placedOrder.total)}</span>
         </p>
-        {placedOrder.paymentMethod === "BANK_TRANSFER" && (
+        {paymentStatusOf(placedOrder) === "UNPAID" && (
           <div className="mx-auto mt-6 max-w-[40rem]">
             <BankTransferQR orderCode={placedOrder.code} amount={placedOrder.total} />
           </div>

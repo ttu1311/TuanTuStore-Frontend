@@ -15,7 +15,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import CartToast, { type Toast } from "@/components/ui/CartToast";
 import { ADMIN_LOGIN_PATH, hasAdminHint } from "@/lib/adminConstants";
 import { MAX_QUANTITY, cleanQuantity, getCartLines, maxOrderable, selectedLines } from "@/lib/cart";
-import { applyCodes, type AppliedCodes } from "@/lib/coupons";
+import { applyCodes, isSystemCode, type AppliedCodes } from "@/lib/coupons";
 import { customerCanCancel, formatOrderCode, isNotShipped, orderNumberFromCode, samePhone, type CheckoutFields } from "@/lib/orders";
 import { isSamePassword } from "@/lib/password";
 import { createProductId, type ProductInput } from "@/lib/products";
@@ -488,7 +488,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       address: customer.address.street.trim(),
       note: customer.note.trim(),
       paymentMethod,
-      ...(paymentMethod === "BANK_TRANSFER" ? { paymentStatus: "UNPAID" as const } : {}),
+      // Đơn chuyển khoản 0₫: không có gì để chuyển, nên không chờ thanh toán (và không có mã QR)
+      ...(paymentMethod === "BANK_TRANSFER" ? { paymentStatus: totals.total > 0 ? ("UNPAID" as const) : ("PAID" as const) } : {}),
       status: "PENDING",
       items,
       subtotal: totals.subtotal,
@@ -651,6 +652,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   function addCoupon(coupon: Coupon): ActionResult {
     if (!isAdmin) return fail(NO_PERMISSION);
+    if (isSystemCode(coupon.code)) return fail("Mã này là mã hệ thống, không tạo trùng được", "code");
     if (coupons.some((item) => item.code === coupon.code)) return fail("Mã này đã có", "code");
     return saveCoupons([...coupons, coupon]) ? OK : fail(SAVE_ERROR);
   }

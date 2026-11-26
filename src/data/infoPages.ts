@@ -1,12 +1,12 @@
-import { DISCOUNT, FREE_SHIPPING_MIN, SHIPPING_FEE } from "@/lib/cart";
-import { PASSPORT_COUPON } from "@/lib/coupons";
+import { FREE_SHIPPING_MIN, SHIPPING_FEE } from "@/lib/cart";
+import { PASSPORT_COUPON, WELCOME_COUPON } from "@/lib/coupons";
 import { formatVND } from "@/lib/format";
 import { orderStatuses, orderStatusLabels } from "@/lib/orders";
 import { storeContact } from "@/data/contact";
 import { bankAccount } from "@/data/payment";
 
 // Nội dung các trang hướng dẫn và chính sách (/thong-tin/<slug>), liên kết từ Footer.
-// Các con số (phí vận chuyển, mức miễn phí, giảm giá) lấy từ src/lib/cart.ts, nên luôn khớp với giỏ hàng.
+// Các con số lấy từ src/lib/cart.ts (phí vận chuyển, mức miễn phí) và src/lib/coupons.ts (mã giảm giá), nên luôn khớp với giỏ hàng.
 // Đặc sản 3 Miền là đồ án học tập: đây là chính sách MẪU, mô tả cách cửa hàng vận hành, và mỗi trang đều nói rõ điều đó.
 
 export type InfoSection = {
@@ -27,7 +27,6 @@ export type InfoPage = {
 
 const shipping = formatVND(SHIPPING_FEE);
 const freeFrom = formatVND(FREE_SHIPPING_MIN);
-const discount = formatVND(DISCOUNT);
 const statusFlow = orderStatuses.map((status) => orderStatusLabels[status]).join(" → ");
 
 export const infoPages: InfoPage[] = [
@@ -103,12 +102,12 @@ export const infoPages: InfoPage[] = [
         answer: `Phí vận chuyển là ${shipping} cho mỗi đơn. Đơn có tạm tính từ ${freeFrom} trở lên được miễn phí vận chuyển.`,
       },
       {
-        question: "Giảm giá trong giỏ hàng là gì?",
-        answer: `Mỗi đơn hàng được giảm ${discount}, trừ thẳng vào tổng cộng. Một số sản phẩm còn có giá ưu đãi riêng, hiện bằng giá cũ gạch ngang và nhãn phần trăm giảm.`,
+        question: "Đơn đầu tiên có được giảm giá không?",
+        answer: `Có. Đơn đầu tiên của mỗi tài khoản được giảm ${formatVND(WELCOME_COUPON.amount)} với mã ${WELCOME_COUPON.code}: ở trang thanh toán, bấm “Áp dụng” ở dòng gợi ý hoặc tự nhập mã. Mã này không cộng dồn với mã giảm giá khác nhưng dùng chung được với mã miễn phí vận chuyển; nếu đơn đầu bị hủy, bạn dùng lại được ở đơn sau. Ngoài ra, một số sản phẩm có giá ưu đãi riêng, hiện bằng giá cũ gạch ngang và nhãn phần trăm giảm.`,
       },
       {
         question: "Làm sao để có mã giảm giá?",
-        answer: `Mỗi tỉnh bạn đã nhận được đặc sản được đóng một con dấu trong “Hộ chiếu đặc sản” (trang Tài khoản). Đóng đủ ${PASSPORT_COUPON.stampsNeeded} dấu, bạn nhận mã ${PASSPORT_COUPON.code}: giảm ${PASSPORT_COUPON.percent}% tạm tính, tối đa ${formatVND(PASSPORT_COUPON.maxDiscount)}, dùng một lần. Nhập mã ở ô “Mã giảm giá” khi thanh toán; mã thay cho khoản giảm ${discount} của đơn đó.`,
+        answer: `Mỗi tỉnh bạn đã nhận được đặc sản được đóng một con dấu trong “Hộ chiếu đặc sản” (trang Tài khoản). Đóng đủ ${PASSPORT_COUPON.stampsNeeded} dấu, bạn nhận mã ${PASSPORT_COUPON.code}: giảm ${PASSPORT_COUPON.percent}% tạm tính, tối đa ${formatVND(PASSPORT_COUPON.maxDiscount)}, dùng một lần. Nhập mã ở ô “Mã giảm giá” khi thanh toán.`,
       },
       {
         question: "Tôi dùng được mấy mã giảm giá cho một đơn?",

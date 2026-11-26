@@ -22,11 +22,13 @@ function crc16(text: string) {
 type VietQrInput = {
   bin: string; // mã BIN ngân hàng, ví dụ "970436"
   accountNo: string;
-  amount: number; // VND, số nguyên
+  amount: number; // VND, số nguyên dương (đơn 0₫ không cần chuyển khoản nên không có mã QR)
   message: string; // nội dung chuyển khoản (chữ không dấu, tối đa 25 ký tự), ở đây là mã đơn
 };
 
 export function vietQrPayload({ bin, accountNo, amount, message }: VietQrInput) {
+  // Mã QR số tiền 0 hoặc âm: ứng dụng ngân hàng báo lỗi hoặc cho khách tự gõ số tiền. Nơi gọi phải chặn trước.
+  if (!(Math.round(amount) > 0)) throw new RangeError("Số tiền chuyển khoản phải lớn hơn 0");
   const beneficiary = field("00", bin) + field("01", accountNo);
   // 38: thông tin người nhận theo VietQR. QRIBFTTA = chuyển nhanh 24/7 tới SỐ TÀI KHOẢN
   const merchant = field("00", "A000000727") + field("01", beneficiary) + field("02", "QRIBFTTA");

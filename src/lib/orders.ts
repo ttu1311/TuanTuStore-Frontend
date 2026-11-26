@@ -59,8 +59,10 @@ export const paymentStatusStyles: Record<PaymentStatus, string> = {
 
 // Trạng thái thanh toán của một đơn: null với đơn COD (trả khi nhận hàng).
 // Đơn chuyển khoản tạo trước khi có trường này được coi là chưa thanh toán.
+// Đơn chuyển khoản có tổng 0₫ (mã giảm hết tạm tính và miễn phí vận chuyển) không còn gì để trả: coi như đã thanh toán.
 export function paymentStatusOf(order: Order): PaymentStatus | null {
   if (order.paymentMethod !== "BANK_TRANSFER") return null;
+  if (order.total <= 0) return "PAID";
   return order.paymentStatus ?? "UNPAID";
 }
 

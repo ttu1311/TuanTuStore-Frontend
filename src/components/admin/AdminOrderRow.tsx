@@ -76,7 +76,7 @@ export default function AdminOrderRow({ order, accountText }: { order: Order; ac
   const totalRows = [
     ["Tạm tính", formatVND(order.subtotal)],
     [order.shippingCoupon ? `Phí vận chuyển (mã ${order.shippingCoupon})` : "Phí vận chuyển", order.shippingFee === 0 ? "Miễn phí" : formatVND(order.shippingFee)],
-    [order.coupon ? `Giảm giá (mã ${order.coupon})` : "Giảm giá", `−${formatVND(order.discount)}`],
+    ...(order.discount > 0 ? [[order.coupon ? `Giảm giá (mã ${order.coupon})` : "Giảm giá", `−${formatVND(order.discount)}`]] : []),
   ];
 
   return (

@@ -8,10 +8,17 @@ import { vietQrPayload } from "@/lib/vietqr";
 
 const QUIET_ZONE = 4; // lề trắng quanh mã (ô), theo chuẩn QR
 
+type BankTransferQRProps = { orderCode: string; amount: number };
+
 // Mã QR chuyển khoản cho MỘT đơn: số tiền và nội dung (mã đơn) có sẵn trong mã.
 // TẠM THỜI: sau khi khách chuyển, Admin xác nhận thủ công ("Xác nhận đã nhận tiền" ở /admin/don-hang).
 // Khi có backend: webhook PayOS sẽ tự chuyển đơn sang "Đã thanh toán" (xem src/data/payment.ts).
-export default function BankTransferQR({ orderCode, amount }: { orderCode: string; amount: number }) {
+// Đơn 0₫ không cần chuyển khoản: không hiện gì (không bao giờ tạo mã QR số tiền 0).
+export default function BankTransferQR(props: BankTransferQRProps) {
+  return props.amount > 0 ? <BankTransferCard {...props} /> : null;
+}
+
+function BankTransferCard({ orderCode, amount }: BankTransferQRProps) {
   const payload = vietQrPayload({ bin: bankAccount.bin, accountNo: bankAccount.accountNo, amount, message: orderCode });
 
   // Vẽ mã thành một <path> SVG: mỗi ô đen là một hình vuông 1x1
