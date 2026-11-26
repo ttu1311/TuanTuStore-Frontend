@@ -10,14 +10,13 @@ export type SeedUpdate = {
   from: string | number | RegExp;
 };
 
-const placeholderBrand = /^Thương hiệu [A-Z]$/; // "Thương hiệu A" … giá trị giữ chỗ cũ
+export const placeholderBrand = /^Thương hiệu [A-Z]$/; // "Thương hiệu A" … giá trị giữ chỗ cũ
 
 export const seedUpdates: SeedUpdate[] = [
   // Thương hiệu giữ chỗ -> thương hiệu thật (mọi sản phẩm mẫu)
   ...initialProducts.map((product): SeedUpdate => ({ id: product.id, field: "brand", from: placeholderBrand })),
 
   // Xuất xứ cho khớp với thương hiệu mới
-  { id: "banh-com", field: "origin", from: "Hàng Than, Hà Nội" },
   { id: "banh-pia", field: "origin", from: "Vũng Thơm, Sóc Trăng" },
   { id: "keo-dua", field: "origin", from: "Cồn Phụng, Bến Tre" },
 
@@ -61,4 +60,9 @@ export const renamedImages: Record<string, string> = {
   "/images/placeholder-mat-ong-rung-u-minh-ha.jpg": "/images/p-mat-ong-u-minh-ha.jpg",
   "/images/placeholder-kho-ca-boi.jpg": "/images/p-kho-ca-boi.jpg",
   "/images/p-keo-dua.jpg": "/images/p-keo-dua-ben-tre.jpg",
+  // Rà ảnh Miền Bắc (11/2026): ảnh cũ có chữ, nhãn hoặc không thấy sản phẩm, đã thay bằng ảnh Wikimedia Commons khác (xem Credits trong README)
+  "/images/p-mien-dong-binh-lieu.jpg": "/images/p-mien-dong-binh-lieu-v2.jpg",
+  "/images/p-mat-ong-bac-ha-meo-vac.jpg": "/images/p-mat-ong-bac-ha-meo-vac-v2.jpg",
+  "/images/p-tuong-ban.jpg": "/images/p-tuong-ban-v3.jpg",
+  "/images/p-hat-de-trung-khanh.jpg": "/images/p-hat-de-trung-khanh-v2.jpg",
 };

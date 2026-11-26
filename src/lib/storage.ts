@@ -1,8 +1,8 @@
 // Nơi DUY NHẤT làm việc với localStorage / sessionStorage.
 // Các hàm này phải chạy ở trình duyệt (trong useEffect hoặc trình xử lý sự kiện), không bao giờ chạy khi render trên server.
 import { caMauProducts, initialProducts, initialUsers } from "@/data/initialData";
-import { threeRegionProducts } from "@/data/moreProducts";
-import { renamedImages, seedUpdates } from "@/data/seedUpdates";
+import { fullProvinceProducts, threeRegionProducts } from "@/data/moreProducts";
+import { placeholderBrand, renamedImages, seedUpdates } from "@/data/seedUpdates";
 import { INITIAL_STOCK } from "@/lib/cart";
 import type { CartItem, Coupon, Order, Product, Review, User } from "@/types";
 
@@ -28,7 +28,8 @@ export const STORAGE_KEYS = {
 // Để thêm sản phẩm về sau: đưa chúng vào initialProducts VÀ thêm một nhóm mới ở đây với id mới.
 const seedBatches: { id: string; products: Product[] }[] = [
   { id: "ca-mau", products: caMauProducts },
-  { id: "ba-mien-60", products: threeRegionProducts }, // 47 món, mỗi miền đủ 20 món (tháng 11/2026)
+  { id: "ba-mien-60", products: threeRegionProducts }, // ban đầu 47 món, mỗi miền đủ 20 món (tháng 11/2026)
+  { id: "du-34-tinh", products: fullProvinceProducts }, // 5 món thay 5 món cũ để đủ 34 tỉnh (tháng 11/2026), xem replacedSamples
 ];
 
 // Đọc một giá trị JSON. Trả về null khi thiếu khóa, văn bản không phải JSON hợp lệ hoặc storage bị chặn.
@@ -78,6 +79,7 @@ export function initializeStorage() {
 const migrations: { id: string; run: () => boolean }[] = [
   { id: "remove-legacy-admin", run: removeLegacyAdminAccount },
   { id: "remove-contact-requests", run: removeContactRequests },
+  ...replacedSamples().map((sample) => ({ id: `replace-${sample.id}`, run: () => removeReplacedSample(sample) })),
 ];
 
 function runMigrations() {
@@ -88,6 +90,67 @@ function runMigrations() {
     done.push(migration.id);
     writeJSON(STORAGE_KEYS.migrations, done);
   }
+}
+
+// Món mẫu đã được thay bằng món khác (đủ 34 tỉnh, 11/2026; món mới ở fullProvinceProducts) cùng giá trị mẫu cũ của nó.
+// Một hàm chứ không phải hằng số, vì migrations ở trên được tạo trước khi tới dòng này.
+type ReplacedSample = { id: string; name: string; price: number; image: string; brand: string };
+
+function replacedSamples(): ReplacedSample[] {
+  return [
+    { id: "nuoc-mam-cat-hai", name: "Nước mắm Cát Hải", price: 90000, image: "/images/p-nuoc-mam-cat-hai.jpg", brand: "Nước mắm Cát Hải" },
+    { id: "banh-com", name: "Bánh cốm", price: 90000, image: "/images/p-banh-com.jpg", brand: "Hồng Lam" },
+    { id: "tra-sen-tay-ho", name: "Trà sen Tây Hồ", price: 350000, image: "/images/p-tra-sen-tay-ho.jpg", brand: "Trà sen Quảng An" },
+    { id: "banh-da-nem-lang-cheu", name: "Bánh đa nem làng Chều", price: 30000, image: "/images/p-banh-da-nem-lang-cheu.jpg", brand: "Bánh đa nem làng Chều" },
+    { id: "nuoc-mam-nam-o", name: "Nước mắm Nam Ô", price: 110000, image: "/images/p-nuoc-mam-nam-o.jpg", brand: "Nước mắm Nam Ô" },
+  ];
+}
+
+// Bỏ một món mẫu đã được thay, CHỈ KHI Admin chưa sửa nó (tên, giá, ảnh, thương hiệu vẫn là giá trị mẫu; thương hiệu giữ chỗ
+// "Thương hiệu A"… của bản rất cũ cũng tính là chưa sửa). Admin đã sửa thì giữ nguyên món đó. Đơn hàng cũ không bị đổi.
+// Bỏ id khỏi giỏ hàng, danh sách yêu thích, "đã xem gần đây" và lượt xem TRƯỚC, danh sách sản phẩm SAU CÙNG:
+// lỗi giữa chừng thì lần sau vẫn tìm thấy món cũ để làm lại. Trả về false nếu chưa lưu được (sẽ thử lại lần sau).
+function removeReplacedSample(sample: ReplacedSample) {
+  const products = readJSON<Product[]>(STORAGE_KEYS.products);
+  if (!Array.isArray(products)) return false;
+  const old = products.find((product) => product.id === sample.id);
+  if (!old) return true; // trình duyệt mới, hoặc Admin đã xóa món này
+  const untouched =
+    old.name === sample.name &&
+    old.price === sample.price &&
+    old.image === sample.image &&
+    (old.brand === sample.brand || placeholderBrand.test(old.brand));
+  if (!untouched) return true;
+  if (!removeProductReferences(sample.id)) return false;
+  return writeJSON(STORAGE_KEYS.products, products.filter((product) => product.id !== sample.id));
+}
+
+// Bỏ một id sản phẩm khỏi giỏ hàng, yêu thích (mọi tài khoản), "đã xem gần đây" và lượt xem. Chỉ ghi khóa nào thật sự đổi.
+function removeProductReferences(id: string) {
+  const cart = readJSON<CartItem[]>(STORAGE_KEYS.cart);
+  if (Array.isArray(cart) && cart.some((item) => item.productId === id)) {
+    if (!writeJSON(STORAGE_KEYS.cart, cart.filter((item) => item.productId !== id))) return false;
+  }
+  const wishlists = readJSON<Record<string, unknown>>(STORAGE_KEYS.wishlists);
+  if (wishlists && typeof wishlists === "object" && !Array.isArray(wishlists)) {
+    const has = Object.values(wishlists).some((list) => Array.isArray(list) && list.includes(id));
+    if (has) {
+      const next = Object.fromEntries(
+        Object.entries(wishlists).map(([userId, list]) => [userId, Array.isArray(list) ? list.filter((item) => item !== id) : list])
+      );
+      if (!writeJSON(STORAGE_KEYS.wishlists, next)) return false;
+    }
+  }
+  const recent = readJSON<unknown[]>(STORAGE_KEYS.recentlyViewed);
+  if (Array.isArray(recent) && recent.includes(id)) {
+    if (!writeJSON(STORAGE_KEYS.recentlyViewed, recent.filter((item) => item !== id))) return false;
+  }
+  const views = readJSON<Record<string, unknown>>(STORAGE_KEYS.productViews);
+  if (views && typeof views === "object" && !Array.isArray(views) && id in views) {
+    const { [id]: _removed, ...rest } = views; // eslint-disable-line @typescript-eslint/no-unused-vars
+    if (!writeJSON(STORAGE_KEYS.productViews, rest)) return false;
+  }
+  return true;
 }
 
 // Trang Liên hệ (form "Yêu cầu gọi lại") đã bị bỏ, nên khóa lưu các yêu cầu đó không còn ai đọc: xóa khỏi trình duyệt.
