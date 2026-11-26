@@ -164,7 +164,7 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 | `/admin/san-pham/them` | Admin: add a product |
 | `/admin/san-pham/[id]/sua` | Admin: edit a product |
 | `/admin/don-hang` | Admin: orders — details, change status ("Đã hủy" returns the goods to stock), "Xác nhận đã nhận tiền" for bank transfers, delete |
-| `/admin/thong-ke` | Admin: purchases per product — sold, orders, revenue, views, stock; click a column to sort |
+| `/admin/thong-ke` | Admin: purchases per product — sold, orders, revenue, views, stock; click a column to sort. **"Tỉnh bán chạy"**: completed orders in the selected period (7/30/90 days/all) grouped by the **product's province of origin** (not the buyer's), top 10 by revenue (goods only: price × quantity, without shipping or order discount; ties by quantity) with the region in small text, quantity and order count, plus "X/34 tỉnh đã có món bán ra". Products deleted from the shop go under "Không rõ xuất xứ" (orders do not store the origin). Logic: `provinceSales` in `src/lib/stats.ts` |
 | `/admin/nguoi-dung` | Admin: customer accounts — view, delete (there are no roles any more) |
 | `/admin/ma-giam-gia` | Admin: discount codes — create a code (percent with optional cap, fixed amount, or free shipping; optional minimum subtotal and total number of uses), see how many orders used it, turn off, delete |
 | `/api/captcha/verify` | Route Handler (server): verifies a Turnstile token with Cloudflare `siteverify` using the secret key |

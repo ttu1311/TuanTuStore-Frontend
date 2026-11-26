@@ -1,7 +1,10 @@
 // Số liệu cho trang Admin (Tổng quan và Thống kê sản phẩm). Mọi con số đếm từ dữ liệu trong localStorage.
+import { provinces } from "@/data/provinces";
+import { isKnownProvince } from "@/lib/address";
 import { INITIAL_STOCK, LOW_STOCK } from "@/lib/cart";
 import { adminOrderStatuses } from "@/lib/orders";
-import type { Order, OrderStatus, Product } from "@/types";
+import { productProvince } from "@/lib/products";
+import type { Order, OrderStatus, Product, Region } from "@/types";
 
 export type ProductStat = {
   product: Product;
@@ -104,6 +107,46 @@ export function stockReport(stats: ProductStat[], orders: Order[], count = 10): 
 // Sản phẩm còn từ LOW_STOCK trở xuống (kể cả đã hết), ít nhất lên đầu
 export function lowStockProducts(products: Product[]) {
   return products.filter((product) => product.stock <= LOW_STOCK).sort((a, b) => a.stock - b.stock || a.name.localeCompare(b.name, "vi"));
+}
+
+// ---------- Tỉnh bán chạy (trang Thống kê) ----------
+
+// Món đã bị xóa khỏi cửa hàng: đơn chỉ lưu tên và giá, không lưu xuất xứ, nên không biết tỉnh
+export const UNKNOWN_PROVINCE = "Không rõ xuất xứ";
+
+export type ProvinceSale = {
+  province: string; // tỉnh xuất xứ của sản phẩm (tên sau sáp nhập), hoặc UNKNOWN_PROVINCE
+  region: Region | null; // miền của sản phẩm thuộc tỉnh này (null với UNKNOWN_PROVINCE)
+  revenue: number; // tiền hàng: giá lúc mua × số lượng (không tính phí vận chuyển, giảm giá của đơn)
+  quantity: number; // số lượng đã bán
+  orders: number; // số đơn có ít nhất một món của tỉnh này
+};
+
+// Bán theo TỈNH XUẤT XỨ của sản phẩm (không phải tỉnh của người mua), chỉ đơn ĐÃ HOÀN THÀNH.
+// orders: đã lọc theo khoảng thời gian ở trang. Xếp doanh thu giảm dần, bằng nhau thì số lượng, rồi tên.
+export function provinceSales(products: Product[], orders: Order[]): ProvinceSale[] {
+  const byId = new Map(products.map((product) => [product.id, product]));
+  const rows = new Map<string, ProvinceSale & { codes: Set<string> }>();
+  for (const order of orders) {
+    if (order.status !== "COMPLETED") continue;
+    for (const item of order.items) {
+      const product = byId.get(item.productId);
+      const province = product ? productProvince(product) : UNKNOWN_PROVINCE;
+      const row = rows.get(province) ?? { province, region: product?.region ?? null, revenue: 0, quantity: 0, orders: 0, codes: new Set<string>() };
+      row.revenue += item.price * item.quantity;
+      row.quantity += item.quantity;
+      row.codes.add(order.code);
+      rows.set(province, row);
+    }
+  }
+  return Array.from(rows.values(), ({ codes, ...row }) => ({ ...row, orders: codes.size })).sort(
+    (a, b) => b.revenue - a.revenue || b.quantity - a.quantity || a.province.localeCompare(b.province, "vi")
+  );
+}
+
+// "X/34 tỉnh đã có món bán ra": chỉ đếm các tỉnh trong danh sách 34 tỉnh (không tính "Không rõ xuất xứ")
+export function provinceCoverage(sales: ProvinceSale[]) {
+  return { sold: sales.filter((row) => row.quantity > 0 && isKnownProvince(row.province)).length, total: provinces.length };
 }
 
 // ---------- Theo thời gian (trang Thống kê) ----------

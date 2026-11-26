@@ -10,6 +10,8 @@ import { regionKeys, regions } from "@/lib/regions";
 import {
   ordersBetween,
   productStats,
+  provinceCoverage,
+  provinceSales,
   rangeBounds,
   salesSummary,
   type ProductStat,
@@ -119,6 +121,19 @@ export default function AdminProductStats() {
     })
     .sort((a, b) => b.value - a.value);
 
+  // Tỉnh bán chạy: theo tỉnh xuất xứ của sản phẩm, đơn hoàn thành trong khoảng đã chọn, top 10 theo doanh thu
+  const sales = provinceSales(products, inRange);
+  const coverage = provinceCoverage(sales);
+  const provinceBars: BarItem[] = sales.slice(0, 10).map((row) => ({
+    id: row.province,
+    label: row.province,
+    sublabel: row.region ? regions[row.region].label : undefined,
+    value: row.revenue,
+    valueText: formatVND(row.revenue),
+    tooltipValue: `Doanh thu ${formatVND(row.revenue)}`,
+    details: [`${row.quantity} đã bán`, `${row.orders} đơn`],
+  }));
+
   const kpis = [
     { label: "Doanh số", value: formatVND(summary.revenue), change: previous && changeText(summary.revenue, previous.revenue) },
     { label: "Số đơn", value: String(summary.orders), change: previous && changeText(summary.orders, previous.orders) },
@@ -182,6 +197,29 @@ export default function AdminProductStats() {
           <RankedBars items={regionBars} label="Đã bán theo miền" empty="Chưa có lượt mua nào trong khoảng này." />
         </section>
       </div>
+
+      <section aria-labelledby="provinces-chart-title" className={`${cardStyle} mt-6`}>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h2 id="provinces-chart-title" className={cardTitle}>
+            Tỉnh bán chạy
+          </h2>
+          {sales.length > 0 && (
+            <p className="text-sm font-semibold text-ink">
+              {coverage.sold}/{coverage.total} tỉnh đã có món bán ra
+            </p>
+          )}
+        </div>
+        <p className="mb-3 mt-1 max-w-[52rem] text-sm text-ink-muted">
+          Theo tỉnh xuất xứ của sản phẩm (không phải nơi người mua), chỉ tính đơn đã hoàn thành. Doanh thu là tiền hàng (giá lúc mua ×
+          số lượng), chưa trừ giảm giá và chưa cộng phí vận chuyển. Top 10 theo doanh thu.
+        </p>
+        <RankedBars
+          items={provinceBars}
+          label="Tỉnh bán chạy"
+          empty="Chưa có đơn hoàn thành nào trong khoảng này."
+          valueRoom="6.5rem"
+        />
+      </section>
 
       <h2 className="mb-2 mt-10 font-display text-xl font-semibold text-ink">Chi tiết theo sản phẩm</h2>
       <p className="mb-4 max-w-[52rem] text-sm text-ink-muted">
