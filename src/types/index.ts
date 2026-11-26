@@ -110,7 +110,7 @@ export interface Order {
   subtotal: number;
   shippingFee: number;
   discount: number;
-  coupon?: string; // mã giảm giá đã dùng (ví dụ "HOCHIEU50", xem src/lib/coupons.ts); không có = giảm mặc định
+  coupon?: string; // mã giảm giá đã dùng (ví dụ "HOCHIEU50", "CHAOBAN", xem src/lib/coupons.ts); không có = không dùng mã (đơn cũ: giảm cố định 20.000₫)
   shippingCoupon?: string; // mã miễn phí vận chuyển đã dùng (khi đó shippingFee = 0)
   total: number;
   // Có = khách chọn gói quà (miễn phí) khi thanh toán; `message` là lời nhắn in trên thiệp ("" = thiệp trống).

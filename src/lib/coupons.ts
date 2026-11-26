@@ -1,12 +1,14 @@
 // Mã giảm giá. Có hai nguồn:
-// - Mã hộ chiếu PASSPORT_COUPON (cố định): khách đã đóng đủ PASSPORT_COUPON.stampsNeeded dấu trong "Hộ chiếu đặc sản".
+// - Mã hệ thống (cố định trong code, không nằm trong danh sách mã của Admin):
+//   + PASSPORT_COUPON: khách đã đóng đủ PASSPORT_COUPON.stampsNeeded dấu trong "Hộ chiếu đặc sản".
+//   + WELCOME_COUPON (CHAOBAN): đơn đầu tiên của tài khoản (chưa có đơn nào không bị hủy).
 // - Mã do chủ cửa hàng tạo ở /admin/ma-giam-gia (Coupon, lưu trong localStorage): giảm %, giảm số tiền, hoặc miễn phí vận chuyển.
 // Quy tắc chung:
 // - Phải đăng nhập; mỗi khách dùng mỗi mã một lần. Đơn đã hủy không tính, nên hủy đơn thì dùng lại được.
-// - Mỗi đơn tối đa MỘT mã giảm giá (mã hộ chiếu cũng là mã giảm giá) và MỘT mã miễn phí vận chuyển.
-// - Mã giảm giá THAY cho khoản giảm mặc định DISCOUNT của đơn đó.
+// - Mỗi đơn tối đa MỘT mã giảm giá (mã hộ chiếu và CHAOBAN cũng là mã giảm giá) và MỘT mã miễn phí vận chuyển.
+// - Không có mã giảm giá thì đơn không được giảm. Số tiền giảm không bao giờ quá tạm tính.
 // Trang thanh toán và placeOrder (StoreContext) đều tính qua applyCodes, nên hai nơi luôn ra cùng một con số.
-import { DISCOUNT, calculateTotals } from "@/lib/cart";
+import { calculateTotals } from "@/lib/cart";
 import { formatVND } from "@/lib/format";
 import { buildPassport } from "@/lib/passport";
 import type { Coupon, CouponKind, Order, Product, User } from "@/types";
@@ -17,6 +19,22 @@ export const PASSPORT_COUPON = {
   maxDiscount: 200000, // giảm tối đa (VND) mỗi đơn
   stampsNeeded: 17,
 } as const;
+
+// Mã chào mừng: giảm cố định cho đơn đầu tiên của mỗi tài khoản
+export const WELCOME_COUPON = {
+  code: "CHAOBAN",
+  amount: 20000, // VND
+} as const;
+
+// Mã hệ thống: Admin không tạo được mã trùng tên
+export function isSystemCode(code: string) {
+  return code === PASSPORT_COUPON.code || code === WELCOME_COUPON.code;
+}
+
+// Khách chưa có đơn nào không bị hủy, tức đơn sắp đặt là đơn đầu tiên (đơn đầu bị hủy thì vẫn tính là chưa có)
+export function isFirstOrder(orders: Order[], userId: string) {
+  return !orders.some((order) => order.userId === userId && order.status !== "CANCELLED");
+}
 
 export const couponKindLabels: Record<CouponKind, string> = {
   PERCENT: "Giảm theo %",
@@ -52,10 +70,13 @@ export function describeCoupon(coupon: Pick<Coupon, "kind" | "value" | "maxDisco
   return `Giảm ${coupon.value}%` + (coupon.maxDiscount ? `, tối đa ${formatVND(coupon.maxDiscount)}` : "");
 }
 
-// Một mã khách có thể nhập: mã hộ chiếu, hoặc mã của chủ cửa hàng
+// Một mã khách có thể nhập: mã hệ thống (hộ chiếu, CHAOBAN), hoặc mã của chủ cửa hàng
 function findCode(code: string, coupons: Coupon[]): Coupon | undefined {
   if (code === PASSPORT_COUPON.code) {
     return { code, kind: "PERCENT", value: PASSPORT_COUPON.percent, maxDiscount: PASSPORT_COUPON.maxDiscount, active: true, createdAt: "" };
+  }
+  if (code === WELCOME_COUPON.code) {
+    return { code, kind: "AMOUNT", value: WELCOME_COUPON.amount, active: true, createdAt: "" };
   }
   return coupons.find((coupon) => coupon.code === code);
 }
@@ -74,6 +95,9 @@ export function codeProblem(code: string, { user, products, orders, coupons, sub
       return `Mã này dành cho khách đã đóng đủ ${PASSPORT_COUPON.stampsNeeded} dấu trong Hộ chiếu đặc sản. Bạn đang có ${stamped}/${total} dấu.`;
     }
   }
+  if (code === WELCOME_COUPON.code && !isFirstOrder(orders, user.id)) {
+    return `Mã ${WELCOME_COUPON.code} chỉ dành cho đơn hàng đầu tiên của bạn.`;
+  }
   if (coupon.minSubtotal && subtotal < coupon.minSubtotal) {
     return `Mã ${code} áp dụng cho đơn có tạm tính từ ${formatVND(coupon.minSubtotal)}.`;
   }
@@ -83,7 +107,7 @@ export function codeProblem(code: string, { user, products, orders, coupons, sub
   return null;
 }
 
-// Có mã này không (mã hộ chiếu, hoặc mã cửa hàng đã tạo)
+// Có mã này không (mã hệ thống, hoặc mã cửa hàng đã tạo)
 export function codeExists(code: string, coupons: Coupon[]) {
   return Boolean(findCode(code, coupons));
 }
@@ -120,7 +144,7 @@ export function applyCodes(codes: AppliedCodes, context: CouponContext) {
     if (problem) return { ok: false as const, message: problem };
   }
   const discountCoupon = codes.coupon ? findCode(codes.coupon, context.coupons) : undefined;
-  const discount = discountCoupon ? discountOf(discountCoupon, context.subtotal) : DISCOUNT;
+  const discount = discountCoupon ? discountOf(discountCoupon, context.subtotal) : 0;
   return { ok: true as const, totals: calculateTotals(context.subtotal, discount, Boolean(codes.shippingCoupon)) };
 }
 
@@ -156,6 +180,7 @@ export function validateCouponForm(
   if (!code) errors.code = "Vui lòng nhập mã";
   else if (!/^[A-Z0-9]{3,20}$/.test(code)) errors.code = "Mã gồm 3–20 chữ cái không dấu hoặc chữ số";
   else if (code === PASSPORT_COUPON.code) errors.code = "Mã này dành riêng cho Hộ chiếu đặc sản";
+  else if (code === WELCOME_COUPON.code) errors.code = "Mã này là mã hệ thống cho đơn đầu tiên, không tạo trùng được";
   else if (existing.some((coupon) => coupon.code === code)) errors.code = "Mã này đã có";
 
   const value = parseNumber(values.value);

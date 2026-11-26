@@ -6,6 +6,7 @@ import { btnBase, btnPrimary } from "@/components/ui/buttons";
 import { useStore } from "@/context/StoreContext";
 import {
   PASSPORT_COUPON,
+  WELCOME_COUPON,
   couponKindLabels,
   describeCoupon,
   emptyCouponForm,
@@ -99,8 +100,8 @@ export default function AdminCoupons() {
       <form noValidate onSubmit={handleSubmit} className="rounded-xl border border-line bg-white p-5 md:p-6">
         <h2 className="font-display text-xl font-semibold text-ink">Tạo mã mới</h2>
         <p className="mt-1 text-sm text-ink-muted">
-          Khách phải đăng nhập để dùng mã, và mỗi khách dùng mỗi mã một lần. Mỗi đơn dùng được một mã giảm giá (thay cho khoản giảm
-          mặc định) và một mã miễn phí vận chuyển.
+          Khách phải đăng nhập để dùng mã, và mỗi khách dùng mỗi mã một lần. Mỗi đơn dùng được một mã giảm giá và một mã miễn phí
+          vận chuyển.
         </p>
 
         <div className="mt-5 grid gap-4 md:grid-cols-2">
@@ -171,7 +172,7 @@ export default function AdminCoupons() {
             </tr>
           </thead>
           <tbody>
-            {/* Mã hộ chiếu: cố định, chỉ để Admin thấy đủ các mã khách có thể nhập */}
+            {/* Mã hệ thống (hộ chiếu, CHAOBAN): cố định trong code, chỉ để Admin thấy đủ các mã khách có thể nhập */}
             <tr className="group">
               <td className={`${td} font-semibold`}>{PASSPORT_COUPON.code}</td>
               <td className={td}>
@@ -182,7 +183,17 @@ export default function AdminCoupons() {
               <td className={td}>
                 <span className="text-sm text-ink-muted">Luôn bật</span>
               </td>
-              <td className={`${td} text-sm text-ink-muted`}>Mã cố định</td>
+              <td className={`${td} text-sm text-ink-muted`}>Mã hệ thống</td>
+            </tr>
+            <tr className="group">
+              <td className={`${td} font-semibold`}>{WELCOME_COUPON.code}</td>
+              <td className={td}>{describeCoupon({ kind: "AMOUNT", value: WELCOME_COUPON.amount })}</td>
+              <td className={td}>Đơn đầu tiên của khách</td>
+              <td className={`${td} whitespace-nowrap tabular-nums`}>{ordersUsingCode(orders, WELCOME_COUPON.code).length}</td>
+              <td className={td}>
+                <span className="text-sm text-ink-muted">Luôn bật</span>
+              </td>
+              <td className={`${td} text-sm text-ink-muted`}>Mã hệ thống</td>
             </tr>
             {sorted.map((coupon) => {
               const used = ordersUsingCode(orders, coupon.code).length;
