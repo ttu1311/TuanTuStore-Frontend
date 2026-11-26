@@ -146,8 +146,8 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 | `/` | Homepage, top to bottom: banner (4 photo slides: ba miền, Miền Bắc, Miền Trung, Miền Nam; photos in `public/images/banner`), **"Ưu đãi hôm nay"** (every in-stock product that has an old price higher than its price, biggest discount first, up to 5 in ONE row that shows 4 at a time on a computer (2 on a tablet) with arrow buttons to see the rest, swipe on a phone; the block disappears when there is none: the Admin puts a product in or out by filling or clearing "Giá cũ" in the product form), **"Tất cả sản phẩm"** (tabs: Bán chạy · Tất cả · Miền Bắc · Miền Trung · Miền Nam; up to 8 products per tab, and a "Xem tất cả sản phẩm" button at the bottom that opens `/san-pham`, filtered by region on a region tab; **Bán chạy** = top 8 in-stock products by quantity sold, cancelled orders excluded, ties: views then newest; only customers' purchases decide the order, Admin cannot rank or pin a product; the "Top 1/2/3" badge on product cards is computed the same way and only products that have sold get one), **"Ghép hộp quà ba miền"** (2 questions: occasion, budget per item; then it opens `/hop-qua` with the box already filled) |
 | `/san-pham` | Product list: filter by region / province / price, sort. **The only search box is the one in the header** (instant suggestions, recent searches, `/` shortcut; logic in `src/lib/search.ts`). Keyword and filters live in the address (`?q=`, `?region=`, `?province=` (both repeatable), `?price=`, `?sort=`), so F5, Back and shared links keep them; applied conditions show as removable chips |
 | `/san-pham/[id]` | Product detail: price, stock left ("Hết hàng" disables buying), stars, description, information, quantity, "Thêm vào giỏ hàng", "Mua ngay", ♡ wishlist, related products |
-| `/gio-hang` | Cart with a **tick box per product** and "Chọn tất cả": only ticked products are priced and bought, the others stay in the cart. Change quantity (never above the stock), remove, clear all, progress towards free shipping; checkout is blocked while a *ticked* line exceeds the stock |
-| `/thanh-toan` | Checkout, **login required** (a guest is sent to `/dang-nhap` and comes back here; the cart is kept; `placeOrder` refuses too). Only the ticked cart products; after the order only those leave the cart; "Mua ngay" on a product page ticks only that product. The customer chooses "Mua cho bản thân" (default address from the account, nothing to retype) or "Mua tặng người thân" (recipient form). 2-level address: province (34, after the 2025 merger) → ward typed by hand. COD or bank transfer with a **VietQR code** (amount and order code filled in). Optional free gift wrap. **Mã giảm giá** field (the passport coupon, see below) |
+| `/gio-hang` | Cart with a **tick box per product** and "Chọn tất cả": only ticked products are priced and bought, the others stay in the cart. Change quantity (never above the stock), remove, clear all, progress towards free shipping, a short `CHAOBAN` reminder for guests and customers without an order; checkout is blocked while a *ticked* line exceeds the stock |
+| `/thanh-toan` | Checkout, **login required** (a guest is sent to `/dang-nhap` and comes back here; the cart is kept; `placeOrder` refuses too). Only the ticked cart products; after the order only those leave the cart; "Mua ngay" on a product page ticks only that product. The customer chooses "Mua cho bản thân" (default address from the account, nothing to retype) or "Mua tặng người thân" (recipient form). 2-level address: province (34, after the 2025 merger) → ward typed by hand. COD or bank transfer with a **VietQR code** (amount and order code filled in). Optional free gift wrap. **Mã giảm giá** field (`CHAOBAN` for a first order, offered by a one-click "Áp dụng" line; the passport coupon; shop codes, see below) |
 | `/dang-nhap` | Customer login. `?next=/path` returns to that page afterwards (only paths inside the site) |
 | `/dang-nhap-quan-tri` | Admin login (see "Admin login"): password checked on the server, Turnstile, increasing wait after wrong passwords. No link points to it from the shop. `?next=` only accepts paths under `/admin` |
 | `/dang-ky` | Registration with a Cloudflare Turnstile CAPTCHA, verified on the server (`/api/captcha/verify`). Also reads `?next=` |
@@ -166,7 +166,7 @@ exists only in that phone's browser. It does not appear in the Admin pages opene
 | `/admin/don-hang` | Admin: orders — details, change status ("Đã hủy" returns the goods to stock), "Xác nhận đã nhận tiền" for bank transfers, delete |
 | `/admin/thong-ke` | Admin: purchases per product — sold, orders, revenue, views, stock; click a column to sort |
 | `/admin/nguoi-dung` | Admin: customer accounts — view, delete (there are no roles any more) |
-| `/admin/ma-giam-gia` | Admin: discount codes — create a code (percent with optional cap, fixed amount, or free shipping; optional minimum subtotal and total number of uses), see how many orders used it, turn off, delete |
+| `/admin/ma-giam-gia` | Admin: discount codes — create a code (percent with optional cap, fixed amount, or free shipping; optional minimum subtotal and total number of uses), see how many orders used it, turn off, delete. The system codes `HOCHIEU50` and `CHAOBAN` are listed read-only with their usage count and cannot be created again |
 | `/api/captcha/verify` | Route Handler (server): verifies a Turnstile token with Cloudflare `siteverify` using the secret key |
 | `/api/admin/login`, `/api/admin/logout`, `/api/admin/session` | Route Handlers (server): admin login, logout, and "is this browser's admin session valid?" |
 
@@ -273,9 +273,10 @@ read from `localStorage`. This avoids hydration errors, because the server has n
 - Passwords are plain text in `localStorage` (see the warning in "Demo accounts and passwords"). That simplicity is what lets
   login work on `localhost`, on plain `http://` LAN addresses and on `https://` alike.
 - Because the data is only in the browser, an unknown product address shows the 404 message with HTTP status 200.
-- Shipping fee is 30.000₫, free when the subtotal reaches 300.000₫; every order gets a fixed 20.000₫ discount. All three values are
-  in `src/lib/cart.ts`; the banner, cart, checkout and help pages read them from there. Each order stores its own
-  shipping fee, so changing these values never changes an old order. A discount never exceeds the subtotal
+- Shipping fee is 30.000₫, free when the subtotal reaches 300.000₫. Both values are in `src/lib/cart.ts`; the banner, cart,
+  checkout and help pages read them from there. Each order stores its own shipping fee and discount, so changing these values
+  never changes an old order (orders saved when every order got a fixed 20.000₫ discount keep it). There is **no automatic
+  discount**: without a discount code the order gets 0₫ off and no "Giảm giá" line. A discount never exceeds the subtotal
   (`calculateTotals` caps it and shows the amount actually taken off), so the total is never negative.
 - **Buying requires an account.** Browsing and adding to the cart work for guests (the cart is saved in the browser and survives the login);
   `/thanh-toan` and `placeOrder` need a logged-in customer, so every new order has a `userId`. Orders saved before this rule
@@ -292,11 +293,14 @@ read from `localStorage`. This avoids hydration errors, because the server has n
   them once; a product the Admin has saved keeps what the Admin wrote (see `applySeedUpdates`).
 - **Hộ chiếu đặc sản** stamps a province when one of the customer's orders containing a product from there is completed;
   orders not completed yet show as "Đang trên đường tới bạn". With **17 stamps** the customer unlocks the coupon `HOCHIEU50`
-  (50% of the subtotal, at most 200.000₫, once per account; a cancelled order gives it back). It replaces the fixed 20.000₫
-  discount on that order, and `placeOrder` checks it again. Rules are in `src/lib/coupons.ts`; the order keeps `Order.coupon`.
+  (50% of the subtotal, at most 200.000₫, once per account; a cancelled order gives it back). `placeOrder` checks it again. Rules are in `src/lib/coupons.ts`; the order keeps `Order.coupon`.
 - **Discount codes from the shop** (`/admin/ma-giam-gia`, stored under `tuantustore-coupons`, none by default) follow the same
   rules: the customer must be logged in, each customer uses each code once, a cancelled order gives it back. One order takes at
-  most one discount code (the passport code counts as one) plus one free-shipping code (`Order.shippingCoupon`).
+  most one discount code (the passport code and `CHAOBAN` count as one) plus one free-shipping code (`Order.shippingCoupon`).
+- **`CHAOBAN`** (welcome code, defined in `src/lib/coupons.ts` like the passport code, not stored with the shop codes): 20.000₫ off
+  (capped at the subtotal) for an account with no order except cancelled ones, so a cancelled first order gives it back. Checkout
+  shows "Đơn đầu tiên của bạn? Dùng mã CHAOBAN giảm 20.000₫" with an "Áp dụng" button while the customer is eligible and has no
+  discount code yet; `placeOrder` checks it again through `applyCodes`. The Admin cannot create a code named `CHAOBAN` or `HOCHIEU50`.
 - **Background music** (round button at the bottom left of every shop page, not on `/admin`): it never starts by itself. One
   `<audio>` element lives in `MusicProvider` (`src/context/MusicContext.tsx`) inside the root layout, so the music keeps playing
   while the customer moves between pages. After a reload the track and position come back, paused ("Nghe tiếp «…»"). A file

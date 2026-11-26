@@ -10,7 +10,17 @@ import LoadingState from "@/components/ui/LoadingState";
 import { useStore } from "@/context/StoreContext";
 import FreeShippingProgress from "@/components/cart/FreeShippingProgress";
 import { calculateTotals, getCartLines, selectedLines, type CartLine } from "@/lib/cart";
-import { PASSPORT_COUPON, applyCodes, codeExists, codeProblem, codeSlot, describeCode, normalizeCouponCode, type AppliedCodes } from "@/lib/coupons";
+import {
+  PASSPORT_COUPON,
+  WELCOME_COUPON,
+  applyCodes,
+  codeExists,
+  codeProblem,
+  codeSlot,
+  describeCode,
+  normalizeCouponCode,
+  type AppliedCodes,
+} from "@/lib/coupons";
 import { formatVND } from "@/lib/format";
 import { emptyAddress, formatAddress, validateAddress } from "@/lib/address";
 import {
@@ -94,6 +104,8 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
   // Mã đã áp dụng mà nay không còn hợp lệ (ví dụ Admin vừa tắt mã ở tab khác): tính như chưa có mã, placeOrder sẽ báo lỗi
   const priced = applyCodes(codes, couponContext);
   const { subtotal, shippingFee, discount, total } = priced.ok ? priced.totals : calculateTotals(lineTotal);
+  // Gợi ý mã CHAOBAN: khách đủ điều kiện (đơn đầu tiên) và chưa có mã giảm giá nào
+  const suggestWelcome = !codes.coupon && codeProblem(WELCOME_COUPON.code, couponContext) === null;
 
   function applyCoupon() {
     const code = normalizeCouponCode(couponText);
@@ -101,6 +113,11 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
       setCouponError("Vui lòng nhập mã giảm giá.");
       return;
     }
+    if (applyCode(code)) setCouponText("");
+  }
+
+  // Kiểm tra rồi áp một mã; trả về true nếu đã áp
+  function applyCode(code: string) {
     const slot = codeSlot(code, coupons) === "shipping" ? "shippingCoupon" : "coupon";
     const current = codes[slot];
     const problem = !codeExists(code, coupons)
@@ -113,10 +130,14 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
             : `Đơn đã có mã miễn phí vận chuyển ${current}.`
           : codeProblem(code, couponContext);
     setCouponError(problem ?? "");
-    if (!problem) {
-      setCodes({ ...codes, [slot]: code });
-      setCouponText("");
-    }
+    if (!problem) setCodes({ ...codes, [slot]: code });
+    return !problem;
+  }
+
+  // Nút "Áp dụng" ở dòng gợi ý biến mất sau khi bấm: chuyển focus về ô nhập mã để không bị mất
+  function applyWelcome() {
+    applyCode(WELCOME_COUPON.code);
+    document.getElementById("coupon")?.focus();
   }
 
   function removeCode(slot: keyof AppliedCodes) {
@@ -222,7 +243,8 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
       label: codes.shippingCoupon ? `Phí vận chuyển (mã ${codes.shippingCoupon})` : "Phí vận chuyển",
       value: shippingFee === 0 ? "Miễn phí" : formatVND(shippingFee),
     },
-    { label: codes.coupon ? `Giảm giá (mã ${codes.coupon})` : "Giảm giá", value: `−${formatVND(discount)}` },
+    // Không có mã giảm giá thì không giảm, không hiện dòng này
+    ...(discount > 0 ? [{ label: codes.coupon ? `Giảm giá (mã ${codes.coupon})` : "Giảm giá", value: `−${formatVND(discount)}` }] : []),
     ...(giftWrap ? [{ label: "Gói quà & thiệp", value: "Miễn phí" }] : []),
   ];
 
@@ -281,6 +303,17 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
                   </div>
                 );
               })}
+              {suggestWelcome && (
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 rounded-lg bg-gold-soft px-4 py-1">
+                  <p className="text-sm text-gold-ink">
+                    Đơn đầu tiên của bạn? Dùng mã <span className="font-semibold">{WELCOME_COUPON.code}</span> giảm{" "}
+                    {formatVND(WELCOME_COUPON.amount)}
+                  </p>
+                  <button type="button" onClick={applyWelcome} aria-label={`Áp dụng mã ${WELCOME_COUPON.code}`} className="min-h-11 text-sm font-medium text-primary underline underline-offset-4">
+                    Áp dụng
+                  </button>
+                </div>
+              )}
               <div className="flex gap-2">
                 <input
                   id="coupon"
