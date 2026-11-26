@@ -61,4 +61,9 @@ export const renamedImages: Record<string, string> = {
   "/images/placeholder-mat-ong-rung-u-minh-ha.jpg": "/images/p-mat-ong-u-minh-ha.jpg",
   "/images/placeholder-kho-ca-boi.jpg": "/images/p-kho-ca-boi.jpg",
   "/images/p-keo-dua.jpg": "/images/p-keo-dua-ben-tre.jpg",
+  // Rà ảnh Miền Bắc (11/2026): ảnh cũ có chữ, nhãn hoặc không thấy sản phẩm, đã thay bằng ảnh Wikimedia Commons khác (xem Credits trong README)
+  "/images/p-mien-dong-binh-lieu.jpg": "/images/p-mien-dong-binh-lieu-v2.jpg",
+  "/images/p-mat-ong-bac-ha-meo-vac.jpg": "/images/p-mat-ong-bac-ha-meo-vac-v2.jpg",
+  "/images/p-tuong-ban.jpg": "/images/p-tuong-ban-v3.jpg",
+  "/images/p-hat-de-trung-khanh.jpg": "/images/p-hat-de-trung-khanh-v2.jpg",
 };

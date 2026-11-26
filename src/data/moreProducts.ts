@@ -142,7 +142,7 @@ export const threeRegionProducts: Product[] = [
       "Củ dong riềng được nghiền lấy tinh bột, tráng thành bánh, thái sợi rồi phơi khô. Miến dong Bình Liêu nổi tiếng nhờ sợi miến dai và có màu trong tự nhiên.\n\n" +
       "Miến dùng để nấu miến gà, miến lươn, xào hoặc làm nhân nem rán, là món thường thấy trên mâm cỗ ngày Tết của người miền Bắc.",
     price: 70000,
-    image: "/images/p-mien-dong-binh-lieu.jpg",
+    image: "/images/p-mien-dong-binh-lieu-v2.jpg",
     region: "bac",
     brand: "Miến dong Bình Liêu",
     origin: "Quảng Ninh",
@@ -458,7 +458,7 @@ export const threeRegionProducts: Product[] = [
       "Tương Bần được làm từ ba nguyên liệu chính: gạo nếp, đậu tương và muối. Xôi nếp được ủ cho lên mốc vàng, đậu tương rang rồi ngâm nước, sau đó trộn cùng muối và phơi nắng trong chum nhiều tháng.\n\n" +
       "Tương có màu vàng sánh, vị ngọt đậm và mặn nhẹ. Đây là nước chấm quen thuộc cho rau muống luộc, đậu phụ rán và các món om, kho của người miền Bắc.",
     price: 35000,
-    image: "/images/p-tuong-ban.jpg",
+    image: "/images/p-tuong-ban-v3.jpg",
     region: "bac",
     brand: "Tương Bần",
     origin: "Hưng Yên",
@@ -773,7 +773,7 @@ export const threeRegionProducts: Product[] = [
       "Vào mùa đông, những triền núi đá ở Mèo Vạc nở đầy hoa bạc hà dại. Người dân nuôi ong để lấy mật từ loài hoa này, tạo nên một loại mật ong đặc trưng của cao nguyên đá.\n\n" +
       "Mật có màu vàng sáng, vị ngọt thanh, hơi the nhẹ ở cuối vị. Mật ong bạc hà dễ kết tinh khi trời lạnh; đó là hiện tượng tự nhiên.",
     price: 320000,
-    image: "/images/p-mat-ong-bac-ha-meo-vac.jpg",
+    image: "/images/p-mat-ong-bac-ha-meo-vac-v2.jpg",
     region: "bac",
     brand: "Mật ong bạc hà Mèo Vạc",
     origin: "Tuyên Quang",
@@ -816,7 +816,7 @@ export const threeRegionProducts: Product[] = [
       "Trùng Khánh là vùng cao của Cao Bằng, nơi cây dẻ được trồng trên đồi núi. Hạt dẻ ở đây to tròn, vỏ màu nâu bóng.\n\n" +
       "Hạt dẻ rang hoặc luộc có ruột vàng, bùi, ngọt và thơm. Dẻ cũng dùng để hầm gà, nấu xôi hoặc nấu chè.",
     price: 110000,
-    image: "/images/p-hat-de-trung-khanh.jpg",
+    image: "/images/p-hat-de-trung-khanh-v2.jpg",
     region: "bac",
     brand: "Hạt dẻ Trùng Khánh",
     origin: "Cao Bằng",
