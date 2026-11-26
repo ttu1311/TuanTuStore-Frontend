@@ -7,6 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
 import Icon from "@/components/ui/Icon";
 import { useStore } from "@/context/StoreContext";
+import { useVoiceSearch } from "@/hooks/useVoiceSearch";
 import { formatVND } from "@/lib/format";
 import { getBestSellers } from "@/lib/products";
 import { regionKeys, regions } from "@/lib/regions";
@@ -19,10 +20,11 @@ const SUGGESTION_LIMIT = 6;
 const BEST_SELLER_SHOWN = 3;
 const LIST_ID = "header-search-list";
 const PRODUCTS_PATH = "/san-pham";
+const MAX_LENGTH = 100;
 
 const formClass = "relative order-3 mx-auto w-full basis-full lg:order-none lg:max-w-[560px] lg:flex-1 lg:basis-0";
 const inputClass =
-  "h-12 w-full rounded-md border border-line bg-white pl-12 pr-12 text-ink transition-colors duration-200 placeholder:text-ink-muted focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-soft [&::-webkit-search-cancel-button]:hidden";
+  "h-12 w-full rounded-md border border-line bg-white pl-12 text-ink transition-colors duration-200 placeholder:text-ink-muted focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-soft [&::-webkit-search-cancel-button]:hidden";
 
 // Một dòng trong bảng gợi ý. Mọi dòng đều có địa chỉ (href), nên bấm giữa hoặc Ctrl+bấm vẫn mở tab mới.
 type Option =
@@ -57,10 +59,10 @@ function StaticSearch() {
         id="search-input"
         name="q"
         type="search"
-        maxLength={100}
+        maxLength={MAX_LENGTH}
         placeholder="Tìm chè, ô mai, nước mắm…"
         autoComplete="off"
-        className={inputClass}
+        className={`${inputClass} pr-12`}
       />
     </Form>
   );
@@ -87,6 +89,34 @@ function SearchBox() {
   const [recent, setRecent] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const boxRef = useRef<HTMLFormElement>(null);
+
+  // Tìm bằng giọng nói: chữ nghe được hiện dần vào ô; nói xong thì mở bảng gợi ý như khi gõ (KHÔNG tự chuyển trang)
+  const voice = useVoiceSearch({
+    onInterim: (text) => {
+      setValue(text.slice(0, MAX_LENGTH));
+      setActive(-1);
+    },
+    onFinal: (text) => {
+      setValue(text.slice(0, MAX_LENGTH));
+      setActive(-1);
+      setOpen(true);
+      inputRef.current?.focus();
+    },
+  });
+  const { cancel: cancelVoice } = voice;
+
+  // Chuyển trang thì thôi nghe
+  useEffect(() => cancelVoice(), [pathname, cancelVoice]);
+
+  function toggleVoice() {
+    if (voice.listening) {
+      voice.stop();
+      return;
+    }
+    setOpen(false);
+    setActive(-1);
+    voice.start();
+  }
 
   const term = value.trim();
   const sold = useMemo(() => soldCounts(orders), [orders]);
@@ -365,9 +395,9 @@ function SearchBox() {
         id="search-input"
         name="q"
         type="search"
-        maxLength={100}
+        maxLength={MAX_LENGTH}
         enterKeyHint="search"
-        placeholder="Tìm chè, ô mai, nước mắm…"
+        placeholder={voice.listening ? "Đang nghe…" : "Tìm chè, ô mai, nước mắm…"}
         autoComplete="off"
         value={value}
         role="combobox"
@@ -386,7 +416,7 @@ function SearchBox() {
         }}
         onClick={() => setOpen(true)}
         onKeyDown={onKeyDown}
-        className={inputClass}
+        className={`${inputClass} ${voice.supported ? "pr-[5.5rem]" : "pr-12"}`}
       />
       {value ? (
         <button
@@ -398,22 +428,49 @@ function SearchBox() {
             setOpen(true);
             inputRef.current?.focus();
           }}
-          className="absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-ink-muted transition-colors duration-200 hover:bg-surface hover:text-ink"
+          className={`absolute ${voice.supported ? "right-11" : "right-1.5"} top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-ink-muted transition-colors duration-200 hover:bg-surface hover:text-ink`}
         >
           <Icon name="x" size={18} />
         </button>
       ) : (
         <kbd
           aria-hidden="true"
-          className="pointer-events-none absolute right-3 top-1/2 hidden h-6 w-6 -translate-y-1/2 items-center justify-center rounded border border-line bg-surface font-sans text-xs text-ink-muted lg:flex"
+          className={`pointer-events-none absolute ${voice.supported ? "right-12" : "right-3"} top-1/2 hidden h-6 w-6 -translate-y-1/2 items-center justify-center rounded border border-line bg-surface font-sans text-xs text-ink-muted lg:flex`}
         >
           /
         </kbd>
+      )}
+      {/* Nút micro: chỉ hiện khi trình duyệt có nhận dạng giọng nói (Firefox chưa có) */}
+      {voice.supported && (
+        <button
+          type="button"
+          onClick={toggleVoice}
+          aria-pressed={voice.listening}
+          aria-label={voice.listening ? "Dừng nghe" : "Tìm bằng giọng nói"}
+          className={`absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full transition-colors duration-200 ${
+            voice.listening ? "bg-primary text-white" : "text-ink-muted hover:bg-surface hover:text-ink"
+          }`}
+        >
+          {/* Vòng nhịp đập nhẹ khi đang nghe (tắt khi bật "giảm chuyển động") */}
+          {voice.listening && (
+            <span aria-hidden="true" className="pointer-events-none absolute -inset-1 rounded-full border-2 border-primary motion-safe:animate-pulse" />
+          )}
+          <Icon name="mic" size={18} />
+        </button>
       )}
 
       <p aria-live="polite" className="sr-only">
         {liveMessage}
       </p>
+      <p role="status" className="sr-only">
+        {voice.listening ? "Đang nghe…" : ""}
+      </p>
+      {/* Lỗi nhận giọng nói: dòng nhỏ dưới ô, tự ẩn sau vài giây */}
+      {voice.error && !showPanel && (
+        <p role="alert" className="absolute left-0 top-full z-50 mt-1 rounded-md border border-line bg-white px-3 py-1.5 text-xs font-medium text-sale shadow-card">
+          {voice.error}
+        </p>
+      )}
 
       {showPanel && (
         <div className="absolute inset-x-0 top-full z-50 mt-2 max-h-[60vh] animate-dropdown-in overflow-y-auto overscroll-contain rounded-xl border border-line bg-white p-2 shadow-card">

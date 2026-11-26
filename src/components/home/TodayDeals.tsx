@@ -14,7 +14,7 @@ const MAX_DEALS = 5; // một hàng 5 món, hiện 4 món cùng lúc (máy tính
 // điện thoại ~72% bề ngang (lộ một phần thẻ kế tiếp để gợi ý vuốt), từ 640px hiện 2 thẻ, từ 1024px hiện 4 thẻ.
 const cellClass = "w-[72%] shrink-0 snap-start sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3.75rem)/4)]";
 
-// "Ưu đãi hôm nay" ở trang chủ, ngay dưới banner: mọi sản phẩm đang giảm giá, tức là có "Giá cũ" lớn hơn giá hiện tại
+// "Sản phẩm đang khuyến mãi" ở trang chủ, ngay dưới banner: mọi sản phẩm đang giảm giá, tức là có "Giá cũ" lớn hơn giá hiện tại
 // (Admin nhập "Giá cũ" ở form sản phẩm là món đó tự vào đây, xóa "Giá cũ" là món đó tự ra). Giảm nhiều nhất xếp trước,
 // bằng nhau thì giá thấp trước. Món hết hàng không đưa vào. Không món nào giảm giá thì cả khối biến mất.
 // Một hàng duy nhất tối đa 5 món: nhiều hơn số thẻ hiện được thì có hai mũi tên ở hai bên (từ 640px), mỗi lần bấm sang một thẻ;
@@ -90,7 +90,7 @@ export default function TodayDeals() {
   return (
     <section
       ref={sectionRef}
-      id="uu-dai-hom-nay"
+      id="san-pham-khuyen-mai"
       aria-labelledby="deals-title"
       className="relative overflow-clip rounded-2xl border border-line bg-white p-4 shadow-sm sm:p-6 lg:p-8"
     >
@@ -105,9 +105,9 @@ export default function TodayDeals() {
             Giá tốt
           </p>
           <h2 id="deals-title" className="font-display text-3xl/[1.2] font-bold text-ink sm:text-4xl/[1.2]">
-            Ưu đãi hôm nay
+            Sản phẩm đang khuyến mãi
           </h2>
-          <p className="mt-2 max-w-[32rem] text-ink-muted">Các món giảm giá duy nhất trong hôm nay.</p>
+          <p className="mt-2 max-w-[32rem] text-ink-muted">Các món đang bán thấp hơn giá cũ, giảm nhiều nhất xếp trước.</p>
         </div>
         {isReady && (
           <div className="flex items-center gap-4">

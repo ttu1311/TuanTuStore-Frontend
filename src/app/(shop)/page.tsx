@@ -6,7 +6,7 @@ import { PageContainer } from "@/components/layout/PageLayout";
 import Reveal from "@/components/ui/Reveal";
 
 // Trang chủ, gọn còn các khối chính:
-// banner (ảnh các miền) → "Ưu đãi hôm nay" (món đang giảm giá, tự biến mất nếu không có) → "Tất cả sản phẩm" (tab bán chạy / tất cả / ba miền) → ghép hộp quà (2 câu hỏi).
+// banner (ảnh các miền) → "Sản phẩm đang khuyến mãi" (món đang giảm giá, tự biến mất nếu không có) → "Tất cả sản phẩm" (tab bán chạy / tất cả / ba miền) → ghép hộp quà (2 câu hỏi).
 // Hộp quà, sản phẩm… có trang riêng của chúng.
 // "Tất cả sản phẩm" đọc sản phẩm và đơn hàng từ localStorage ở trình duyệt.
 export default function HomePage() {

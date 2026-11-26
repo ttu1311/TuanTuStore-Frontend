@@ -7,7 +7,7 @@ import { discountPercent, savingAmount } from "@/lib/products";
 import { regions } from "@/lib/regions";
 import type { Product } from "@/types";
 
-// Thẻ của khối "Ưu đãi hôm nay": gọn hơn ProductCard (bỏ sao đánh giá và dòng "Còn X sản phẩm"),
+// Thẻ của khối "Sản phẩm đang khuyến mãi": gọn hơn ProductCard (bỏ sao đánh giá và dòng "Còn X sản phẩm"),
 // nhấn vào mức giảm: nhãn "-X%" to ở góc ảnh, giá mới to màu sale, giá cũ gạch ngang và số tiền tiết kiệm.
 // Rê chuột: thẻ nhấc lên, ảnh phóng nhẹ, chip "Tiết kiệm" đậm lên. Chỉ nhận sản phẩm đang giảm giá và còn hàng (xem TodayDeals).
 export default function DealCard({ product }: { product: Product }) {
