@@ -261,6 +261,8 @@ read from `localStorage`. This avoids hydration errors, because the server has n
 - **Bank transfer (temporary):** the QR code follows the VietQR standard, so banking apps fill in the amount and the order code. The
   order stays "Chờ thanh toán" until an Admin presses "Xác nhận đã nhận tiền". Automatic confirmation needs a backend receiving a
   payment webhook (planned: PayOS — check the signature, match order code and amount, never confirm the same payment twice).
+  An order whose total is 0₫ has nothing to transfer: it is saved as "Đã thanh toán" and shows no QR code (`vietQrPayload`
+  refuses an amount ≤ 0).
 - **CAPTCHA limitation:** the Turnstile token is verified on the server, but the account itself is still created in `localStorage`,
   so a determined bot could skip the check. With a backend, the registration API must verify the token itself.
 - **Wishlist** is saved per account (in this browser): a guest pressing ♡ is sent to the login page and back.
@@ -273,7 +275,8 @@ read from `localStorage`. This avoids hydration errors, because the server has n
 - Because the data is only in the browser, an unknown product address shows the 404 message with HTTP status 200.
 - Shipping fee is 30.000₫, free when the subtotal reaches 300.000₫; every order gets a fixed 20.000₫ discount. All three values are
   in `src/lib/cart.ts`; the banner, cart, checkout and help pages read them from there. Each order stores its own
-  shipping fee, so changing these values never changes an old order.
+  shipping fee, so changing these values never changes an old order. A discount never exceeds the subtotal
+  (`calculateTotals` caps it and shows the amount actually taken off), so the total is never negative.
 - **Buying requires an account.** Browsing and adding to the cart work for guests (the cart is saved in the browser and survives the login);
   `/thanh-toan` and `placeOrder` need a logged-in customer, so every new order has a `userId`. Orders saved before this rule
   (guest orders) and orders of deleted accounts have `userId: null` and show as "Khách vãng lai" in Admin.

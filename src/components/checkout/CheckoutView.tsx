@@ -19,6 +19,7 @@ import {
   validateCheckout,
   type CheckoutErrors,
   type CheckoutFields,
+  paymentStatusOf,
 } from "@/lib/orders";
 import { isValidPhone } from "@/lib/validation";
 import type { Order, PaymentMethod, SavedAddress, User } from "@/types";
@@ -324,13 +325,13 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
             <dl className="mt-4 space-y-3 border-t border-line pt-4">
               {summaryRows.map((row) => (
                 <div key={row.label} className="flex justify-between gap-4">
-                  <dt className="text-ink-muted">{row.label}</dt>
-                  <dd className="font-medium text-ink">{row.value}</dd>
+                  <dt className="min-w-0 text-ink-muted">{row.label}</dt>
+                  <dd className="whitespace-nowrap font-medium text-ink">{row.value}</dd>
                 </div>
               ))}
               <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-line pt-4">
                 <dt className="text-lg font-semibold text-ink">Tổng cộng</dt>
-                <dd className="text-2xl font-bold text-primary">{formatVND(total)}</dd>
+                <dd className="whitespace-nowrap text-2xl font-bold text-primary">{formatVND(total)}</dd>
               </div>
             </dl>
 
@@ -470,7 +471,9 @@ function CheckoutForm({ lines, leftInCart, user, onPlaced }: CheckoutFormProps) 
               ))}
               {payment === "BANK_TRANSFER" && (
                 <p className="pl-8 text-sm text-ink-muted">
-                  Đặt hàng xong, bạn sẽ thấy mã QR có sẵn số tiền và nội dung chuyển khoản (mã đơn).
+                  {total > 0
+                    ? "Đặt hàng xong, bạn sẽ thấy mã QR có sẵn số tiền và nội dung chuyển khoản (mã đơn)."
+                    : "Tổng cộng 0₫ nên đơn này không cần chuyển khoản."}
                 </p>
               )}
             </div>
@@ -535,7 +538,7 @@ export default function CheckoutView() {
         <p className="mt-1 text-ink-muted">
           Tổng cộng: <span className="text-lg font-bold text-primary">{formatVND(placedOrder.total)}</span>
         </p>
-        {placedOrder.paymentMethod === "BANK_TRANSFER" && (
+        {paymentStatusOf(placedOrder) === "UNPAID" && (
           <div className="mx-auto mt-6 max-w-[40rem]">
             <BankTransferQR orderCode={placedOrder.code} amount={placedOrder.total} />
           </div>

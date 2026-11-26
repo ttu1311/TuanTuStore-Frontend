@@ -488,7 +488,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       address: customer.address.street.trim(),
       note: customer.note.trim(),
       paymentMethod,
-      ...(paymentMethod === "BANK_TRANSFER" ? { paymentStatus: "UNPAID" as const } : {}),
+      // Đơn chuyển khoản 0₫: không có gì để chuyển, nên không chờ thanh toán (và không có mã QR)
+      ...(paymentMethod === "BANK_TRANSFER" ? { paymentStatus: totals.total > 0 ? ("UNPAID" as const) : ("PAID" as const) } : {}),
       status: "PENDING",
       items,
       subtotal: totals.subtotal,

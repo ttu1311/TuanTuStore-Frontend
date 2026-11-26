@@ -41,7 +41,9 @@ export function shippingFeeFor(subtotal: number) {
 // Đơn hàng lưu lại phí vận chuyển của chính nó, nên đổi các mức ở trên không làm đổi đơn cũ.
 // discount: số tiền của mã giảm giá khách đã nhập (src/lib/coupons.ts); không có mã thì giảm DISCOUNT.
 // freeShipping: khách đã nhập mã miễn phí vận chuyển.
+// Giảm giá không bao giờ quá tạm tính, nên Tổng cộng luôn ≥ 0 (giảm giá trả về là số tiền giảm THỰC TẾ).
 export function calculateTotals(subtotal: number, discount: number = DISCOUNT, freeShipping = false) {
   const shippingFee = freeShipping ? 0 : shippingFeeFor(subtotal);
-  return { subtotal, shippingFee, discount, total: subtotal + shippingFee - discount };
+  const actualDiscount = Math.max(0, Math.min(discount, subtotal));
+  return { subtotal, shippingFee, discount: actualDiscount, total: Math.max(0, subtotal + shippingFee - actualDiscount) };
 }
