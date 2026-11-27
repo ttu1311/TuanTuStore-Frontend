@@ -61,8 +61,24 @@ export const renamedImages: Record<string, string> = {
   "/images/placeholder-kho-ca-boi.jpg": "/images/p-kho-ca-boi.jpg",
   "/images/p-keo-dua.jpg": "/images/p-keo-dua-ben-tre.jpg",
   // Rà ảnh Miền Bắc (11/2026): ảnh cũ có chữ, nhãn hoặc không thấy sản phẩm, đã thay bằng ảnh Wikimedia Commons khác (xem Credits trong README)
-  "/images/p-mien-dong-binh-lieu.jpg": "/images/p-mien-dong-binh-lieu-v2.jpg",
+  "/images/p-mien-dong-binh-lieu.jpg": "/images/p-mien-dong-binh-lieu-v3.jpg", // v2 (miến đậu xanh) đã được thay tiếp bằng v3
   "/images/p-mat-ong-bac-ha-meo-vac.jpg": "/images/p-mat-ong-bac-ha-meo-vac-v2.jpg",
   "/images/p-tuong-ban.jpg": "/images/p-tuong-ban-v3.jpg",
   "/images/p-hat-de-trung-khanh.jpg": "/images/p-hat-de-trung-khanh-v2.jpg",
+  // Rà ảnh Miền Trung và Miền Nam (11/2026), cùng ảnh Miến dong thay lần hai
+  "/images/p-khoai-deo-quang-binh.jpg": "/images/p-khoai-deo-quang-binh-v2.jpg",
+  "/images/p-nho-say-ninh-thuan.jpg": "/images/p-nho-say-ninh-thuan-v2.jpg",
+  "/images/p-nuoc-mam-phan-thiet.jpg": "/images/p-nuoc-mam-phan-thiet-v2.jpg",
+  "/images/p-toi-ly-son.jpg": "/images/p-toi-ly-son-v2.jpg",
+  "/images/p-banh-kho-me.jpg": "/images/p-banh-kho-me-v2.jpg",
+  "/images/p-ca-phe-khe-sanh.jpg": "/images/p-ca-phe-khe-sanh-v2.jpg",
+  "/images/p-ca-phe.jpg": "/images/p-ca-phe-v2.jpg",
+  "/images/p-mien-dong-binh-lieu-v2.jpg": "/images/p-mien-dong-binh-lieu-v3.jpg",
+  "/images/p-banh-trang-phoi-suong.jpg": "/images/p-banh-trang-phoi-suong-v2.jpg",
+  "/images/p-hu-tieu-my-tho.jpg": "/images/p-hu-tieu-my-tho-v2.jpg",
+  "/images/p-kho-ca-dua-can-gio.jpg": "/images/p-kho-ca-dua-can-gio-v2.jpg",
+  "/images/p-lap-xuong-soc-trang.jpg": "/images/p-lap-xuong-soc-trang-v2.jpg",
+  "/images/p-banh-pia.jpg": "/images/p-banh-pia-v2.jpg",
+  "/images/p-duong-thot-not.jpg": "/images/p-duong-thot-not-v2.jpg",
+  "/images/p-nuoc-mam.jpg": "/images/p-nuoc-mam-v2.jpg",
 };
