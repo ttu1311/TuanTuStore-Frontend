@@ -182,12 +182,12 @@ Unknown pages and unknown products show a Vietnamese "Lỗi 404" message.
 | `tuantustore-cart` | cart: product id + quantity | `[]` |
 | `tuantustore-orders` | all orders | `[]` |
 | `tuantustore-order-seq` | last order number used | `0` |
-| `tuantustore-seed-batches` | groups of products added after the first version that this browser already received | `["ca-mau", "ba-mien-60", "du-34-tinh"]` |
+| `tuantustore-seed-batches` | groups of products added after the first version that this browser already received | `["ca-mau", "ba-mien-60", "du-34-tinh", "dau-tay-da-lat"]` |
 | `tuantustore-reviews` | product reviews (stars + comment) | `[]` (no sample reviews) |
 | `tuantustore-wishlists` | wishlist per account: `{ userId: [productId, …] }` | — (created at the first ♡) |
 | `tuantustore-product-views` | `{ productId: number of detail-page views }` in this browser (breaks ties in "Sản phẩm bán chạy" while nothing has been sold) | — (created at the first product view) |
 | `tuantustore-recently-viewed` | ids of the products this browser opened last (shown in "Đã xem gần đây") | — (not created until a product is opened) |
-| `tuantustore-migrations` | ids of the one-time clean-ups this browser already ran, e.g. `remove-legacy-admin` (removes the old sample admin account `admin@tuantustore.vn` and every `role` field) `remove-contact-requests` (deletes the old key `tuantustore-contact-requests` left by the removed Liên hệ page) and `replace-<id>` for the 5 replaced products (see below); see `runMigrations` in `src/lib/storage.ts` | written on the first visit |
+| `tuantustore-migrations` | ids of the one-time clean-ups this browser already ran, e.g. `remove-legacy-admin` (removes the old sample admin account `admin@tuantustore.vn` and every `role` field) `remove-contact-requests` (deletes the old key `tuantustore-contact-requests` left by the removed Liên hệ page) and `replace-<id>` for the 6 replaced products (see below); see `runMigrations` in `src/lib/storage.ts` | written on the first visit |
 | `tuantustore-recent-searches` | the last 5 keywords searched in the header search box, newest first (shown as "Tìm gần đây") | — (created at the first search) |
 | `tuantustore-music` | background music: `{ trackId, currentTime, volume, muted }` (track saved by id, see `src/data/playlist.ts`) | — (created when the player is first used) |
 
@@ -198,10 +198,12 @@ Unknown pages and unknown products show a Vietnamese "Lỗi 404" message.
   added twice, and a product the Admin deletes afterwards does not come back (see `addNewSeedBatches` in `src/lib/storage.ts`).
 - **Replaced sample products (November 2026, so that all 34 provinces have a product, still 20 per region):** Nước mắm Cát Hải →
   Bánh gai Ninh Giang, Bánh cốm → Vải thiều sấy Lục Ngạn (Bắc Ninh), Trà sen Tây Hồ → Bưởi Đoan Hùng (Phú Thọ), Bánh đa nem làng
-  Chều → Thảo quả Lai Châu (Lai Châu), Nước mắm Nam Ô → Cam Vinh (Nghệ An). A browser that saved the old list receives the new
-  products once (seed batch `du-34-tinh`); the one-time steps `replace-<old id>` then remove an old product **only if the Admin
+  Chều → Thảo quả Lai Châu (Lai Châu), Nước mắm Nam Ô → Cam Vinh (Nghệ An); then Trà atiso Đà Lạt → Dâu tây sấy dẻo Đà Lạt (same
+  province, because Wikimedia Commons has no photo of artichoke tea). A browser that saved the old list receives the new
+  products once (seed batches `du-34-tinh`, `dau-tay-da-lat`); the one-time steps `replace-<old id>` then remove an old product **only if the Admin
   never edited it** (name, price, photo and brand still the sample values) and take its id out of the cart, the wishlists,
-  "recently viewed" and the view counts. An old product the Admin edited is kept (the shop then has 61 products). Old orders
+  "recently viewed" and the view counts. An old product the Admin edited is kept (the shop then has more than 60 products); the
+  photos of the replaced products stay in `public/images` for that case. Old orders
   keep their own copy of the product. The new products keep the old ones' creation dates, so "Mới nhất" keeps its order.
   Bưởi Đoan Hùng and Cam Vinh are fresh seasonal fruit (the only exceptions to "dried or sealed, keeps at least 2 weeks at room
   temperature"); their storage text says so (oranges: about 1 week at room temperature, about 3 weeks in the fridge).
@@ -226,7 +228,7 @@ src/
 │   └── StoreContext.tsx the ONE place that holds the data and saves it to localStorage
 ├── data/
 │   ├── initialData.ts   the first products, Cà Mau included (no sample accounts)
-│   ├── moreProducts.ts  the products added in November 2026 (seed batch "ba-mien-60") and the 5 replacements (seed batch "du-34-tinh"), so each region has 20
+│   ├── moreProducts.ts  the products added in November 2026 (seed batch "ba-mien-60") and the replacements (seed batches "du-34-tinh", "dau-tay-da-lat"), so each region has 20
 │   ├── brands.ts        what each brand is (kind, place, short introduction)
 │   ├── provinces.ts     the 34 provinces after the 2025 merger, old names → new names
 │   ├── contact.ts       the shop's phone, Zalo, email and opening hours (shown in the footer, `id="lien-he"`, and on the order lookup and help pages). There is no contact page: `/lien-he` redirects to `/#lien-he`

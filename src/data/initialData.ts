@@ -1,6 +1,6 @@
 import type { Product, User } from "@/types";
 import { INITIAL_STOCK } from "@/lib/cart";
-import { fullProvinceProducts, threeRegionProducts } from "@/data/moreProducts";
+import { fullProvinceProducts, lamDongSwapProducts, threeRegionProducts } from "@/data/moreProducts";
 
 // Dữ liệu chỉ được ghi vào localStorage ở lần truy cập ĐẦU TIÊN (xem initializeStorage trong src/lib/storage.ts).
 // Sau đó, website luôn dùng những gì đã lưu trong localStorage, nên thay đổi của Admin được giữ lại.
@@ -122,6 +122,7 @@ export const caMauProducts: Product[] = [
 // hiển thị sản phẩm đúng thứ tự bên dưới. Sản phẩm do Admin thêm có ngày của thời điểm thêm.
 export const initialProducts: Product[] = [
   ...fullProvinceProducts,
+  ...lamDongSwapProducts,
   ...threeRegionProducts,
   ...caMauProducts,
   {

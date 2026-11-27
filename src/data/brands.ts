@@ -273,10 +273,10 @@ export const brands: Brand[] = [
     about: "Mực một nắng là mực tươi phơi đúng một nắng, đặc sản quen thuộc của các làng chài ven biển Khánh Hòa.",
   },
   {
-    name: "Atiso Đà Lạt",
+    name: "Dâu tây Đà Lạt",
     kind: "Đặc sản địa phương",
     place: "Đà Lạt, Lâm Đồng",
-    about: "Atiso được trồng ở Đà Lạt từ đầu thế kỷ 20; hoa, lá và thân được sấy khô để làm trà.",
+    about: "Dâu tây là loại quả gắn với Đà Lạt; nhiều vườn trồng dâu trên giàn trong nhà kính, kết hợp đón khách tham quan. Mùa dâu kéo dài từ khoảng tháng 11 đến cuối tháng 4 năm sau.",
   },
   {
     name: "Nước mắm Phan Thiết",

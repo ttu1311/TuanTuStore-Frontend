@@ -3,7 +3,7 @@ import { INITIAL_STOCK } from "@/lib/cart";
 
 // Các đặc sản thêm vào tháng 11/2026 (ban đầu 47 món), để mỗi miền có 20 món (cùng các món có từ trước).
 // Trình duyệt đã lưu danh sách sản phẩm từ trước nhận các món này MỘT LẦN (seedBatches "ba-mien-60" trong src/lib/storage.ts).
-// 4 món trong nhóm ban đầu đã được thay bằng món khác (xem fullProvinceProducts ở cuối file).
+// 5 món trong nhóm ban đầu đã được thay bằng món khác (xem fullProvinceProducts và lamDongSwapProducts ở cuối file).
 // Thương hiệu là chỉ dẫn địa lý (đã kiểm chứng) hoặc tên làng nghề / vùng có thật, xem src/data/brands.ts.
 // Giá và quy cách là giá trị mẫu cho đồ án, KHÔNG phải giá thị trường. Ảnh: Wikimedia Commons.
 // Ngày đi từ mới nhất đến cũ nhất, xen kẽ ba miền.
@@ -767,27 +767,6 @@ export const threeRegionProducts: Product[] = [
     createdAt: "2026-11-14T09:22:00.000Z",
   },
   {
-    id: "tra-atiso-da-lat",
-    name: "Trà atiso Đà Lạt",
-    shortDescription: "Trà túi lọc từ hoa, lá atiso Đà Lạt, nước màu nâu, vị ngọt nhẹ, uống nóng hay lạnh đều ngon.",
-    description:
-      "Atiso là loài cây xứ lạnh được người Pháp đưa lên Đà Lạt từ đầu thế kỷ 20. Hoa, lá, thân và rễ atiso được thái nhỏ, sấy khô để làm trà.\n\n" +
-      "Trà atiso túi lọc tiện pha, nước có màu nâu nhạt, vị ngọt nhẹ và hơi đắng. Đây là món quà quen thuộc khi du lịch Đà Lạt.",
-    price: 55000,
-    image: "/images/p-tra-atiso-da-lat.jpg",
-    region: "trung",
-    brand: "Atiso Đà Lạt",
-    origin: "Lâm Đồng",
-    pack: "Hộp 20 túi lọc",
-    stock: INITIAL_STOCK,
-    occasions: ["bieu-nguoi-lon"],
-    story: {
-      enjoy: "Pha 1 túi với khoảng 200ml nước sôi, đợi 3–5 phút; uống nóng hoặc thêm đá.",
-      storage: "Để nơi khô ráo, đậy kín hộp.",
-    },
-    createdAt: "2026-11-14T09:21:00.000Z",
-  },
-  {
     id: "hoa-hoi-lang-son",
     name: "Hoa hồi Lạng Sơn",
     shortDescription: "Hoa hồi khô tám cánh của Lạng Sơn, thơm nồng, dùng nấu phở, kho thịt và các món hầm.",
@@ -1029,5 +1008,33 @@ export const fullProvinceProducts: Product[] = [
       season: "Chính vụ khoảng tháng 11–12.",
     },
     createdAt: "2026-11-14T09:44:00.000Z",
+  },
+];
+
+// Đổi Trà atiso Đà Lạt -> Dâu tây sấy dẻo Đà Lạt (11/2026): Commons không có ảnh trà atiso nào (chỉ có atiso tươi).
+// Cùng tỉnh Lâm Đồng nên vẫn 34 tỉnh, Miền Trung vẫn 20 món. Trình duyệt cũ nhận món mới MỘT LẦN (seedBatches "dau-tay-da-lat");
+// món cũ được bỏ bởi bước replace-tra-atiso-da-lat trong runMigrations (src/lib/storage.ts), chỉ khi Admin chưa sửa.
+export const lamDongSwapProducts: Product[] = [
+  {
+    id: "dau-tay-say-da-lat",
+    name: "Dâu tây sấy dẻo Đà Lạt",
+    shortDescription: "Dâu tây Đà Lạt sấy dẻo, vị chua ngọt, màu đỏ sẫm, ăn vặt hay pha trà đều hợp.",
+    description:
+      "Dâu tây là loại quả gắn với Đà Lạt (Lâm Đồng), nơi khí hậu mát quanh năm; mùa dâu kéo dài từ khoảng tháng 11 đến cuối tháng 4. Dâu tươi chỉ để được vài ngày, nên phần lớn được sấy dẻo để mang đi xa.\n\n" +
+      "Dâu sấy dẻo giữ vị chua ngọt và mùi thơm của dâu, thịt quả dẻo, màu đỏ sẫm. Ăn trực tiếp như món ăn vặt, hoặc ngâm vào nước nóng pha thành trà dâu.",
+    price: 175000,
+    image: "/images/p-dau-tay-say-da-lat.jpg",
+    region: "trung",
+    brand: "Dâu tây Đà Lạt",
+    origin: "Lâm Đồng",
+    pack: "Hũ 250g",
+    stock: INITIAL_STOCK,
+    occasions: ["an-vat", "qua-tet"],
+    story: {
+      enjoy: "Ăn trực tiếp như món ăn vặt; hoặc thả vài quả vào nước nóng cho một ly trà dâu chua ngọt.",
+      storage: "Đồ sấy khô: đậy kín hũ, để nơi khô mát, tránh nắng; dùng trước hạn in trên bao bì. Sau khi mở nắp nên dùng dần trong vài tuần, trời nồm ẩm thì cất ngăn mát.",
+      season: "Dâu tây Đà Lạt vào mùa từ khoảng tháng 11 đến cuối tháng 4; dâu sấy có quanh năm.",
+    },
+    createdAt: "2026-11-14T09:21:00.000Z",
   },
 ];
