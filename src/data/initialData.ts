@@ -1,6 +1,6 @@
 import type { Product, User } from "@/types";
 import { INITIAL_STOCK } from "@/lib/cart";
-import { fullProvinceProducts, threeRegionProducts } from "@/data/moreProducts";
+import { fullProvinceProducts, lamDongSwapProducts, threeRegionProducts } from "@/data/moreProducts";
 
 // Dữ liệu chỉ được ghi vào localStorage ở lần truy cập ĐẦU TIÊN (xem initializeStorage trong src/lib/storage.ts).
 // Sau đó, website luôn dùng những gì đã lưu trong localStorage, nên thay đổi của Admin được giữ lại.
@@ -122,6 +122,7 @@ export const caMauProducts: Product[] = [
 // hiển thị sản phẩm đúng thứ tự bên dưới. Sản phẩm do Admin thêm có ngày của thời điểm thêm.
 export const initialProducts: Product[] = [
   ...fullProvinceProducts,
+  ...lamDongSwapProducts,
   ...threeRegionProducts,
   ...caMauProducts,
   {
@@ -177,7 +178,7 @@ export const initialProducts: Product[] = [
       "Bánh có vị ngọt nhẹ, thơm mùi mè rang. Bạn có thể ăn trực tiếp, bẻ nhỏ ăn kèm kem hoặc dùng cùng trà và cà phê.",
     price: 65000,
     oldPrice: 75000,
-    image: "/images/p-banh-kho-me.jpg",
+    image: "/images/p-banh-kho-me-v2.jpg",
     region: "trung",
     brand: "Bà Liễu Mẹ",
     origin: "Đà Nẵng",
@@ -198,7 +199,7 @@ export const initialProducts: Product[] = [
       "Bánh pía là đặc sản của Sóc Trăng, có nguồn gốc từ ẩm thực của người Hoa. Vỏ bánh gồm nhiều lớp bột mỏng xếp chồng, khi nướng lên có độ xốp nhẹ.\n\n" +
       "Nhân bánh phổ biến là đậu xanh, thường kết hợp với khoai môn, sầu riêng hoặc trứng muối. Bánh thích hợp dùng với trà nóng.",
     price: 98000,
-    image: "/images/p-banh-pia.jpg",
+    image: "/images/p-banh-pia-v2.jpg",
     region: "nam",
     brand: "Tân Huê Viên",
     origin: "Cần Thơ",
@@ -220,7 +221,7 @@ export const initialProducts: Product[] = [
       "Cà phê hạt phù hợp để xay và pha phin theo kiểu truyền thống, cho ly cà phê đậm đà, ít chua. Bạn cũng có thể dùng cho máy pha espresso.",
     price: 210000,
     oldPrice: 240000,
-    image: "/images/p-ca-phe.jpg",
+    image: "/images/p-ca-phe-v2.jpg",
     region: "trung",
     brand: "Trung Nguyên",
     origin: "Đắk Lắk",
@@ -242,7 +243,7 @@ export const initialProducts: Product[] = [
       "Phú Quốc nổi tiếng với nghề làm nước mắm truyền thống. Cá cơm tươi được ướp muối và ủ trong thời gian dài để cho ra nước mắm có màu cánh gián và mùi thơm đặc trưng.\n\n" +
       "Nước mắm dùng để chấm, nêm nếm hoặc pha nước chấm cho nhiều món ăn Việt Nam như bún, gỏi và cơm.",
     price: 145000,
-    image: "/images/p-nuoc-mam.jpg",
+    image: "/images/p-nuoc-mam-v2.jpg",
     region: "nam",
     brand: "Khải Hoàn",
     origin: "An Giang",

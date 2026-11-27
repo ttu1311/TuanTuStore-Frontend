@@ -3,7 +3,7 @@ import { INITIAL_STOCK } from "@/lib/cart";
 
 // Các đặc sản thêm vào tháng 11/2026 (ban đầu 47 món), để mỗi miền có 20 món (cùng các món có từ trước).
 // Trình duyệt đã lưu danh sách sản phẩm từ trước nhận các món này MỘT LẦN (seedBatches "ba-mien-60" trong src/lib/storage.ts).
-// 4 món trong nhóm ban đầu đã được thay bằng món khác (xem fullProvinceProducts ở cuối file).
+// 5 món trong nhóm ban đầu đã được thay bằng món khác (xem fullProvinceProducts và lamDongSwapProducts ở cuối file).
 // Thương hiệu là chỉ dẫn địa lý (đã kiểm chứng) hoặc tên làng nghề / vùng có thật, xem src/data/brands.ts.
 // Giá và quy cách là giá trị mẫu cho đồ án, KHÔNG phải giá thị trường. Ảnh: Wikimedia Commons.
 // Ngày đi từ mới nhất đến cũ nhất, xen kẽ ba miền.
@@ -100,7 +100,7 @@ export const threeRegionProducts: Product[] = [
       "Bánh tráng được tráng từ bột gạo, phơi nắng rồi nướng trên lửa, sau đó đem phơi qua sương đêm. Hơi sương giúp bánh mềm, dẻo, không cần nhúng nước khi cuốn.\n\n" +
       "Món ăn đi kèm nổi tiếng là bánh tráng phơi sương cuốn thịt heo luộc, rau rừng, chấm mắm nêm.",
     price: 55000,
-    image: "/images/p-banh-trang-phoi-suong.jpg",
+    image: "/images/p-banh-trang-phoi-suong-v2.jpg",
     region: "nam",
     brand: "Bánh tráng phơi sương Trảng Bàng",
     origin: "Tây Ninh",
@@ -121,7 +121,7 @@ export const threeRegionProducts: Product[] = [
       "Củ dong riềng được nghiền lấy tinh bột, tráng thành bánh, thái sợi rồi phơi khô. Miến dong Bình Liêu nổi tiếng nhờ sợi miến dai và có màu trong tự nhiên.\n\n" +
       "Miến dùng để nấu miến gà, miến lươn, xào hoặc làm nhân nem rán, là món thường thấy trên mâm cỗ ngày Tết của người miền Bắc.",
     price: 70000,
-    image: "/images/p-mien-dong-binh-lieu-v2.jpg",
+    image: "/images/p-mien-dong-binh-lieu-v3.jpg",
     region: "bac",
     brand: "Miến dong Bình Liêu",
     origin: "Quảng Ninh",
@@ -142,7 +142,7 @@ export const threeRegionProducts: Product[] = [
       "Khoai lang trồng trên đất cát ven biển được hấp chín, thái lát rồi phơi dưới nắng nhiều ngày cho đến khi miếng khoai dẻo và trong.\n\n" +
       "Khoai deo có vị ngọt tự nhiên, dẻo và thơm mùi khoai. Ăn trực tiếp như món ăn vặt, hoặc nướng sơ trên bếp cho thơm hơn.",
     price: 85000,
-    image: "/images/p-khoai-deo-quang-binh.jpg",
+    image: "/images/p-khoai-deo-quang-binh-v2.jpg",
     region: "trung",
     brand: "Khoai deo Quảng Bình",
     origin: "Quảng Trị",
@@ -226,7 +226,7 @@ export const threeRegionProducts: Product[] = [
       "Cá dứa sống ở vùng nước lợ cửa sông Cần Giờ. Cá được làm sạch, xẻ đôi, ướp nhẹ rồi phơi một nắng để thịt vẫn còn mềm và giữ vị ngọt.\n\n" +
       "Khô cá dứa thịt dày, béo, chiên vàng hoặc nướng than đều thơm, ăn với cơm trắng hoặc làm món nhắm.",
     price: 380000,
-    image: "/images/p-kho-ca-dua-can-gio.jpg",
+    image: "/images/p-kho-ca-dua-can-gio-v2.jpg",
     region: "nam",
     brand: "Khô cá dứa Cần Giờ",
     origin: "Hồ Chí Minh",
@@ -374,7 +374,7 @@ export const threeRegionProducts: Product[] = [
       "Hủ tiếu Mỹ Tho được làm từ bột gạo, tráng thành bánh, phơi khô rồi cắt sợi. Sợi hủ tiếu nhỏ, dai và trong, nấu không bị nhão.\n\n" +
       "Sợi khô dùng để nấu hủ tiếu Mỹ Tho với nước dùng xương heo, tôm, thịt bằm, hoặc làm hủ tiếu xào.",
     price: 40000,
-    image: "/images/p-hu-tieu-my-tho.jpg",
+    image: "/images/p-hu-tieu-my-tho-v2.jpg",
     region: "nam",
     brand: "Hủ tiếu Mỹ Tho",
     origin: "Đồng Tháp",
@@ -416,7 +416,7 @@ export const threeRegionProducts: Product[] = [
       "Trên đảo Lý Sơn, người dân trồng tỏi trên lớp cát trắng phủ lên nền đất núi lửa. Tỏi được thu hoạch, phơi khô và bó thành từng chùm.\n\n" +
       "Tỏi Lý Sơn củ nhỏ, tép trắng, chắc, mùi thơm dịu, vị cay nhẹ và có hậu ngọt. Dùng phi thơm, làm nước chấm hoặc ngâm mật ong.",
     price: 120000,
-    image: "/images/p-toi-ly-son.jpg",
+    image: "/images/p-toi-ly-son-v2.jpg",
     region: "trung",
     brand: "Tỏi Lý Sơn",
     origin: "Quảng Ngãi",
@@ -437,7 +437,7 @@ export const threeRegionProducts: Product[] = [
       "Lạp xưởng được làm từ thịt heo nạc và mỡ thái hạt lựu, ướp đường, muối, rượu mai quế lộ, rồi nhồi vào ruột heo và phơi khô.\n\n" +
       "Lạp xưởng có vị ngọt đậm, thơm mùi rượu, dùng để chiên ăn với cơm, hấp, làm xôi lạp xưởng hoặc cơm chiên.",
     price: 150000,
-    image: "/images/p-lap-xuong-soc-trang.jpg",
+    image: "/images/p-lap-xuong-soc-trang-v2.jpg",
     region: "nam",
     brand: "Lạp xưởng Sóc Trăng",
     origin: "Cần Thơ",
@@ -563,7 +563,7 @@ export const threeRegionProducts: Product[] = [
       "Người dân vùng Bảy Núi trèo lên ngọn cây thốt nốt để lấy nước từ buồng hoa, rồi nấu nhiều giờ trên bếp củi cho đến khi cô đặc thành đường.\n\n" +
       "Đường thốt nốt có màu vàng nâu, vị ngọt thanh, thơm đặc trưng. Dùng nấu chè, kho cá, kho thịt hoặc ăn trực tiếp.",
     price: 85000,
-    image: "/images/p-duong-thot-not.jpg",
+    image: "/images/p-duong-thot-not-v2.jpg",
     region: "nam",
     brand: "Đường thốt nốt An Giang",
     origin: "An Giang",
@@ -668,7 +668,7 @@ export const threeRegionProducts: Product[] = [
       "Ninh Thuận có khí hậu khô, nhiều nắng, hợp với cây nho; ở đây nho cho thu hoạch nhiều vụ trong năm. Nho chín được sấy dẻo để giữ lâu và dễ mang đi xa.\n\n" +
       "Nho sấy có vị chua ngọt tự nhiên, dẻo và thơm. Ăn trực tiếp, trộn sữa chua, làm bánh hoặc pha trà.",
     price: 85000,
-    image: "/images/p-nho-say-ninh-thuan.jpg",
+    image: "/images/p-nho-say-ninh-thuan-v2.jpg",
     region: "trung",
     brand: "Nho Ninh Thuận",
     origin: "Khánh Hòa",
@@ -767,27 +767,6 @@ export const threeRegionProducts: Product[] = [
     createdAt: "2026-11-14T09:22:00.000Z",
   },
   {
-    id: "tra-atiso-da-lat",
-    name: "Trà atiso Đà Lạt",
-    shortDescription: "Trà túi lọc từ hoa, lá atiso Đà Lạt, nước màu nâu, vị ngọt nhẹ, uống nóng hay lạnh đều ngon.",
-    description:
-      "Atiso là loài cây xứ lạnh được người Pháp đưa lên Đà Lạt từ đầu thế kỷ 20. Hoa, lá, thân và rễ atiso được thái nhỏ, sấy khô để làm trà.\n\n" +
-      "Trà atiso túi lọc tiện pha, nước có màu nâu nhạt, vị ngọt nhẹ và hơi đắng. Đây là món quà quen thuộc khi du lịch Đà Lạt.",
-    price: 55000,
-    image: "/images/p-tra-atiso-da-lat.jpg",
-    region: "trung",
-    brand: "Atiso Đà Lạt",
-    origin: "Lâm Đồng",
-    pack: "Hộp 20 túi lọc",
-    stock: INITIAL_STOCK,
-    occasions: ["bieu-nguoi-lon"],
-    story: {
-      enjoy: "Pha 1 túi với khoảng 200ml nước sôi, đợi 3–5 phút; uống nóng hoặc thêm đá.",
-      storage: "Để nơi khô ráo, đậy kín hộp.",
-    },
-    createdAt: "2026-11-14T09:21:00.000Z",
-  },
-  {
     id: "hoa-hoi-lang-son",
     name: "Hoa hồi Lạng Sơn",
     shortDescription: "Hoa hồi khô tám cánh của Lạng Sơn, thơm nồng, dùng nấu phở, kho thịt và các món hầm.",
@@ -816,7 +795,7 @@ export const threeRegionProducts: Product[] = [
       "Phan Thiết là một trong những thủ phủ nước mắm của Việt Nam. Cá cơm đánh bắt ngoài khơi được trộn muối, ủ chượp trong thùng gỗ nhiều tháng rồi rút lấy nước mắm.\n\n" +
       "Nước mắm có màu cánh gián, mùi thơm đặc trưng, vị mặn đậm và ngọt hậu, dùng để chấm và nêm nấu.",
     price: 95000,
-    image: "/images/p-nuoc-mam-phan-thiet.jpg",
+    image: "/images/p-nuoc-mam-phan-thiet-v2.jpg",
     region: "trung",
     brand: "Nước mắm Phan Thiết",
     origin: "Lâm Đồng",
@@ -858,7 +837,7 @@ export const threeRegionProducts: Product[] = [
       "Khe Sanh thuộc huyện Hướng Hóa, vùng đồi núi phía tây Quảng Trị, nơi cây cà phê được người Pháp đưa vào trồng từ đầu thế kỷ 20. Khí hậu mát và đất đỏ bazan giúp hạt cà phê ở đây có hương thơm riêng.\n\n" +
       "Cà phê được rang mộc và xay sẵn, pha phin cho nước nâu sánh, vị đắng dịu, chua nhẹ và thơm. Hợp uống đen đá hoặc pha với sữa.",
     price: 140000,
-    image: "/images/p-ca-phe-khe-sanh.jpg",
+    image: "/images/p-ca-phe-khe-sanh-v2.jpg",
     region: "trung",
     brand: "Cà phê Khe Sanh",
     origin: "Quảng Trị",
@@ -1029,5 +1008,33 @@ export const fullProvinceProducts: Product[] = [
       season: "Chính vụ khoảng tháng 11–12.",
     },
     createdAt: "2026-11-14T09:44:00.000Z",
+  },
+];
+
+// Đổi Trà atiso Đà Lạt -> Dâu tây sấy dẻo Đà Lạt (11/2026): Commons không có ảnh trà atiso nào (chỉ có atiso tươi).
+// Cùng tỉnh Lâm Đồng nên vẫn 34 tỉnh, Miền Trung vẫn 20 món. Trình duyệt cũ nhận món mới MỘT LẦN (seedBatches "dau-tay-da-lat");
+// món cũ được bỏ bởi bước replace-tra-atiso-da-lat trong runMigrations (src/lib/storage.ts), chỉ khi Admin chưa sửa.
+export const lamDongSwapProducts: Product[] = [
+  {
+    id: "dau-tay-say-da-lat",
+    name: "Dâu tây sấy dẻo Đà Lạt",
+    shortDescription: "Dâu tây Đà Lạt sấy dẻo, vị chua ngọt, màu đỏ sẫm, ăn vặt hay pha trà đều hợp.",
+    description:
+      "Dâu tây là loại quả gắn với Đà Lạt (Lâm Đồng), nơi khí hậu mát quanh năm; mùa dâu kéo dài từ khoảng tháng 11 đến cuối tháng 4. Dâu tươi chỉ để được vài ngày, nên phần lớn được sấy dẻo để mang đi xa.\n\n" +
+      "Dâu sấy dẻo giữ vị chua ngọt và mùi thơm của dâu, thịt quả dẻo, màu đỏ sẫm. Ăn trực tiếp như món ăn vặt, hoặc ngâm vào nước nóng pha thành trà dâu.",
+    price: 175000,
+    image: "/images/p-dau-tay-say-da-lat.jpg",
+    region: "trung",
+    brand: "Dâu tây Đà Lạt",
+    origin: "Lâm Đồng",
+    pack: "Hũ 250g",
+    stock: INITIAL_STOCK,
+    occasions: ["an-vat", "qua-tet"],
+    story: {
+      enjoy: "Ăn trực tiếp như món ăn vặt; hoặc thả vài quả vào nước nóng cho một ly trà dâu chua ngọt.",
+      storage: "Đồ sấy khô: đậy kín hũ, để nơi khô mát, tránh nắng; dùng trước hạn in trên bao bì. Sau khi mở nắp nên dùng dần trong vài tuần, trời nồm ẩm thì cất ngăn mát.",
+      season: "Dâu tây Đà Lạt vào mùa từ khoảng tháng 11 đến cuối tháng 4; dâu sấy có quanh năm.",
+    },
+    createdAt: "2026-11-14T09:21:00.000Z",
   },
 ];

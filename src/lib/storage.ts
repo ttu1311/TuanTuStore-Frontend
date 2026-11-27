@@ -1,7 +1,7 @@
 // Nơi DUY NHẤT làm việc với localStorage / sessionStorage.
 // Các hàm này phải chạy ở trình duyệt (trong useEffect hoặc trình xử lý sự kiện), không bao giờ chạy khi render trên server.
 import { caMauProducts, initialProducts, initialUsers } from "@/data/initialData";
-import { fullProvinceProducts, threeRegionProducts } from "@/data/moreProducts";
+import { fullProvinceProducts, lamDongSwapProducts, threeRegionProducts } from "@/data/moreProducts";
 import { placeholderBrand, renamedImages, seedUpdates } from "@/data/seedUpdates";
 import { INITIAL_STOCK } from "@/lib/cart";
 import type { CartItem, Coupon, Order, Product, Review, User } from "@/types";
@@ -30,6 +30,7 @@ const seedBatches: { id: string; products: Product[] }[] = [
   { id: "ca-mau", products: caMauProducts },
   { id: "ba-mien-60", products: threeRegionProducts }, // ban đầu 47 món, mỗi miền đủ 20 món (tháng 11/2026)
   { id: "du-34-tinh", products: fullProvinceProducts }, // 5 món thay 5 món cũ để đủ 34 tỉnh (tháng 11/2026), xem replacedSamples
+  { id: "dau-tay-da-lat", products: lamDongSwapProducts }, // Dâu tây sấy dẻo Đà Lạt thay Trà atiso Đà Lạt (tháng 11/2026)
 ];
 
 // Đọc một giá trị JSON. Trả về null khi thiếu khóa, văn bản không phải JSON hợp lệ hoặc storage bị chặn.
@@ -92,7 +93,7 @@ function runMigrations() {
   }
 }
 
-// Món mẫu đã được thay bằng món khác (đủ 34 tỉnh, 11/2026; món mới ở fullProvinceProducts) cùng giá trị mẫu cũ của nó.
+// Món mẫu đã được thay bằng món khác (đủ 34 tỉnh, 11/2026; món mới ở fullProvinceProducts và lamDongSwapProducts) cùng giá trị mẫu cũ của nó.
 // Một hàm chứ không phải hằng số, vì migrations ở trên được tạo trước khi tới dòng này.
 type ReplacedSample = { id: string; name: string; price: number; image: string; brand: string };
 
@@ -103,6 +104,8 @@ function replacedSamples(): ReplacedSample[] {
     { id: "tra-sen-tay-ho", name: "Trà sen Tây Hồ", price: 350000, image: "/images/p-tra-sen-tay-ho.jpg", brand: "Trà sen Quảng An" },
     { id: "banh-da-nem-lang-cheu", name: "Bánh đa nem làng Chều", price: 30000, image: "/images/p-banh-da-nem-lang-cheu.jpg", brand: "Bánh đa nem làng Chều" },
     { id: "nuoc-mam-nam-o", name: "Nước mắm Nam Ô", price: 110000, image: "/images/p-nuoc-mam-nam-o.jpg", brand: "Nước mắm Nam Ô" },
+    // Không có ảnh trà atiso nào trên Commons: thay bằng Dâu tây sấy dẻo Đà Lạt (cùng tỉnh Lâm Đồng)
+    { id: "tra-atiso-da-lat", name: "Trà atiso Đà Lạt", price: 55000, image: "/images/p-tra-atiso-da-lat.jpg", brand: "Atiso Đà Lạt" },
   ];
 }
 
